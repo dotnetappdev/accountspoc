@@ -30,6 +30,7 @@ public class ApplicationDbContext : DbContext
     public DbSet<PaymentTransaction> PaymentTransactions => Set<PaymentTransaction>();
     public DbSet<PaymentProviderConfig> PaymentProviderConfigs => Set<PaymentProviderConfig>();
     public DbSet<ApiKeyConfig> ApiKeyConfigs => Set<ApiKeyConfig>();
+    public DbSet<ConfigurationSetting> ConfigurationSettings => Set<ConfigurationSetting>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -390,6 +391,28 @@ public class ApplicationDbContext : DbContext
             entity.Property(e => e.Environment).HasMaxLength(50);
             entity.HasIndex(e => e.TenantId);
             entity.HasIndex(e => new { e.TenantId, e.ServiceName, e.KeyName });
+            
+            entity.HasOne(e => e.Tenant)
+                .WithMany()
+                .HasForeignKey(e => e.TenantId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+        
+        // ConfigurationSetting configuration (Generic Settings)
+        modelBuilder.Entity<ConfigurationSetting>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Category).IsRequired().HasMaxLength(100);
+            entity.Property(e => e.Key).IsRequired().HasMaxLength(200);
+            entity.Property(e => e.Value).IsRequired();
+            entity.Property(e => e.DataType).HasMaxLength(50);
+            entity.Property(e => e.Description).HasMaxLength(1000);
+            entity.Property(e => e.ValidationRule).HasMaxLength(500);
+            entity.Property(e => e.DefaultValue).HasMaxLength(2000);
+            entity.Property(e => e.LastModifiedBy).HasMaxLength(200);
+            entity.HasIndex(e => e.TenantId);
+            entity.HasIndex(e => new { e.TenantId, e.Category });
+            entity.HasIndex(e => new { e.TenantId, e.Category, e.Key }).IsUnique();
             
             entity.HasOne(e => e.Tenant)
                 .WithMany()

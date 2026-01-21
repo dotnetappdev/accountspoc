@@ -38,6 +38,10 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9QYWdlcy9CaWxsT2ZNYXRlcmlhbHMucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = 
 
+[/home/runner/work/accountspoc/accountspoc/src/AccountsPOC.BlazorApp/Components/Pages/ConfigurationSettings.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9QYWdlcy9Db25maWd1cmF0aW9uU2V0dGluZ3MucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
 [/home/runner/work/accountspoc/accountspoc/src/AccountsPOC.BlazorApp/Components/Pages/Counter.razor]
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9QYWdlcy9Db3VudGVyLnJhem9y
 build_metadata.AdditionalFiles.CssScope = 
