@@ -26,6 +26,10 @@ build_property.EnableCodeStyleSeverity =
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9BcHAucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = 
 
+[/home/runner/work/accountspoc/accountspoc/src/AccountsPOC.BlazorApp/Components/Pages/ApiKeyManagement.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9QYWdlcy9BcGlLZXlNYW5hZ2VtZW50LnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
 [/home/runner/work/accountspoc/accountspoc/src/AccountsPOC.BlazorApp/Components/Pages/BankAccounts.razor]
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9QYWdlcy9CYW5rQWNjb3VudHMucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = 
@@ -64,6 +68,10 @@ build_metadata.AdditionalFiles.CssScope =
 
 [/home/runner/work/accountspoc/accountspoc/src/AccountsPOC.BlazorApp/Components/Pages/NotFound.razor]
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9QYWdlcy9Ob3RGb3VuZC5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/runner/work/accountspoc/accountspoc/src/AccountsPOC.BlazorApp/Components/Pages/PaymentProviderConfigs.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9QYWdlcy9QYXltZW50UHJvdmlkZXJDb25maWdzLnJhem9y
 build_metadata.AdditionalFiles.CssScope = 
 
 [/home/runner/work/accountspoc/accountspoc/src/AccountsPOC.BlazorApp/Components/Pages/PriceLists.razor]

@@ -28,6 +28,8 @@ public class ApplicationDbContext : DbContext
     public DbSet<CustomFieldValue> CustomFieldValues => Set<CustomFieldValue>();
     public DbSet<EmailTemplate> EmailTemplates => Set<EmailTemplate>();
     public DbSet<PaymentTransaction> PaymentTransactions => Set<PaymentTransaction>();
+    public DbSet<PaymentProviderConfig> PaymentProviderConfigs => Set<PaymentProviderConfig>();
+    public DbSet<ApiKeyConfig> ApiKeyConfigs => Set<ApiKeyConfig>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -352,6 +354,46 @@ public class ApplicationDbContext : DbContext
             entity.HasOne(e => e.SalesInvoice)
                 .WithMany()
                 .HasForeignKey(e => e.SalesInvoiceId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+        
+        // PaymentProviderConfig configuration
+        modelBuilder.Entity<PaymentProviderConfig>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.ProviderName).IsRequired().HasMaxLength(100);
+            entity.Property(e => e.ProviderCode).IsRequired().HasMaxLength(50);
+            entity.Property(e => e.PublishableKey).HasMaxLength(500);
+            entity.Property(e => e.SecretKey).HasMaxLength(500);
+            entity.Property(e => e.ApiKey).HasMaxLength(500);
+            entity.Property(e => e.MerchantId).HasMaxLength(200);
+            entity.Property(e => e.WebhookSecret).HasMaxLength(500);
+            entity.Property(e => e.Environment).HasMaxLength(50);
+            entity.HasIndex(e => e.TenantId);
+            entity.HasIndex(e => new { e.TenantId, e.ProviderCode }).IsUnique();
+            
+            entity.HasOne(e => e.Tenant)
+                .WithMany()
+                .HasForeignKey(e => e.TenantId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+        
+        // ApiKeyConfig configuration
+        modelBuilder.Entity<ApiKeyConfig>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.ServiceName).IsRequired().HasMaxLength(100);
+            entity.Property(e => e.KeyName).IsRequired().HasMaxLength(100);
+            entity.Property(e => e.KeyType).IsRequired().HasMaxLength(50);
+            entity.Property(e => e.KeyValue).IsRequired().HasMaxLength(1000);
+            entity.Property(e => e.Description).HasMaxLength(500);
+            entity.Property(e => e.Environment).HasMaxLength(50);
+            entity.HasIndex(e => e.TenantId);
+            entity.HasIndex(e => new { e.TenantId, e.ServiceName, e.KeyName });
+            
+            entity.HasOne(e => e.Tenant)
+                .WithMany()
+                .HasForeignKey(e => e.TenantId)
                 .OnDelete(DeleteBehavior.Restrict);
         });
     }
