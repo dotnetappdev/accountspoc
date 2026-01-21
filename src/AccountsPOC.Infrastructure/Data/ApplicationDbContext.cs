@@ -31,6 +31,7 @@ public class ApplicationDbContext : DbContext
     public DbSet<PaymentProviderConfig> PaymentProviderConfigs => Set<PaymentProviderConfig>();
     public DbSet<ApiKeyConfig> ApiKeyConfigs => Set<ApiKeyConfig>();
     public DbSet<ConfigurationSetting> ConfigurationSettings => Set<ConfigurationSetting>();
+    public DbSet<ExchangeRate> ExchangeRates => Set<ExchangeRate>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -418,6 +419,19 @@ public class ApplicationDbContext : DbContext
                 .WithMany()
                 .HasForeignKey(e => e.TenantId)
                 .OnDelete(DeleteBehavior.Restrict);
+        });
+        
+        // ExchangeRate configuration
+        modelBuilder.Entity<ExchangeRate>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.FromCurrency).IsRequired().HasMaxLength(10);
+            entity.Property(e => e.ToCurrency).IsRequired().HasMaxLength(10);
+            entity.Property(e => e.Rate).HasPrecision(18, 6);
+            entity.Property(e => e.Source).IsRequired().HasMaxLength(100);
+            entity.HasIndex(e => e.TenantId);
+            entity.HasIndex(e => new { e.TenantId, e.FromCurrency, e.ToCurrency, e.RateDate });
+            entity.HasIndex(e => new { e.TenantId, e.FromCurrency, e.ToCurrency, e.IsActive });
         });
     }
 }
