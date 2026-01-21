@@ -86,17 +86,17 @@
                     <div class="mb-4">
                         <h5 class="mb-3">Select Payment Method:</h5>
                         <div class="btn-group w-100" role="group">
-                            <input type="radio" class="btn-check" name="paymentMethod" id="stripe" value="Stripe" @onchange="() => selectedMethod = \"Stripe\"" checked="@(selectedMethod == \"Stripe\")" />
+                            <input type="radio" class="btn-check" name="paymentMethod" id="stripe" value="Stripe" @onchange="@(() => selectedMethod = "Stripe")" checked="@(selectedMethod == "Stripe")" />
                             <label class="btn btn-outline-primary" for="stripe">
                                 <i class="bi bi-credit-card"></i> Credit/Debit Card
                             </label>
 
-                            <input type="radio" class="btn-check" name="paymentMethod" id="applepay" value="ApplePay" @onchange="() => selectedMethod = \"ApplePay\"" />
+                            <input type="radio" class="btn-check" name="paymentMethod" id="applepay" value="ApplePay" @onchange="@(() => selectedMethod = "ApplePay")" />
                             <label class="btn btn-outline-primary" for="applepay">
                                 <i class="bi bi-apple"></i> Apple Pay
                             </label>
 
-                            <input type="radio" class="btn-check" name="paymentMethod" id="googlepay" value="GooglePay" @onchange="() => selectedMethod = \"GooglePay\"" />
+                            <input type="radio" class="btn-check" name="paymentMethod" id="googlepay" value="GooglePay" @onchange="@(() => selectedMethod = "GooglePay")" />
                             <label class="btn btn-outline-primary" for="googlepay">
                                 <i class="bi bi-google"></i> Google Pay
                             </label>

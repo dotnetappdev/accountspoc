@@ -27,19 +27,19 @@
     <ul class="nav nav-tabs custom-tabs mb-4">
         <li class="nav-item">
             <button class="nav-link @(selectedEntityType == "BillOfMaterial" ? "active" : "")" 
-                    @onclick="() => SelectEntityType(\"BillOfMaterial\")">
+                    @onclick="@(() => SelectEntityType("BillOfMaterial"))">
                 <i class="bi bi-file-earmark-text"></i> Bill of Materials
             </button>
         </li>
         <li class="nav-item">
             <button class="nav-link @(selectedEntityType == "SalesOrder" ? "active" : "")" 
-                    @onclick="() => SelectEntityType(\"SalesOrder\")">
+                    @onclick="@(() => SelectEntityType("SalesOrder"))">
                 <i class="bi bi-cart"></i> Sales Orders
             </button>
         </li>
         <li class="nav-item">
             <button class="nav-link @(selectedEntityType == "SalesOrderItem" ? "active" : "")" 
-                    @onclick="() => SelectEntityType(\"SalesOrderItem\")">
+                    @onclick="@(() => SelectEntityType("SalesOrderItem"))">
                 <i class="bi bi-list-ul"></i> Sales Order Items
             </button>
         </li>

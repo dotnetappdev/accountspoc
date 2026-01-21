@@ -29,7 +29,7 @@
         isDarkMode = !isDarkMode;
         var theme = isDarkMode ? "dark" : "light";
         
-        await JS.InvokeVoidAsync("localStorage.setItem", "theme", theme");
+        await JS.InvokeVoidAsync("localStorage.setItem", "theme", theme);
         await JS.InvokeVoidAsync("eval", $"document.documentElement.setAttribute('data-theme', '{theme}')");
     }
 }
