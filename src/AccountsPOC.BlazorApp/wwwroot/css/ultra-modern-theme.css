@@ -19,10 +19,13 @@
     --bg-main: #f0f2f5;
     --bg-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
     
-    /* Sidebar */
-    --sidebar-bg: #1a1d29;
-    --sidebar-hover: rgba(255, 255, 255, 0.08);
-    --sidebar-active: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+    /* Sidebar - Professional Accounting Theme */
+    --sidebar-bg: #0f1419;
+    --sidebar-hover: rgba(255, 255, 255, 0.06);
+    --sidebar-active: #2563eb;
+    --sidebar-border: rgba(255, 255, 255, 0.08);
+    --accent-blue: #2563eb;
+    --accent-blue-light: #3b82f6;
     
     /* Typography */
     --font-primary: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
@@ -890,4 +893,305 @@ textarea.form-control {
     .table tbody tr {
         border-color: #334155;
     }
+}
+
+/* ==========================================
+   Modern Sidebar Navigation System
+   Accounting Package Theme
+   ========================================== */
+
+.modern-sidebar {
+    width: 260px;
+    height: 100vh;
+    background: var(--sidebar-bg);
+    border-right: 1px solid var(--sidebar-border);
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    left: 0;
+    top: 0;
+    z-index: 1000;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+/* Custom Scrollbar for Sidebar */
+.modern-sidebar::-webkit-scrollbar {
+    width: 6px;
+}
+
+.modern-sidebar::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.modern-sidebar::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+}
+
+.modern-sidebar::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.15);
+}
+
+/* Sidebar Header */
+.sidebar-header {
+    padding: 1.5rem 1rem;
+    border-bottom: 1px solid var(--sidebar-border);
+    background: rgba(0, 0, 0, 0.2);
+}
+
+.sidebar-header .logo {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    color: #fff;
+    font-size: 1.25rem;
+    font-weight: 700;
+}
+
+.sidebar-header .logo i {
+    font-size: 1.5rem;
+    color: var(--accent-blue-light);
+}
+
+.sidebar-header .logo-text {
+    background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* Navigation */
+.sidebar-nav {
+    flex: 1;
+    padding: 1rem 0.5rem;
+}
+
+/* Navigation Items */
+.nav-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    margin-bottom: 0.25rem;
+    color: rgba(255, 255, 255, 0.7);
+    text-decoration: none;
+    border-radius: 8px;
+    transition: all var(--transition-base);
+    font-size: 0.875rem;
+    font-weight: 500;
+    position: relative;
+    overflow: hidden;
+}
+
+.nav-item i {
+    font-size: 1.125rem;
+    min-width: 20px;
+    text-align: center;
+}
+
+.nav-item:hover {
+    background: var(--sidebar-hover);
+    color: #fff;
+    transform: translateX(4px);
+}
+
+.nav-item.active {
+    background: var(--sidebar-active);
+    color: #fff;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+}
+
+.nav-item.active::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: #60a5fa;
+}
+
+/* Section Headers */
+.nav-section {
+    margin-bottom: 0.5rem;
+}
+
+.section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding: 0.625rem 1rem;
+    background: transparent;
+    border: none;
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: pointer;
+    transition: all var(--transition-base);
+    border-radius: 6px;
+}
+
+.section-header:hover {
+    background: rgba(255, 255, 255, 0.04);
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.section-title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.section-title i {
+    font-size: 1rem;
+}
+
+.section-header i.bi-chevron-down,
+.section-header i.bi-chevron-right {
+    font-size: 0.75rem;
+    transition: transform var(--transition-base);
+}
+
+/* Section Items */
+.section-items {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height var(--transition-base) ease-out;
+    padding-left: 0.5rem;
+}
+
+.section-items.expanded {
+    max-height: 500px;
+}
+
+.nav-item.sub-item {
+    padding: 0.625rem 1rem 0.625rem 2.5rem;
+    font-size: 0.8125rem;
+    position: relative;
+}
+
+.nav-item.sub-item::before {
+    content: '';
+    position: absolute;
+    left: 1.25rem;
+    top: 50%;
+    width: 4px;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    transform: translateY(-50%);
+    transition: all var(--transition-base);
+}
+
+.nav-item.sub-item:hover::before {
+    background: var(--accent-blue-light);
+    width: 6px;
+    height: 6px;
+}
+
+.nav-item.sub-item.active::before {
+    content: '';
+    position: absolute;
+    left: 1rem;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    height: 100%;
+    background: var(--accent-blue);
+    border-radius: 0;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+    .modern-sidebar {
+        width: 240px;
+    }
+}
+
+@media (max-width: 768px) {
+    .modern-sidebar {
+        transform: translateX(-100%);
+        transition: transform var(--transition-base);
+    }
+    
+    .modern-sidebar.mobile-open {
+        transform: translateX(0);
+    }
+    
+    /* Mobile Toggle Button */
+    .mobile-menu-toggle {
+        position: fixed;
+        top: 1rem;
+        left: 1rem;
+        z-index: 1001;
+        width: 40px;
+        height: 40px;
+        background: var(--sidebar-bg);
+        border: 1px solid var(--sidebar-border);
+        border-radius: 8px;
+        color: #fff;
+        font-size: 1.25rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        box-shadow: var(--shadow-md);
+    }
+    
+    .mobile-menu-toggle:hover {
+        background: rgba(37, 99, 235, 0.2);
+    }
+}
+
+/* Adjust main content when sidebar is present */
+.main {
+    margin-left: 260px;
+    transition: margin-left var(--transition-base);
+}
+
+@media (max-width: 1024px) {
+    .main {
+        margin-left: 240px;
+    }
+}
+
+@media (max-width: 768px) {
+    .main {
+        margin-left: 0;
+    }
+}
+
+/* Badge for Active Sections */
+.section-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 6px;
+    background: var(--accent-blue);
+    color: #fff;
+    font-size: 0.625rem;
+    font-weight: 600;
+    border-radius: var(--radius-full);
+}
+
+/* Smooth Animations */
+@keyframes slideInRight {
+    from {
+        transform: translateX(-10px);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+.section-items.expanded .nav-item {
+    animation: slideInRight var(--transition-base) ease-out;
 }
