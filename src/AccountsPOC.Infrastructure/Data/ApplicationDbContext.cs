@@ -32,6 +32,8 @@ public class ApplicationDbContext : DbContext
     public DbSet<ApiKeyConfig> ApiKeyConfigs => Set<ApiKeyConfig>();
     public DbSet<ConfigurationSetting> ConfigurationSettings => Set<ConfigurationSetting>();
     public DbSet<ExchangeRate> ExchangeRates => Set<ExchangeRate>();
+    public DbSet<CustomForm> CustomForms => Set<CustomForm>();
+    public DbSet<FormSubmission> FormSubmissions => Set<FormSubmission>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -432,6 +434,35 @@ public class ApplicationDbContext : DbContext
             entity.HasIndex(e => e.TenantId);
             entity.HasIndex(e => new { e.TenantId, e.FromCurrency, e.ToCurrency, e.RateDate });
             entity.HasIndex(e => new { e.TenantId, e.FromCurrency, e.ToCurrency, e.IsActive });
+        });
+        
+        // CustomForm configuration
+        modelBuilder.Entity<CustomForm>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Title).IsRequired().HasMaxLength(200);
+            entity.Property(e => e.Description).HasMaxLength(1000);
+            entity.Property(e => e.FormFieldsJson).IsRequired().HasColumnType("TEXT");
+            entity.HasIndex(e => e.TenantId);
+            entity.HasIndex(e => new { e.TenantId, e.IsActive });
+            
+            entity.HasMany(e => e.Submissions)
+                .WithOne(e => e.CustomForm)
+                .HasForeignKey(e => e.CustomFormId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+        
+        // FormSubmission configuration
+        modelBuilder.Entity<FormSubmission>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.AnswersJson).IsRequired().HasColumnType("TEXT");
+            entity.Property(e => e.FileUploadsJson).HasColumnType("TEXT");
+            entity.Property(e => e.SubmitterEmail).HasMaxLength(200);
+            entity.Property(e => e.SubmitterIpAddress).HasMaxLength(50);
+            entity.HasIndex(e => e.TenantId);
+            entity.HasIndex(e => new { e.TenantId, e.CustomFormId });
+            entity.HasIndex(e => e.SubmittedDate);
         });
     }
 }
