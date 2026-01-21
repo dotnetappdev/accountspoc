@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "dgSpecHash": "T7xm3e2v008=",
+  "success": true,
+  "projectFilePath": "/home/runner/work/accountspoc/accountspoc/src/AccountsPOC.BlazorApp/AccountsPOC.BlazorApp.csproj",
+  "expectedPackageFiles": [
+    "/home/runner/.nuget/packages/microsoft.aspnetcore.app.internal.assets/10.0.1/microsoft.aspnetcore.app.internal.assets.10.0.1.nupkg.sha512"
+  ],
+  "logs": []
+}
