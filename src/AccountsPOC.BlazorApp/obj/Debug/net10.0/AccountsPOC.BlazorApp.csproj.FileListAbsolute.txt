@@ -85,4 +85,4 @@
 /home/runner/work/accountspoc/accountspoc/src/AccountsPOC.BlazorApp/obj/Debug/net10.0/AccountsPOC.BlazorApp.genruntimeconfig.cache
 /home/runner/work/accountspoc/accountspoc/src/AccountsPOC.BlazorApp/obj/Debug/net10.0/ref/AccountsPOC.BlazorApp.dll
 /home/runner/work/accountspoc/accountspoc/src/AccountsPOC.BlazorApp/obj/Debug/net10.0/compressed/nzusl8fw9t-{0}-7b2oly0idp-7b2oly0idp.gz
-/home/runner/work/accountspoc/accountspoc/src/AccountsPOC.BlazorApp/obj/Debug/net10.0/compressed/fz5hwt95wx-{0}-u0kmc05esq-u0kmc05esq.gz
+/home/runner/work/accountspoc/accountspoc/src/AccountsPOC.BlazorApp/obj/Debug/net10.0/compressed/fz5hwt95wx-{0}-f2t5tqajnh-f2t5tqajnh.gz

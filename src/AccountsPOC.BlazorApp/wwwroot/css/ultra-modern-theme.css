@@ -1195,3 +1195,181 @@ textarea.form-control {
 .section-items.expanded .nav-item {
     animation: slideInRight var(--transition-base) ease-out;
 }
+
+/* Branding Management Styles */
+.branding-asset-card {
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 2px solid transparent;
+}
+
+.branding-asset-card.active {
+    border-color: var(--accent-blue);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.branding-asset-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+}
+
+.asset-preview {
+    position: relative;
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.asset-image {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    padding: 1rem;
+}
+
+.asset-placeholder {
+    text-align: center;
+    color: #6b7280;
+}
+
+.asset-placeholder i {
+    font-size: 3rem;
+    opacity: 0.3;
+}
+
+.active-badge {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    padding: 0.25rem 0.75rem;
+    border-radius: var(--radius-full);
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.asset-details {
+    padding: 1.25rem;
+}
+
+.asset-name {
+    font-size: 1.125rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    color: #1f2937;
+}
+
+.asset-meta {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin-bottom: 0.75rem;
+}
+
+.asset-description {
+    font-size: 0.875rem;
+    color: #6b7280;
+    margin-bottom: 0.75rem;
+    line-height: 1.5;
+}
+
+.asset-info {
+    display: flex;
+    gap: 1rem;
+    font-size: 0.75rem;
+    color: #9ca3af;
+    margin-bottom: 0.5rem;
+}
+
+.asset-info i {
+    margin-right: 0.25rem;
+}
+
+.asset-actions {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+/* Upload Area */
+.upload-area {
+    border: 2px dashed #d1d5db;
+    border-radius: var(--radius-md);
+    padding: 2rem;
+    text-align: center;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    background: #f9fafb;
+}
+
+.upload-area:hover {
+    border-color: var(--accent-blue);
+    background: #f0f9ff;
+}
+
+.upload-area.drag-over {
+    border-color: var(--accent-blue);
+    background: linear-gradient(135deg, #dbeafe 0%, #eff6ff 100%);
+    transform: scale(1.02);
+}
+
+.upload-label {
+    cursor: pointer;
+    display: block;
+    margin: 0;
+}
+
+.upload-label i {
+    color: var(--accent-blue);
+}
+
+.preview-container {
+    padding: 1rem;
+    background: #f9fafb;
+    border-radius: var(--radius-md);
+    text-align: center;
+}
+
+/* Nav Tabs for Asset Types */
+.nav-tabs-wrapper {
+    border-bottom: 2px solid #e5e7eb;
+}
+
+.nav-tabs {
+    border: none;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.nav-tabs .nav-item {
+    margin-bottom: -2px;
+}
+
+.nav-tabs .nav-link {
+    border: none;
+    background: none;
+    color: #6b7280;
+    font-weight: 500;
+    padding: 0.75rem 1.25rem;
+    border-radius: var(--radius-md) var(--radius-md) 0 0;
+    transition: all 0.2s ease;
+}
+
+.nav-tabs .nav-link:hover {
+    color: var(--accent-blue);
+    background: rgba(37, 99, 235, 0.05);
+}
+
+.nav-tabs .nav-link.active {
+    color: var(--accent-blue);
+    background: rgba(37, 99, 235, 0.1);
+    border-bottom: 3px solid var(--accent-blue);
+    font-weight: 600;
+}
+
+.nav-tabs .nav-link i {
+    margin-right: 0.5rem;
+}

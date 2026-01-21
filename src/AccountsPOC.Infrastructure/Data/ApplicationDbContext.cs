@@ -37,6 +37,7 @@ public class ApplicationDbContext : DbContext
     public DbSet<Supplier> Suppliers => Set<Supplier>();
     public DbSet<PurchaseOrder> PurchaseOrders => Set<PurchaseOrder>();
     public DbSet<PurchaseOrderItem> PurchaseOrderItems => Set<PurchaseOrderItem>();
+    public DbSet<BrandingAsset> BrandingAssets => Set<BrandingAsset>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -542,6 +543,23 @@ public class ApplicationDbContext : DbContext
                 .WithMany()
                 .HasForeignKey(e => e.ProductId)
                 .OnDelete(DeleteBehavior.Restrict);
+        });
+        
+        // BrandingAsset configuration
+        modelBuilder.Entity<BrandingAsset>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.AssetType).IsRequired().HasMaxLength(50);
+            entity.Property(e => e.AssetName).IsRequired().HasMaxLength(200);
+            entity.Property(e => e.FileName).HasMaxLength(255);
+            entity.Property(e => e.MimeType).HasMaxLength(100);
+            entity.Property(e => e.AltText).HasMaxLength(500);
+            entity.Property(e => e.UsageContext).HasMaxLength(100);
+            entity.Property(e => e.Description).HasMaxLength(1000);
+            entity.Property(e => e.CreatedBy).HasMaxLength(100);
+            entity.Property(e => e.LastModifiedBy).HasMaxLength(100);
+            entity.HasIndex(e => e.TenantId);
+            entity.HasIndex(e => new { e.TenantId, e.AssetType, e.IsActive });
         });
     }
 }
