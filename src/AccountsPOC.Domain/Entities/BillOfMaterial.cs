@@ -3,6 +3,7 @@ namespace AccountsPOC.Domain.Entities;
 public class BillOfMaterial
 {
     public int Id { get; set; }
+    public int TenantId { get; set; }
     public required string BOMNumber { get; set; }
     public required string Name { get; set; }
     public string? Description { get; set; }

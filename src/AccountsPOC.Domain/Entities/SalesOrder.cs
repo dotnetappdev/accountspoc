@@ -3,6 +3,7 @@ namespace AccountsPOC.Domain.Entities;
 public class SalesOrder
 {
     public int Id { get; set; }
+    public int TenantId { get; set; }
     public required string OrderNumber { get; set; }
     public DateTime OrderDate { get; set; }
     public required string CustomerName { get; set; }

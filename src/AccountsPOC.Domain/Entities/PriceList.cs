@@ -3,6 +3,7 @@ namespace AccountsPOC.Domain.Entities;
 public class PriceList
 {
     public int Id { get; set; }
+    public int TenantId { get; set; }
     public required string PriceListCode { get; set; }
     public required string Description { get; set; }
     public string? Currency { get; set; }

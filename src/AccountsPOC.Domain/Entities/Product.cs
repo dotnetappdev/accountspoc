@@ -3,6 +3,7 @@ namespace AccountsPOC.Domain.Entities;
 public class Product
 {
     public int Id { get; set; }
+    public int TenantId { get; set; }
     public required string ProductCode { get; set; }
     public required string ProductName { get; set; }
     public string? Description { get; set; }

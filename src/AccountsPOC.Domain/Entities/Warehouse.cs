@@ -3,6 +3,7 @@ namespace AccountsPOC.Domain.Entities;
 public class Warehouse
 {
     public int Id { get; set; }
+    public int TenantId { get; set; }
     public required string WarehouseCode { get; set; }
     public required string WarehouseName { get; set; }
     public required string Address { get; set; }

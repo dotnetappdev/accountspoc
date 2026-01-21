@@ -3,6 +3,7 @@ namespace AccountsPOC.Domain.Entities;
 public class SalesInvoice
 {
     public int Id { get; set; }
+    public int TenantId { get; set; }
     public required string InvoiceNumber { get; set; }
     public DateTime InvoiceDate { get; set; }
     public int SalesOrderId { get; set; }

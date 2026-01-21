@@ -3,6 +3,7 @@ namespace AccountsPOC.Domain.Entities;
 public class StockItem
 {
     public int Id { get; set; }
+    public int TenantId { get; set; }
     public required string StockCode { get; set; }
     public required string Description { get; set; }
     public string? LongDescription { get; set; }

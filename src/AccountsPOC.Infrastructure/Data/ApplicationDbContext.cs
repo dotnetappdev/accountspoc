@@ -22,6 +22,12 @@ public class ApplicationDbContext : DbContext
     public DbSet<PriceList> PriceLists => Set<PriceList>();
     public DbSet<PriceListItem> PriceListItems => Set<PriceListItem>();
     public DbSet<Customer> Customers => Set<Customer>();
+    public DbSet<Tenant> Tenants => Set<Tenant>();
+    public DbSet<SystemSettings> SystemSettings => Set<SystemSettings>();
+    public DbSet<CustomField> CustomFields => Set<CustomField>();
+    public DbSet<CustomFieldValue> CustomFieldValues => Set<CustomFieldValue>();
+    public DbSet<EmailTemplate> EmailTemplates => Set<EmailTemplate>();
+    public DbSet<PaymentTransaction> PaymentTransactions => Set<PaymentTransaction>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -37,6 +43,7 @@ public class ApplicationDbContext : DbContext
             entity.Property(e => e.BranchCode).HasMaxLength(50);
             entity.Property(e => e.Currency).IsRequired().HasMaxLength(10);
             entity.Property(e => e.Balance).HasPrecision(18, 2);
+            entity.HasIndex(e => e.TenantId);
         });
 
         // Product configuration
@@ -48,6 +55,7 @@ public class ApplicationDbContext : DbContext
             entity.Property(e => e.Description).HasMaxLength(1000);
             entity.Property(e => e.UnitPrice).HasPrecision(18, 2);
             entity.HasIndex(e => e.ProductCode).IsUnique();
+            entity.HasIndex(e => e.TenantId);
         });
 
         // SalesOrder configuration
@@ -61,6 +69,7 @@ public class ApplicationDbContext : DbContext
             entity.Property(e => e.TotalAmount).HasPrecision(18, 2);
             entity.Property(e => e.Status).IsRequired().HasMaxLength(50);
             entity.HasIndex(e => e.OrderNumber).IsUnique();
+            entity.HasIndex(e => e.TenantId);
             
             entity.HasMany(e => e.SalesOrderItems)
                 .WithOne(e => e.SalesOrder)
@@ -101,6 +110,7 @@ public class ApplicationDbContext : DbContext
             entity.Property(e => e.TotalAmount).HasPrecision(18, 2);
             entity.Property(e => e.Status).IsRequired().HasMaxLength(50);
             entity.HasIndex(e => e.InvoiceNumber).IsUnique();
+            entity.HasIndex(e => e.TenantId);
         });
 
         // BillOfMaterial configuration
@@ -112,6 +122,7 @@ public class ApplicationDbContext : DbContext
             entity.Property(e => e.Description).HasMaxLength(1000);
             entity.Property(e => e.EstimatedCost).HasPrecision(18, 2);
             entity.HasIndex(e => e.BOMNumber).IsUnique();
+            entity.HasIndex(e => e.TenantId);
             
             entity.HasOne(e => e.Product)
                 .WithMany(e => e.BillOfMaterials)
@@ -148,6 +159,7 @@ public class ApplicationDbContext : DbContext
             entity.Property(e => e.SellingPrice).HasPrecision(18, 2);
             entity.Property(e => e.BinLocation).HasMaxLength(50);
             entity.HasIndex(e => e.StockCode).IsUnique();
+            entity.HasIndex(e => e.TenantId);
             
             entity.HasOne(e => e.Product)
                 .WithMany()
@@ -173,6 +185,7 @@ public class ApplicationDbContext : DbContext
             entity.Property(e => e.ContactName).HasMaxLength(200);
             entity.Property(e => e.ContactPhone).HasMaxLength(50);
             entity.HasIndex(e => e.WarehouseCode).IsUnique();
+            entity.HasIndex(e => e.TenantId);
         });
         
         // PriceList configuration
@@ -183,6 +196,7 @@ public class ApplicationDbContext : DbContext
             entity.Property(e => e.Description).IsRequired().HasMaxLength(200);
             entity.Property(e => e.Currency).HasMaxLength(10);
             entity.HasIndex(e => e.PriceListCode).IsUnique();
+            entity.HasIndex(e => e.TenantId);
             
             entity.HasMany(e => e.PriceListItems)
                 .WithOne(e => e.PriceList)
@@ -220,11 +234,125 @@ public class ApplicationDbContext : DbContext
             entity.Property(e => e.CreditLimit).HasPrecision(18, 2);
             entity.Property(e => e.CurrentBalance).HasPrecision(18, 2);
             entity.HasIndex(e => e.CustomerCode).IsUnique();
+            entity.HasIndex(e => e.TenantId);
             
             entity.HasOne(e => e.DefaultPriceList)
                 .WithMany()
                 .HasForeignKey(e => e.DefaultPriceListId)
                 .OnDelete(DeleteBehavior.SetNull);
+        });
+        
+        // Tenant configuration
+        modelBuilder.Entity<Tenant>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.TenantCode).IsRequired().HasMaxLength(50);
+            entity.Property(e => e.CompanyName).IsRequired().HasMaxLength(200);
+            entity.Property(e => e.ContactEmail).HasMaxLength(200);
+            entity.Property(e => e.ContactPhone).HasMaxLength(50);
+            entity.HasIndex(e => e.TenantCode).IsUnique();
+        });
+        
+        // SystemSettings configuration
+        modelBuilder.Entity<SystemSettings>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.DefaultCurrency).IsRequired().HasMaxLength(10);
+            entity.Property(e => e.CurrencySymbol).HasMaxLength(10);
+            entity.Property(e => e.DateFormat).IsRequired().HasMaxLength(50);
+            entity.Property(e => e.CompanyName).IsRequired().HasMaxLength(200);
+            entity.Property(e => e.CompanyLogo).HasMaxLength(500);
+            entity.Property(e => e.CompanyAddress).HasMaxLength(500);
+            entity.Property(e => e.TaxNumber).HasMaxLength(50);
+            entity.Property(e => e.DefaultTaxRate).HasPrecision(5, 2);
+            entity.Property(e => e.EmailFromAddress).HasMaxLength(200);
+            entity.Property(e => e.EmailFromName).HasMaxLength(200);
+            entity.Property(e => e.StripePublishableKey).HasMaxLength(500);
+            entity.Property(e => e.StripeSecretKey).HasMaxLength(500);
+            entity.HasIndex(e => e.TenantId);
+            
+            entity.HasOne(e => e.Tenant)
+                .WithMany()
+                .HasForeignKey(e => e.TenantId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+        
+        // CustomField configuration
+        modelBuilder.Entity<CustomField>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.EntityType).IsRequired().HasMaxLength(100);
+            entity.Property(e => e.FieldName).IsRequired().HasMaxLength(100);
+            entity.Property(e => e.FieldLabel).IsRequired().HasMaxLength(200);
+            entity.Property(e => e.FieldType).IsRequired().HasMaxLength(50);
+            entity.Property(e => e.Options).HasMaxLength(2000);
+            entity.HasIndex(e => e.TenantId);
+            entity.HasIndex(e => new { e.TenantId, e.EntityType });
+            
+            entity.HasOne(e => e.Tenant)
+                .WithMany()
+                .HasForeignKey(e => e.TenantId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+        
+        // CustomFieldValue configuration
+        modelBuilder.Entity<CustomFieldValue>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.EntityType).IsRequired().HasMaxLength(100);
+            entity.Property(e => e.FieldValue).HasMaxLength(2000);
+            entity.HasIndex(e => new { e.EntityType, e.EntityId });
+            entity.HasIndex(e => e.CustomFieldId);
+            
+            entity.HasOne(e => e.CustomField)
+                .WithMany()
+                .HasForeignKey(e => e.CustomFieldId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+        
+        // EmailTemplate configuration
+        modelBuilder.Entity<EmailTemplate>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.TemplateName).IsRequired().HasMaxLength(200);
+            entity.Property(e => e.TemplateCode).IsRequired().HasMaxLength(100);
+            entity.Property(e => e.Subject).IsRequired().HasMaxLength(500);
+            entity.Property(e => e.BodyHtml).IsRequired();
+            entity.Property(e => e.TriggerEvent).HasMaxLength(100);
+            entity.HasIndex(e => e.TenantId);
+            entity.HasIndex(e => new { e.TenantId, e.TemplateCode });
+            
+            entity.HasOne(e => e.Tenant)
+                .WithMany()
+                .HasForeignKey(e => e.TenantId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+        
+        // PaymentTransaction configuration
+        modelBuilder.Entity<PaymentTransaction>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.PaymentMethod).IsRequired().HasMaxLength(50);
+            entity.Property(e => e.TransactionId).IsRequired().HasMaxLength(200);
+            entity.Property(e => e.Amount).HasPrecision(18, 2);
+            entity.Property(e => e.Currency).IsRequired().HasMaxLength(10);
+            entity.Property(e => e.Status).IsRequired().HasMaxLength(50);
+            entity.Property(e => e.CustomerEmail).HasMaxLength(200);
+            entity.Property(e => e.PaymentIntentId).HasMaxLength(200);
+            entity.Property(e => e.FailureReason).HasMaxLength(1000);
+            entity.HasIndex(e => e.TenantId);
+            entity.HasIndex(e => e.SalesInvoiceId);
+            entity.HasIndex(e => e.TransactionId).IsUnique();
+            
+            entity.HasOne(e => e.Tenant)
+                .WithMany()
+                .HasForeignKey(e => e.TenantId)
+                .OnDelete(DeleteBehavior.Restrict);
+                
+            entity.HasOne(e => e.SalesInvoice)
+                .WithMany()
+                .HasForeignKey(e => e.SalesInvoiceId)
+                .OnDelete(DeleteBehavior.Restrict);
         });
     }
 }

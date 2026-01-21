@@ -3,6 +3,7 @@ namespace AccountsPOC.Domain.Entities;
 public class BankAccount
 {
     public int Id { get; set; }
+    public int TenantId { get; set; }
     public required string AccountName { get; set; }
     public required string AccountNumber { get; set; }
     public required string BankName { get; set; }
