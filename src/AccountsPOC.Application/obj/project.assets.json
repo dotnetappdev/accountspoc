@@ -1,11 +1,30 @@
 {
   "version": 3,
   "targets": {
-    "net10.0": {}
+    "net10.0": {
+      "AccountsPOC.Domain/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v10.0",
+        "compile": {
+          "bin/placeholder/AccountsPOC.Domain.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/AccountsPOC.Domain.dll": {}
+        }
+      }
+    }
   },
-  "libraries": {},
+  "libraries": {
+    "AccountsPOC.Domain/1.0.0": {
+      "type": "project",
+      "path": "../AccountsPOC.Domain/AccountsPOC.Domain.csproj",
+      "msbuildProject": "../AccountsPOC.Domain/AccountsPOC.Domain.csproj"
+    }
+  },
   "projectFileDependencyGroups": {
-    "net10.0": []
+    "net10.0": [
+      "AccountsPOC.Domain >= 1.0.0"
+    ]
   },
   "packageFolders": {
     "/home/runner/.nuget/packages/": {}
@@ -31,7 +50,11 @@
       "frameworks": {
         "net10.0": {
           "targetAlias": "net10.0",
-          "projectReferences": {}
+          "projectReferences": {
+            "/home/runner/work/accountspoc/accountspoc/src/AccountsPOC.Domain/AccountsPOC.Domain.csproj": {
+              "projectPath": "/home/runner/work/accountspoc/accountspoc/src/AccountsPOC.Domain/AccountsPOC.Domain.csproj"
+            }
+          }
         }
       },
       "warningProperties": {

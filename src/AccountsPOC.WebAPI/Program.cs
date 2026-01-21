@@ -8,18 +8,16 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddOpenApi();
 
-// Add DbContext
+// Add DbContext with SQLite
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(
-        builder.Configuration.GetConnectionString("DefaultConnection") 
-        ?? "Server=(localdb)\\mssqllocaldb;Database=AccountsPOCDb;Trusted_Connection=true;TrustServerCertificate=true;"));
+    options.UseSqlite("Data Source=AccountsPOC.db"));
 
 // Add CORS
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowBlazorApp", policy =>
     {
-        policy.WithOrigins("https://localhost:5001", "http://localhost:5000")
+        policy.WithOrigins("https://localhost:5001", "http://localhost:5000", "http://localhost:5193")
               .AllowAnyHeader()
               .AllowAnyMethod();
     });

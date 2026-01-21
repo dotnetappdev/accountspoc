@@ -1,7 +1,111 @@
 ﻿@page "/"
 
-<PageTitle>Home</PageTitle>
+<PageTitle>Accounts POC - Home</PageTitle>
 
-<h1>Hello, world!</h1>
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col">
+            <h1 class="display-4">Accounts Management System</h1>
+            <p class="lead">A modern accounting package built with ASP.NET and Blazor</p>
+        </div>
+    </div>
 
-Welcome to your new app.
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title"><i class="bi bi-speedometer2"></i> Dashboard</h5>
+                    <p class="card-text">
+                        Welcome to your accounting management system. This application provides comprehensive 
+                        financial management features similar to Sage 200, built with modern .NET 10 technologies.
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title"><i class="bi bi-info-circle"></i> Features</h5>
+                    <ul>
+                        <li>Multiple Bank Accounts Management</li>
+                        <li>Product Catalog with Stock Control</li>
+                        <li>Sales Order Processing</li>
+                        <li>Sales Invoice Generation</li>
+                        <li>Bill of Materials (BOM)</li>
+                        <li>BOM to Sales Order Linking</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-3">
+            <div class="card text-white bg-primary mb-3">
+                <div class="card-body">
+                    <h5 class="card-title"><i class="bi bi-bank2"></i> Bank Accounts</h5>
+                    <p class="card-text">Manage multiple bank accounts with balance tracking.</p>
+                    <a href="/bank-accounts" class="btn btn-light">Manage Accounts</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-success mb-3">
+                <div class="card-body">
+                    <h5 class="card-title"><i class="bi bi-box-seam"></i> Products</h5>
+                    <p class="card-text">Maintain your product catalog with pricing and stock.</p>
+                    <a href="/products" class="btn btn-light">View Products</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-warning mb-3">
+                <div class="card-body">
+                    <h5 class="card-title"><i class="bi bi-cart3"></i> Sales Orders</h5>
+                    <p class="card-text">Create and manage sales orders for your customers.</p>
+                    <a href="/sales-orders" class="btn btn-light">View Orders</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-info mb-3">
+                <div class="card-body">
+                    <h5 class="card-title"><i class="bi bi-receipt"></i> Invoices</h5>
+                    <p class="card-text">Generate and track sales invoices.</p>
+                    <a href="/sales-invoices" class="btn btn-light">View Invoices</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card mb-3">
+                <div class="card-body">
+                    <h5 class="card-title"><i class="bi bi-list-check"></i> Bill of Materials</h5>
+                    <p class="card-text">
+                        Create and manage Bills of Materials (BOMs) for your products. BOMs can be 
+                        linked to sales order items to track component requirements.
+                    </p>
+                    <a href="/bill-of-materials" class="btn btn-primary">Manage BOMs</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card mb-3">
+                <div class="card-body">
+                    <h5 class="card-title"><i class="bi bi-gear"></i> Architecture</h5>
+                    <p class="card-text">
+                        Built with:
+                        <ul>
+                            <li>.NET 10 Web API for backend services</li>
+                            <li>Blazor Web App for modern UI</li>
+                            <li>Entity Framework Core with SQL Server</li>
+                            <li>Clean Architecture pattern</li>
+                        </ul>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
