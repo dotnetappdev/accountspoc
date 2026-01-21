@@ -17,6 +17,11 @@ public class ApplicationDbContext : DbContext
     public DbSet<SalesInvoice> SalesInvoices => Set<SalesInvoice>();
     public DbSet<BillOfMaterial> BillOfMaterials => Set<BillOfMaterial>();
     public DbSet<BOMComponent> BOMComponents => Set<BOMComponent>();
+    public DbSet<StockItem> StockItems => Set<StockItem>();
+    public DbSet<Warehouse> Warehouses => Set<Warehouse>();
+    public DbSet<PriceList> PriceLists => Set<PriceList>();
+    public DbSet<PriceListItem> PriceListItems => Set<PriceListItem>();
+    public DbSet<Customer> Customers => Set<Customer>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -130,6 +135,96 @@ public class ApplicationDbContext : DbContext
                 .WithMany()
                 .HasForeignKey(e => e.ProductId)
                 .OnDelete(DeleteBehavior.Restrict);
+        });
+        
+        // StockItem configuration
+        modelBuilder.Entity<StockItem>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.StockCode).IsRequired().HasMaxLength(50);
+            entity.Property(e => e.Description).IsRequired().HasMaxLength(200);
+            entity.Property(e => e.LongDescription).HasMaxLength(1000);
+            entity.Property(e => e.CostPrice).HasPrecision(18, 2);
+            entity.Property(e => e.SellingPrice).HasPrecision(18, 2);
+            entity.Property(e => e.BinLocation).HasMaxLength(50);
+            entity.HasIndex(e => e.StockCode).IsUnique();
+            
+            entity.HasOne(e => e.Product)
+                .WithMany()
+                .HasForeignKey(e => e.ProductId)
+                .OnDelete(DeleteBehavior.Restrict);
+                
+            entity.HasOne(e => e.Warehouse)
+                .WithMany(e => e.StockItems)
+                .HasForeignKey(e => e.WarehouseId)
+                .OnDelete(DeleteBehavior.SetNull);
+        });
+        
+        // Warehouse configuration
+        modelBuilder.Entity<Warehouse>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.WarehouseCode).IsRequired().HasMaxLength(50);
+            entity.Property(e => e.WarehouseName).IsRequired().HasMaxLength(200);
+            entity.Property(e => e.Address).IsRequired().HasMaxLength(500);
+            entity.Property(e => e.City).HasMaxLength(100);
+            entity.Property(e => e.PostCode).HasMaxLength(20);
+            entity.Property(e => e.Country).HasMaxLength(100);
+            entity.Property(e => e.ContactName).HasMaxLength(200);
+            entity.Property(e => e.ContactPhone).HasMaxLength(50);
+            entity.HasIndex(e => e.WarehouseCode).IsUnique();
+        });
+        
+        // PriceList configuration
+        modelBuilder.Entity<PriceList>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.PriceListCode).IsRequired().HasMaxLength(50);
+            entity.Property(e => e.Description).IsRequired().HasMaxLength(200);
+            entity.Property(e => e.Currency).HasMaxLength(10);
+            entity.HasIndex(e => e.PriceListCode).IsUnique();
+            
+            entity.HasMany(e => e.PriceListItems)
+                .WithOne(e => e.PriceList)
+                .HasForeignKey(e => e.PriceListId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+        
+        // PriceListItem configuration
+        modelBuilder.Entity<PriceListItem>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Price).HasPrecision(18, 2);
+            entity.Property(e => e.DiscountPercentage).HasPrecision(5, 2);
+            
+            entity.HasOne(e => e.Product)
+                .WithMany()
+                .HasForeignKey(e => e.ProductId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+        
+        // Customer configuration
+        modelBuilder.Entity<Customer>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.CustomerCode).IsRequired().HasMaxLength(50);
+            entity.Property(e => e.CompanyName).IsRequired().HasMaxLength(200);
+            entity.Property(e => e.ContactName).HasMaxLength(200);
+            entity.Property(e => e.Email).HasMaxLength(200);
+            entity.Property(e => e.Phone).HasMaxLength(50);
+            entity.Property(e => e.Address).IsRequired().HasMaxLength(500);
+            entity.Property(e => e.City).HasMaxLength(100);
+            entity.Property(e => e.PostCode).HasMaxLength(20);
+            entity.Property(e => e.Country).HasMaxLength(100);
+            entity.Property(e => e.VATNumber).HasMaxLength(50);
+            entity.Property(e => e.CreditLimit).HasPrecision(18, 2);
+            entity.Property(e => e.CurrentBalance).HasPrecision(18, 2);
+            entity.HasIndex(e => e.CustomerCode).IsUnique();
+            
+            entity.HasOne(e => e.DefaultPriceList)
+                .WithMany()
+                .HasForeignKey(e => e.DefaultPriceListId)
+                .OnDelete(DeleteBehavior.SetNull);
         });
     }
 }
