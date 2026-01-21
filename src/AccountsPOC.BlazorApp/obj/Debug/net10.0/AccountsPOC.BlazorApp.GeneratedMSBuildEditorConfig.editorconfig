@@ -38,6 +38,10 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9QYWdlcy9Db3VudGVyLnJhem9y
 build_metadata.AdditionalFiles.CssScope = 
 
+[/home/runner/work/accountspoc/accountspoc/src/AccountsPOC.BlazorApp/Components/Pages/Customers.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9QYWdlcy9DdXN0b21lcnMucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
 [/home/runner/work/accountspoc/accountspoc/src/AccountsPOC.BlazorApp/Components/Pages/Error.razor]
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9QYWdlcy9FcnJvci5yYXpvcg==
 build_metadata.AdditionalFiles.CssScope = 
@@ -50,6 +54,10 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9QYWdlcy9Ob3RGb3VuZC5yYXpvcg==
 build_metadata.AdditionalFiles.CssScope = 
 
+[/home/runner/work/accountspoc/accountspoc/src/AccountsPOC.BlazorApp/Components/Pages/PriceLists.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9QYWdlcy9QcmljZUxpc3RzLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
 [/home/runner/work/accountspoc/accountspoc/src/AccountsPOC.BlazorApp/Components/Pages/Products.razor]
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9QYWdlcy9Qcm9kdWN0cy5yYXpvcg==
 build_metadata.AdditionalFiles.CssScope = 
@@ -60,6 +68,18 @@ build_metadata.AdditionalFiles.CssScope =
 
 [/home/runner/work/accountspoc/accountspoc/src/AccountsPOC.BlazorApp/Components/Pages/SalesOrders.razor]
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9QYWdlcy9TYWxlc09yZGVycy5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/runner/work/accountspoc/accountspoc/src/AccountsPOC.BlazorApp/Components/Pages/StockItems.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9QYWdlcy9TdG9ja0l0ZW1zLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/runner/work/accountspoc/accountspoc/src/AccountsPOC.BlazorApp/Components/Pages/TaxExport.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9QYWdlcy9UYXhFeHBvcnQucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/runner/work/accountspoc/accountspoc/src/AccountsPOC.BlazorApp/Components/Pages/Warehouses.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9QYWdlcy9XYXJlaG91c2VzLnJhem9y
 build_metadata.AdditionalFiles.CssScope = 
 
 [/home/runner/work/accountspoc/accountspoc/src/AccountsPOC.BlazorApp/Components/Pages/Weather.razor]
