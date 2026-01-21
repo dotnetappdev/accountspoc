@@ -1,0 +1,93 @@
+@* Currency-aware Money Input Component *@
+
+<div class="currency-input-wrapper">
+    <span class="currency-symbol">@CurrencySymbol</span>
+    <input type="number" 
+           class="form-control currency-input @CssClass" 
+           value="@Value" 
+           @oninput="OnInputChanged"
+           step="@StepValue"
+           min="@Min"
+           max="@Max"
+           placeholder="@Placeholder"
+           disabled="@Disabled"
+           readonly="@ReadOnly" />
+</div>
+
+<style>
+    .currency-input-wrapper {
+        position: relative;
+        display: flex;
+        align-items: center;
+    }
+
+    .currency-symbol {
+        position: absolute;
+        left: 12px;
+        color: #6c757d;
+        font-weight: 600;
+        pointer-events: none;
+        z-index: 1;
+    }
+
+    .currency-input {
+        padding-left: 32px !important;
+        text-align: right;
+        font-weight: 500;
+    }
+
+    .currency-input:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+    }
+</style>
+
+@code {
+    [Parameter] public decimal Value { get; set; }
+    [Parameter] public EventCallback<decimal> ValueChanged { get; set; }
+    [Parameter] public string Currency { get; set; } = "USD";
+    [Parameter] public string CssClass { get; set; } = "";
+    [Parameter] public string Placeholder { get; set; } = "0.00";
+    [Parameter] public decimal Min { get; set; } = 0;
+    [Parameter] public decimal Max { get; set; } = decimal.MaxValue;
+    [Parameter] public bool Disabled { get; set; }
+    [Parameter] public bool ReadOnly { get; set; }
+
+    private int DecimalPlaces => GetDecimalPlaces(Currency);
+    private string StepValue => $"0.{new string('0', DecimalPlaces - 1)}1";
+    
+    private string CurrencySymbol => Currency switch
+    {
+        "USD" => "$",
+        "EUR" => "€",
+        "GBP" => "£",
+        "JPY" => "¥",
+        "CNY" => "¥",
+        "AUD" => "A$",
+        "CAD" => "C$",
+        "CHF" => "CHF",
+        "INR" => "₹",
+        "NZD" => "NZ$",
+        _ => "$"
+    };
+
+    private int GetDecimalPlaces(string currency) => currency switch
+    {
+        "JPY" => 0, // Japanese Yen has no decimal places
+        "KRW" => 0, // Korean Won
+        "BHD" => 3, // Bahraini Dinar has 3 decimal places
+        "KWD" => 3, // Kuwaiti Dinar
+        "OMR" => 3, // Omani Rial
+        _ => 2 // Most currencies use 2 decimal places
+    };
+
+    private async Task OnInputChanged(ChangeEventArgs e)
+    {
+        if (decimal.TryParse(e.Value?.ToString(), out var newValue))
+        {
+            // Round to appropriate decimal places
+            newValue = Math.Round(newValue, DecimalPlaces);
+            await ValueChanged.InvokeAsync(newValue);
+        }
+    }
+}

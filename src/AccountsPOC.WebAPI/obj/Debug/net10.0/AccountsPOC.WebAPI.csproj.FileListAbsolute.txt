@@ -233,3 +233,7 @@
 /home/runner/work/accountspoc/accountspoc/src/AccountsPOC.WebAPI/bin/Debug/net10.0/runtimes/win-x86/native/libwinpthread-1.dll
 /home/runner/work/accountspoc/accountspoc/src/AccountsPOC.WebAPI/bin/Debug/net10.0/runtimes/win-x86/native/qpdf.dll
 /home/runner/work/accountspoc/accountspoc/src/AccountsPOC.WebAPI/bin/Debug/net10.0/runtimes/win-x86/native/zlib1.dll
+/home/runner/work/accountspoc/accountspoc/src/AccountsPOC.WebAPI/bin/Debug/net10.0/BouncyCastle.Cryptography.dll
+/home/runner/work/accountspoc/accountspoc/src/AccountsPOC.WebAPI/bin/Debug/net10.0/MailKit.dll
+/home/runner/work/accountspoc/accountspoc/src/AccountsPOC.WebAPI/bin/Debug/net10.0/MimeKit.dll
+/home/runner/work/accountspoc/accountspoc/src/AccountsPOC.WebAPI/bin/Debug/net10.0/Stripe.net.dll

@@ -1,129 +1,556 @@
 @page "/sales-invoices"
 @using System.Net.Http.Json
 @using AccountsPOC.BlazorApp.Models
+@using AccountsPOC.BlazorApp.Components.Shared
 @inject HttpClient Http
 @rendermode InteractiveServer
 
 <PageTitle>Sales Invoices</PageTitle>
 
-<div class="container-fluid">
-    <h1 class="mb-4">Sales Invoices</h1>
-
-    <div class="row mb-3">
-        <div class="col">
-            <button class="btn btn-primary" @onclick="ShowAddForm">
-                <i class="bi bi-plus-circle"></i> Create New Invoice
-            </button>
+<div class="container-fluid modern-page">
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">
+                <i class="bi bi-receipt"></i> Sales Invoices
+            </h1>
+            <p class="page-subtitle">Manage and track your sales invoices</p>
         </div>
+        <button class="btn-gradient btn-primary" @onclick="ShowAddForm">
+            <i class="bi bi-plus-circle"></i> Create New Invoice
+        </button>
     </div>
-
-    @if (showForm)
-    {
-        <div class="card mb-4">
-            <div class="card-header">
-                <h5>@(editingInvoice != null ? "Edit" : "Create") Sales Invoice</h5>
-            </div>
-            <div class="card-body">
-                <EditForm Model="currentInvoice" OnValidSubmit="SaveSalesInvoice">
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Invoice Number</label>
-                            <InputText class="form-control" @bind-Value="currentInvoice.InvoiceNumber" />
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Sales Order ID</label>
-                            <InputNumber class="form-control" @bind-Value="currentInvoice.SalesOrderId" />
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-4 mb-3">
-                            <label class="form-label">Sub Total</label>
-                            <InputNumber class="form-control" @bind-Value="currentInvoice.SubTotal" />
-                        </div>
-                        <div class="col-md-4 mb-3">
-                            <label class="form-label">Tax Amount</label>
-                            <InputNumber class="form-control" @bind-Value="currentInvoice.TaxAmount" />
-                        </div>
-                        <div class="col-md-4 mb-3">
-                            <label class="form-label">Total Amount</label>
-                            <InputNumber class="form-control" @bind-Value="currentInvoice.TotalAmount" />
-                        </div>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Status</label>
-                        <InputSelect class="form-select" @bind-Value="currentInvoice.Status">
-                            <option value="Unpaid">Unpaid</option>
-                            <option value="Paid">Paid</option>
-                            <option value="Overdue">Overdue</option>
-                            <option value="Cancelled">Cancelled</option>
-                        </InputSelect>
-                    </div>
-                    <button type="submit" class="btn btn-success">Save</button>
-                    <button type="button" class="btn btn-secondary" @onclick="CancelForm">Cancel</button>
-                </EditForm>
-            </div>
-        </div>
-    }
 
     @if (loading)
     {
-        <p><em>Loading...</em></p>
+        <div class="loading-card">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="mt-3">Loading invoices...</p>
+        </div>
     }
     else if (salesInvoices == null || !salesInvoices.Any())
     {
-        <div class="alert alert-info">No sales invoices found.</div>
+        <div class="empty-state">
+            <i class="bi bi-inbox"></i>
+            <h3>No invoices yet</h3>
+            <p>Create your first sales invoice to get started</p>
+        </div>
     }
     else
     {
-        <div class="table-responsive">
-            <table class="table table-striped table-hover">
-                <thead class="table-dark">
-                    <tr>
-                        <th>Invoice Number</th>
-                        <th>Invoice Date</th>
-                        <th>Due Date</th>
-                        <th>Sub Total</th>
-                        <th>Tax</th>
-                        <th>Total Amount</th>
-                        <th>Status</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var invoice in salesInvoices)
-                    {
-                        <tr>
-                            <td>@invoice.InvoiceNumber</td>
-                            <td>@invoice.InvoiceDate.ToShortDateString()</td>
-                            <td>@invoice.DueDate?.ToShortDateString()</td>
-                            <td>@invoice.SubTotal.ToString("C")</td>
-                            <td>@invoice.TaxAmount.ToString("C")</td>
-                            <td>@invoice.TotalAmount.ToString("C")</td>
-                            <td>
-                                <span class="badge @GetStatusBadgeClass(invoice.Status)">@invoice.Status</span>
-                            </td>
-                            <td>
-                                <button class="btn btn-sm btn-warning" @onclick="() => EditSalesInvoice(invoice)">
-                                    <i class="bi bi-pencil"></i> Edit
-                                </button>
-                                <button class="btn btn-sm btn-danger" @onclick="() => DeleteSalesInvoice(invoice.Id)">
-                                    <i class="bi bi-trash"></i> Delete
-                                </button>
-                            </td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
+        <div class="invoices-grid">
+            @foreach (var invoice in salesInvoices)
+            {
+                <div class="invoice-card">
+                    <div class="invoice-card-header">
+                        <div>
+                            <h4 class="invoice-number">@invoice.InvoiceNumber</h4>
+                            <p class="invoice-date">
+                                <i class="bi bi-calendar3"></i> @invoice.InvoiceDate.ToString("MMM dd, yyyy")
+                            </p>
+                        </div>
+                        <span class="status-badge status-@invoice.Status.ToLower()">
+                            @invoice.Status
+                        </span>
+                    </div>
+                    <div class="invoice-card-body">
+                        <div class="invoice-amounts">
+                            <div class="amount-row">
+                                <span class="label">Subtotal:</span>
+                                <span class="value">@invoice.SubTotal.ToString("C")</span>
+                            </div>
+                            <div class="amount-row">
+                                <span class="label">Tax:</span>
+                                <span class="value">@invoice.TaxAmount.ToString("C")</span>
+                            </div>
+                            <div class="amount-row total">
+                                <span class="label">Total:</span>
+                                <span class="value">@invoice.TotalAmount.ToString("C")</span>
+                            </div>
+                        </div>
+                        @if (invoice.DueDate.HasValue)
+                        {
+                            <p class="due-date">
+                                <i class="bi bi-clock"></i> Due: @invoice.DueDate.Value.ToString("MMM dd, yyyy")
+                            </p>
+                        }
+                    </div>
+                    <div class="invoice-card-footer">
+                        <button class="btn-action btn-edit" @onclick="() => EditSalesInvoice(invoice)" title="Edit Invoice">
+                            <i class="bi bi-pencil"></i> Edit
+                        </button>
+                        <button class="btn-action btn-email" @onclick="() => ShowEmailModal(invoice)" title="Send Email">
+                            <i class="bi bi-envelope"></i> Email
+                        </button>
+                        <button class="btn-action btn-link" @onclick="() => ShowPaymentLink(invoice)" title="Payment Link">
+                            <i class="bi bi-link-45deg"></i> Link
+                        </button>
+                        <button class="btn-action btn-delete" @onclick="() => DeleteSalesInvoice(invoice.Id)" title="Delete Invoice">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </div>
+                </div>
+            }
         </div>
     }
 </div>
+
+<ModalDialog Title="@(editingInvoice != null ? "Edit Invoice" : "Create New Invoice")"
+             IsVisible="showForm"
+             OnClose="CancelForm"
+             Size="lg">
+    <Body>
+        <EditForm Model="currentInvoice" OnValidSubmit="SaveSalesInvoice">
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Invoice Number</label>
+                    <InputText class="form-control" @bind-Value="currentInvoice.InvoiceNumber" />
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Sales Order ID</label>
+                    <InputNumber class="form-control" @bind-Value="currentInvoice.SalesOrderId" />
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">Sub Total</label>
+                    <CurrencyInput @bind-Value="currentInvoice.SubTotal" Currency="USD" />
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">Tax Amount</label>
+                    <CurrencyInput @bind-Value="currentInvoice.TaxAmount" Currency="USD" />
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">Total Amount</label>
+                    <CurrencyInput @bind-Value="currentInvoice.TotalAmount" Currency="USD" />
+                </div>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Status</label>
+                <InputSelect class="form-select" @bind-Value="currentInvoice.Status">
+                    <option value="Unpaid">Unpaid</option>
+                    <option value="Paid">Paid</option>
+                    <option value="Overdue">Overdue</option>
+                    <option value="Cancelled">Cancelled</option>
+                </InputSelect>
+            </div>
+            <div class="modal-actions">
+                <button type="submit" class="btn-gradient btn-success">
+                    <i class="bi bi-check-circle"></i> Save Invoice
+                </button>
+                <button type="button" class="btn btn-secondary" @onclick="CancelForm">
+                    Cancel
+                </button>
+            </div>
+        </EditForm>
+    </Body>
+</ModalDialog>
+
+<ModalDialog Title="Send Invoice via Email"
+             IsVisible="showEmailModal"
+             OnClose="CloseEmailModal"
+             Size="md">
+    <Body>
+        <div class="email-form">
+            <div class="mb-3">
+                <label class="form-label">To Email Address</label>
+                <input type="email" class="form-control" @bind="emailForm.ToAddress" placeholder="customer@example.com" />
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Subject</label>
+                <input type="text" class="form-control" @bind="emailForm.Subject" placeholder="Invoice #..." />
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Message</label>
+                <textarea class="form-control" rows="4" @bind="emailForm.Message" placeholder="Dear Customer..."></textarea>
+            </div>
+            <div class="mb-3 form-check">
+                <input type="checkbox" class="form-check-input" id="includePaymentLink" @bind="emailForm.IncludePaymentLink" />
+                <label class="form-check-label" for="includePaymentLink">
+                    Include payment link in email
+                </label>
+            </div>
+        </div>
+    </Body>
+    <Footer>
+        <button type="button" class="btn-gradient btn-primary" @onclick="SendEmail">
+            <i class="bi bi-send"></i> Send Email
+        </button>
+        <button type="button" class="btn btn-secondary" @onclick="CloseEmailModal">
+            Cancel
+        </button>
+    </Footer>
+</ModalDialog>
+
+<ModalDialog Title="Payment Link"
+             IsVisible="showPaymentLinkModal"
+             OnClose="ClosePaymentLinkModal"
+             Size="md">
+    <Body>
+        <div class="payment-link-display">
+            <p class="mb-3">Share this link with your customer to receive payment:</p>
+            <div class="link-container">
+                <input type="text" class="form-control" readonly value="@currentPaymentLink" id="paymentLinkInput" />
+                <button class="btn-gradient btn-primary" @onclick="CopyPaymentLink">
+                    <i class="bi bi-clipboard"></i> Copy
+                </button>
+            </div>
+            <p class="text-muted mt-3">
+                <i class="bi bi-info-circle"></i> This link is valid for 30 days
+            </p>
+        </div>
+    </Body>
+</ModalDialog>
+
+<style>
+    .modern-page {
+        animation: fadeIn 0.4s ease-in;
+    }
+
+    @@keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+        padding-bottom: 1.5rem;
+        border-bottom: 2px solid #e9ecef;
+    }
+
+    .page-title {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #1a1a1a;
+        margin-bottom: 0.25rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .page-subtitle {
+        color: #6c757d;
+        margin-bottom: 0;
+        font-size: 0.95rem;
+    }
+
+    .btn-gradient {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+        color: white;
+        padding: 0.75rem 1.5rem;
+        border-radius: 8px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+    }
+
+    .btn-gradient:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        color: white;
+    }
+
+    .btn-gradient.btn-success {
+        background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        box-shadow: 0 4px 15px rgba(17, 153, 142, 0.3);
+    }
+
+    .btn-gradient.btn-success:hover {
+        box-shadow: 0 6px 20px rgba(17, 153, 142, 0.4);
+    }
+
+    .loading-card {
+        text-align: center;
+        padding: 4rem;
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    }
+
+    .empty-state i {
+        font-size: 4rem;
+        color: #cbd5e0;
+        margin-bottom: 1rem;
+    }
+
+    .empty-state h3 {
+        color: #2d3748;
+        margin-bottom: 0.5rem;
+    }
+
+    .empty-state p {
+        color: #718096;
+    }
+
+    .invoices-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+        gap: 1.5rem;
+        animation: slideUp 0.5s ease-out;
+    }
+
+    @@keyframes slideUp {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .invoice-card {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        transition: all 0.3s ease;
+        overflow: hidden;
+        border: 1px solid #e9ecef;
+    }
+
+    .invoice-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+    }
+
+    .invoice-card-header {
+        padding: 1.25rem;
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        border-bottom: 1px solid #dee2e6;
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+    }
+
+    .invoice-number {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: #1a1a1a;
+        margin-bottom: 0.25rem;
+    }
+
+    .invoice-date {
+        color: #6c757d;
+        font-size: 0.875rem;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.375rem;
+    }
+
+    .status-badge {
+        padding: 0.375rem 0.875rem;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .status-unpaid {
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        color: white;
+    }
+
+    .status-paid {
+        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        color: white;
+    }
+
+    .status-overdue {
+        background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+        color: white;
+    }
+
+    .status-cancelled {
+        background: linear-gradient(135deg, #a8a8a8 0%, #7f7f7f 100%);
+        color: white;
+    }
+
+    .invoice-card-body {
+        padding: 1.25rem;
+    }
+
+    .invoice-amounts {
+        margin-bottom: 1rem;
+    }
+
+    .amount-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 0.5rem 0;
+        border-bottom: 1px solid #f1f3f5;
+    }
+
+    .amount-row.total {
+        border-bottom: none;
+        border-top: 2px solid #667eea;
+        margin-top: 0.5rem;
+        padding-top: 0.75rem;
+        font-weight: 700;
+        font-size: 1.125rem;
+    }
+
+    .amount-row .label {
+        color: #6c757d;
+        font-size: 0.9rem;
+    }
+
+    .amount-row .value {
+        color: #1a1a1a;
+        font-weight: 600;
+    }
+
+    .amount-row.total .value {
+        color: #667eea;
+    }
+
+    .due-date {
+        color: #6c757d;
+        font-size: 0.875rem;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.375rem;
+    }
+
+    .invoice-card-footer {
+        padding: 1rem 1.25rem;
+        background: #f8f9fa;
+        border-top: 1px solid #e9ecef;
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+    }
+
+    .btn-action {
+        flex: 1;
+        min-width: 70px;
+        padding: 0.5rem 0.75rem;
+        border: 1px solid #dee2e6;
+        background: white;
+        border-radius: 6px;
+        font-size: 0.875rem;
+        font-weight: 500;
+        transition: all 0.2s ease;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.375rem;
+    }
+
+    .btn-action:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .btn-edit {
+        color: #667eea;
+        border-color: #667eea;
+    }
+
+    .btn-edit:hover {
+        background: #667eea;
+        color: white;
+    }
+
+    .btn-email {
+        color: #11998e;
+        border-color: #11998e;
+    }
+
+    .btn-email:hover {
+        background: #11998e;
+        color: white;
+    }
+
+    .btn-link {
+        color: #4facfe;
+        border-color: #4facfe;
+    }
+
+    .btn-link:hover {
+        background: #4facfe;
+        color: white;
+    }
+
+    .btn-delete {
+        color: #f5576c;
+        border-color: #f5576c;
+        flex: 0;
+        min-width: 45px;
+    }
+
+    .btn-delete:hover {
+        background: #f5576c;
+        color: white;
+    }
+
+    .modal-actions {
+        display: flex;
+        gap: 0.75rem;
+        justify-content: flex-end;
+        margin-top: 1.5rem;
+        padding-top: 1rem;
+        border-top: 1px solid #e9ecef;
+    }
+
+    .email-form .form-label {
+        font-weight: 600;
+        color: #2d3748;
+        margin-bottom: 0.5rem;
+    }
+
+    .payment-link-display {
+        text-align: center;
+    }
+
+    .link-container {
+        display: flex;
+        gap: 0.75rem;
+        margin: 1rem 0;
+    }
+
+    .link-container input {
+        flex: 1;
+        font-family: monospace;
+        font-size: 0.9rem;
+    }
+
+    .link-container button {
+        white-space: nowrap;
+    }
+</style>
 
 @code {
     private List<SalesInvoice>? salesInvoices;
     private SalesInvoice currentInvoice = new() { InvoiceNumber = "", Status = "Unpaid" };
     private SalesInvoice? editingInvoice;
+    private SalesInvoice? selectedInvoice;
     private bool showForm = false;
+    private bool showEmailModal = false;
+    private bool showPaymentLinkModal = false;
     private bool loading = true;
+    private string currentPaymentLink = "";
+
+    private class EmailForm
+    {
+        public string ToAddress { get; set; } = "";
+        public string Subject { get; set; } = "";
+        public string Message { get; set; } = "";
+        public bool IncludePaymentLink { get; set; } = true;
+    }
+
+    private EmailForm emailForm = new();
 
     protected override async Task OnInitializedAsync()
     {
@@ -213,15 +640,47 @@
         editingInvoice = null;
     }
 
-    private string GetStatusBadgeClass(string status)
+    private void ShowEmailModal(SalesInvoice invoice)
     {
-        return status switch
+        selectedInvoice = invoice;
+        emailForm = new EmailForm
         {
-            "Unpaid" => "bg-warning",
-            "Paid" => "bg-success",
-            "Overdue" => "bg-danger",
-            "Cancelled" => "bg-secondary",
-            _ => "bg-secondary"
+            Subject = $"Invoice {invoice.InvoiceNumber}",
+            Message = $"Please find attached invoice {invoice.InvoiceNumber} for {invoice.TotalAmount:C}.",
+            IncludePaymentLink = true
         };
+        showEmailModal = true;
+    }
+
+    private void CloseEmailModal()
+    {
+        showEmailModal = false;
+        selectedInvoice = null;
+    }
+
+    private async Task SendEmail()
+    {
+        Console.WriteLine($"Sending email to {emailForm.ToAddress}");
+        Console.WriteLine($"Subject: {emailForm.Subject}");
+        Console.WriteLine($"Include payment link: {emailForm.IncludePaymentLink}");
+        // In a real app, call an API to send the email
+        CloseEmailModal();
+    }
+
+    private void ShowPaymentLink(SalesInvoice invoice)
+    {
+        currentPaymentLink = $"https://payment.example.com/invoice/{invoice.Id}/{Guid.NewGuid():N}";
+        showPaymentLinkModal = true;
+    }
+
+    private void ClosePaymentLinkModal()
+    {
+        showPaymentLinkModal = false;
+    }
+
+    private async Task CopyPaymentLink()
+    {
+        // In a real app, use JS interop to copy to clipboard
+        Console.WriteLine($"Copied to clipboard: {currentPaymentLink}");
     }
 }

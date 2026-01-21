@@ -1,0 +1,496 @@
+@page "/emailtemplates"
+@using System.Net.Http.Json
+@using AccountsPOC.BlazorApp.Models
+@inject HttpClient Http
+@rendermode InteractiveServer
+
+<PageTitle>Email Templates</PageTitle>
+
+<div class="container-fluid">
+    <div class="page-header">
+        <h1 class="page-title">
+            <i class="bi bi-envelope-paper"></i> Email Templates
+        </h1>
+        <p class="text-muted">Manage automated email templates for your business</p>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col">
+            <button class="btn btn-primary" @onclick="ShowAddModal">
+                <i class="bi bi-plus-circle"></i> Add Email Template
+            </button>
+        </div>
+    </div>
+
+    @if (loading)
+    {
+        <div class="text-center py-5">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+    }
+    else if (templates == null || !templates.Any())
+    {
+        <div class="alert alert-info">
+            <i class="bi bi-info-circle"></i> No email templates found. Add one to get started.
+        </div>
+    }
+    else
+    {
+        <div class="row g-4">
+            @foreach (var template in templates)
+            {
+                <div class="col-md-6 col-lg-4">
+                    <div class="template-card @(template.IsActive ? "" : "inactive")">
+                        <div class="template-header">
+                            <h5 class="template-title">@template.TemplateName</h5>
+                            @if (template.IsActive)
+                            {
+                                <span class="badge bg-success">Active</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-secondary">Inactive</span>
+                            }
+                        </div>
+                        <div class="template-body">
+                            <div class="template-detail">
+                                <i class="bi bi-tag"></i>
+                                <span>@template.TemplateCode</span>
+                            </div>
+                            <div class="template-detail">
+                                <i class="bi bi-lightning"></i>
+                                <span>@(template.TriggerEvent ?? "Manual")</span>
+                            </div>
+                            <div class="template-detail">
+                                <i class="bi bi-card-text"></i>
+                                <span>@template.Subject</span>
+                            </div>
+                        </div>
+                        <div class="template-actions">
+                            <button class="btn btn-sm btn-outline-primary" @onclick="() => ShowEditModal(template)">
+                                <i class="bi bi-pencil"></i> Edit
+                            </button>
+                            <button class="btn btn-sm btn-outline-info" @onclick="() => ShowPreviewModal(template)">
+                                <i class="bi bi-eye"></i> Preview
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger" @onclick="() => DeleteTemplate(template.Id)">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@if (showModal)
+{
+    <ModalDialog Title="@(editingTemplate != null ? "Edit Email Template" : "Add Email Template")" 
+                 IsVisible="@showModal" 
+                 OnClose="CloseModal"
+                 Size="xl">
+        <Body>
+            <EditForm Model="currentTemplate" OnValidSubmit="SaveTemplate">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Template Name</label>
+                        <InputText class="form-control" @bind-Value="currentTemplate.TemplateName" placeholder="Invoice Email" />
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Template Code</label>
+                        <InputText class="form-control" @bind-Value="currentTemplate.TemplateCode" placeholder="INVOICE_CREATED" />
+                        <small class="form-text text-muted">Unique identifier (uppercase with underscores)</small>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-8 mb-3">
+                        <label class="form-label">Subject</label>
+                        <InputText class="form-control" @bind-Value="currentTemplate.Subject" placeholder="Your Invoice #{{InvoiceNumber}}" />
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Trigger Event</label>
+                        <InputSelect class="form-select" @bind-Value="currentTemplate.TriggerEvent">
+                            <option value="">Manual</option>
+                            <option value="INVOICE_CREATED">Invoice Created</option>
+                            <option value="INVOICE_SENT">Invoice Sent</option>
+                            <option value="PAYMENT_RECEIVED">Payment Received</option>
+                            <option value="ORDER_CONFIRMED">Order Confirmed</option>
+                            <option value="ORDER_SHIPPED">Order Shipped</option>
+                            <option value="ORDER_DELIVERED">Order Delivered</option>
+                        </InputSelect>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Email Body (HTML)</label>
+                    <InputTextArea class="form-control html-editor" @bind-Value="currentTemplate.BodyHtml" rows="15" />
+                    <small class="form-text text-muted">You can use HTML and template variables</small>
+                </div>
+
+                <div class="alert alert-info">
+                    <h6><i class="bi bi-info-circle"></i> Available Template Variables:</h6>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <ul class="template-vars">
+                                <li><code>{{CompanyName}}</code> - Company name</li>
+                                <li><code>{{CustomerName}}</code> - Customer name</li>
+                                <li><code>{{InvoiceNumber}}</code> - Invoice number</li>
+                                <li><code>{{OrderNumber}}</code> - Order number</li>
+                                <li><code>{{TotalAmount}}</code> - Total amount</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <ul class="template-vars">
+                                <li><code>{{DueDate}}</code> - Due date</li>
+                                <li><code>{{PaymentLink}}</code> - Payment link</li>
+                                <li><code>{{TrackingNumber}}</code> - Tracking number</li>
+                                <li><code>{{Date}}</code> - Current date</li>
+                                <li><code>{{Year}}</code> - Current year</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <div class="form-check form-switch">
+                        <InputCheckbox class="form-check-input" @bind-Value="currentTemplate.IsActive" id="isActive" />
+                        <label class="form-check-label" for="isActive">Active Template</label>
+                    </div>
+                </div>
+
+                <div class="mt-4 d-flex justify-content-end gap-2">
+                    <button type="button" class="btn btn-secondary" @onclick="CloseModal">Cancel</button>
+                    <button type="submit" class="btn btn-success">
+                        <i class="bi bi-check-circle"></i> Save Template
+                    </button>
+                </div>
+            </EditForm>
+        </Body>
+    </ModalDialog>
+}
+
+@if (showPreview)
+{
+    <ModalDialog Title="Email Preview" 
+                 IsVisible="@showPreview" 
+                 OnClose="ClosePreview"
+                 Size="lg">
+        <Body>
+            @if (previewTemplate != null)
+            {
+                <div class="preview-container">
+                    <div class="preview-subject">
+                        <strong>Subject:</strong> @previewTemplate.Subject
+                    </div>
+                    <div class="preview-divider"></div>
+                    <div class="preview-body">
+                        @((MarkupString)previewTemplate.BodyHtml)
+                    </div>
+                </div>
+            }
+        </Body>
+        <Footer>
+            <button class="btn btn-secondary" @onclick="ClosePreview">Close</button>
+        </Footer>
+    </ModalDialog>
+}
+
+<style>
+    .page-header {
+        margin-bottom: 2rem;
+    }
+
+    .page-title {
+        font-size: 2rem;
+        font-weight: 700;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 0.5rem;
+    }
+
+    .template-card {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+        transition: all 0.3s ease;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        border: 2px solid transparent;
+    }
+
+    .template-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+        border-color: #667eea;
+    }
+
+    .template-card.inactive {
+        opacity: 0.7;
+    }
+
+    .template-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid #e9ecef;
+    }
+
+    .template-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        margin: 0;
+        color: #2c3e50;
+    }
+
+    .template-body {
+        flex: 1;
+        margin-bottom: 1rem;
+    }
+
+    .template-detail {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 0;
+        color: #6c757d;
+        font-size: 0.9rem;
+    }
+
+    .template-detail i {
+        color: #667eea;
+        font-size: 1rem;
+    }
+
+    .template-actions {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+    }
+
+    .html-editor {
+        font-family: 'Courier New', monospace;
+        font-size: 0.9rem;
+    }
+
+    .template-vars {
+        list-style: none;
+        padding: 0;
+        margin: 0.5rem 0;
+    }
+
+    .template-vars li {
+        padding: 0.25rem 0;
+    }
+
+    .template-vars code {
+        background-color: #f8f9fa;
+        padding: 0.2rem 0.4rem;
+        border-radius: 4px;
+        color: #e83e8c;
+        font-size: 0.85rem;
+    }
+
+    .preview-container {
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 1.5rem;
+    }
+
+    .preview-subject {
+        padding: 1rem;
+        background: white;
+        border-radius: 8px;
+        margin-bottom: 1rem;
+        font-size: 1.1rem;
+    }
+
+    .preview-divider {
+        height: 2px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        margin: 1rem 0;
+    }
+
+    .preview-body {
+        background: white;
+        padding: 2rem;
+        border-radius: 8px;
+        min-height: 200px;
+    }
+</style>
+
+@code {
+    private List<EmailTemplate>? templates;
+    private EmailTemplate currentTemplate = new();
+    private EmailTemplate? editingTemplate;
+    private EmailTemplate? previewTemplate;
+    private bool loading = true;
+    private bool showModal = false;
+    private bool showPreview = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadTemplates();
+    }
+
+    private async Task LoadTemplates()
+    {
+        try
+        {
+            loading = true;
+            templates = await Http.GetFromJsonAsync<List<EmailTemplate>>("api/emailtemplates");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading email templates: {ex.Message}");
+            templates = new List<EmailTemplate>();
+        }
+        finally
+        {
+            loading = false;
+        }
+    }
+
+    private void ShowAddModal()
+    {
+        editingTemplate = null;
+        currentTemplate = new EmailTemplate
+        {
+            TenantId = 1,
+            IsActive = true,
+            CreatedDate = DateTime.UtcNow,
+            BodyHtml = @"<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; text-align: center; }
+        .content { padding: 30px; }
+        .footer { background: #f8f9fa; padding: 20px; text-align: center; font-size: 12px; color: #6c757d; }
+    </style>
+</head>
+<body>
+    <div class='header'>
+        <h1>{{CompanyName}}</h1>
+    </div>
+    <div class='content'>
+        <p>Dear {{CustomerName}},</p>
+        <p>Your content goes here...</p>
+        <p>Best regards,<br>{{CompanyName}}</p>
+    </div>
+    <div class='footer'>
+        <p>&copy; {{Year}} {{CompanyName}}. All rights reserved.</p>
+    </div>
+</body>
+</html>"
+        };
+        showModal = true;
+    }
+
+    private void ShowEditModal(EmailTemplate template)
+    {
+        editingTemplate = template;
+        currentTemplate = new EmailTemplate
+        {
+            Id = template.Id,
+            TenantId = template.TenantId,
+            TemplateName = template.TemplateName,
+            TemplateCode = template.TemplateCode,
+            Subject = template.Subject,
+            BodyHtml = template.BodyHtml,
+            TriggerEvent = template.TriggerEvent,
+            IsActive = template.IsActive,
+            CreatedDate = template.CreatedDate,
+            LastModifiedDate = template.LastModifiedDate
+        };
+        showModal = true;
+    }
+
+    private void ShowPreviewModal(EmailTemplate template)
+    {
+        previewTemplate = template;
+        showPreview = true;
+    }
+
+    private void CloseModal()
+    {
+        showModal = false;
+        editingTemplate = null;
+    }
+
+    private void ClosePreview()
+    {
+        showPreview = false;
+        previewTemplate = null;
+    }
+
+    private async Task SaveTemplate()
+    {
+        try
+        {
+            currentTemplate.LastModifiedDate = DateTime.UtcNow;
+
+            if (editingTemplate != null)
+            {
+                var response = await Http.PutAsJsonAsync($"api/emailtemplates/{currentTemplate.Id}", currentTemplate);
+                if (response.IsSuccessStatusCode)
+                {
+                    var index = templates!.FindIndex(t => t.Id == currentTemplate.Id);
+                    if (index >= 0)
+                    {
+                        templates[index] = currentTemplate;
+                    }
+                }
+            }
+            else
+            {
+                var response = await Http.PostAsJsonAsync("api/emailtemplates", currentTemplate);
+                if (response.IsSuccessStatusCode)
+                {
+                    var newTemplate = await response.Content.ReadFromJsonAsync<EmailTemplate>();
+                    if (newTemplate != null)
+                    {
+                        templates!.Add(newTemplate);
+                    }
+                }
+            }
+
+            CloseModal();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error saving email template: {ex.Message}");
+        }
+    }
+
+    private async Task DeleteTemplate(int id)
+    {
+        if (!await JSRuntime.InvokeAsync<bool>("confirm", "Are you sure you want to delete this template?"))
+            return;
+
+        try
+        {
+            var response = await Http.DeleteAsync($"api/emailtemplates/{id}");
+            if (response.IsSuccessStatusCode)
+            {
+                templates!.RemoveAll(t => t.Id == id);
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error deleting email template: {ex.Message}");
+        }
+    }
+
+    [Inject]
+    private IJSRuntime JSRuntime { get; set; } = default!;
+}
