@@ -14,6 +14,11 @@ public class Product
     public DateTime CreatedDate { get; set; }
     public DateTime? LastModifiedDate { get; set; }
     
+    // Supplier information
+    public int? PreferredSupplierId { get; set; }
+    public decimal? SupplierUnitCost { get; set; }
+    
     // Navigation properties
     public ICollection<BillOfMaterial> BillOfMaterials { get; set; } = new List<BillOfMaterial>();
+    public Supplier? PreferredSupplier { get; set; }
 }

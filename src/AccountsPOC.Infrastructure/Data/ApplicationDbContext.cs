@@ -34,6 +34,9 @@ public class ApplicationDbContext : DbContext
     public DbSet<ExchangeRate> ExchangeRates => Set<ExchangeRate>();
     public DbSet<CustomForm> CustomForms => Set<CustomForm>();
     public DbSet<FormSubmission> FormSubmissions => Set<FormSubmission>();
+    public DbSet<Supplier> Suppliers => Set<Supplier>();
+    public DbSet<PurchaseOrder> PurchaseOrders => Set<PurchaseOrder>();
+    public DbSet<PurchaseOrderItem> PurchaseOrderItems => Set<PurchaseOrderItem>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -463,6 +466,82 @@ public class ApplicationDbContext : DbContext
             entity.HasIndex(e => e.TenantId);
             entity.HasIndex(e => new { e.TenantId, e.CustomFormId });
             entity.HasIndex(e => e.SubmittedDate);
+        });
+        
+        // Supplier configuration
+        modelBuilder.Entity<Supplier>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.SupplierCode).IsRequired().HasMaxLength(50);
+            entity.Property(e => e.SupplierName).IsRequired().HasMaxLength(200);
+            entity.Property(e => e.ContactName).HasMaxLength(200);
+            entity.Property(e => e.Email).HasMaxLength(200);
+            entity.Property(e => e.Phone).HasMaxLength(50);
+            entity.Property(e => e.Address).HasMaxLength(500);
+            entity.Property(e => e.City).HasMaxLength(100);
+            entity.Property(e => e.PostalCode).HasMaxLength(20);
+            entity.Property(e => e.Country).HasMaxLength(100);
+            entity.Property(e => e.WebsiteUrl).HasMaxLength(500);
+            entity.Property(e => e.ApiEndpoint).HasMaxLength(500);
+            entity.Property(e => e.ApiUsername).HasMaxLength(100);
+            entity.Property(e => e.ApiPassword).HasMaxLength(100);
+            entity.Property(e => e.PaymentTerms).HasMaxLength(200);
+            entity.Property(e => e.MinimumOrderValue).HasPrecision(18, 2);
+            entity.HasIndex(e => e.TenantId);
+            entity.HasIndex(e => new { e.TenantId, e.SupplierCode }).IsUnique();
+            
+            entity.HasOne(e => e.Tenant)
+                .WithMany()
+                .HasForeignKey(e => e.TenantId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+        
+        // PurchaseOrder configuration
+        modelBuilder.Entity<PurchaseOrder>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.OrderNumber).IsRequired().HasMaxLength(50);
+            entity.Property(e => e.Status).IsRequired().HasMaxLength(50);
+            entity.Property(e => e.SubTotal).HasPrecision(18, 2);
+            entity.Property(e => e.TaxAmount).HasPrecision(18, 2);
+            entity.Property(e => e.TotalAmount).HasPrecision(18, 2);
+            entity.Property(e => e.Notes).HasMaxLength(2000);
+            entity.Property(e => e.DeliveryAddress).HasMaxLength(500);
+            entity.HasIndex(e => e.TenantId);
+            entity.HasIndex(e => new { e.TenantId, e.OrderNumber }).IsUnique();
+            entity.HasIndex(e => e.SupplierId);
+            
+            entity.HasOne(e => e.Tenant)
+                .WithMany()
+                .HasForeignKey(e => e.TenantId)
+                .OnDelete(DeleteBehavior.Restrict);
+                
+            entity.HasOne(e => e.Supplier)
+                .WithMany()
+                .HasForeignKey(e => e.SupplierId)
+                .OnDelete(DeleteBehavior.Restrict);
+                
+            entity.HasMany(e => e.Items)
+                .WithOne(e => e.PurchaseOrder)
+                .HasForeignKey(e => e.PurchaseOrderId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+        
+        // PurchaseOrderItem configuration
+        modelBuilder.Entity<PurchaseOrderItem>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.UnitPrice).HasPrecision(18, 2);
+            entity.Property(e => e.Discount).HasPrecision(18, 2);
+            entity.Property(e => e.TaxRate).HasPrecision(18, 2);
+            entity.Property(e => e.LineTotal).HasPrecision(18, 2);
+            entity.HasIndex(e => e.PurchaseOrderId);
+            entity.HasIndex(e => e.ProductId);
+            
+            entity.HasOne(e => e.Product)
+                .WithMany()
+                .HasForeignKey(e => e.ProductId)
+                .OnDelete(DeleteBehavior.Restrict);
         });
     }
 }
