@@ -1,0 +1,632 @@
+@page "/track-delivery"
+@page "/track-delivery/{trackingNumber}"
+@inject HttpClient Http
+
+<PageTitle>Track Your Delivery</PageTitle>
+
+<div class="tracking-container">
+    <div class="tracking-header">
+        <h1>📦 Track Your Delivery</h1>
+        <p>Enter your tracking number to see real-time delivery status</p>
+    </div>
+
+    <div class="search-box">
+        <input type="text" 
+               class="tracking-input" 
+               @bind="searchTrackingNumber" 
+               @bind:event="oninput"
+               @onkeypress="HandleKeyPress"
+               placeholder="Enter tracking number or parcel barcode" />
+        <button class="btn btn-primary" @onclick="SearchDelivery" disabled="@isLoading">
+            @if (isLoading)
+            {
+                <span class="spinner-border spinner-border-sm me-2"></span>
+            }
+            🔍 Track
+        </button>
+    </div>
+
+    @if (errorMessage != null)
+    {
+        <div class="alert alert-danger">
+            ❌ @errorMessage
+        </div>
+    }
+
+    @if (deliveryInfo != null)
+    {
+        <div class="tracking-result">
+            <!-- Status Header -->
+            <div class="status-header @GetStatusClass()">
+                <div class="status-icon">@GetStatusIcon()</div>
+                <div class="status-info">
+                    <h2>@GetStatusTitle()</h2>
+                    <p>@GetStatusDescription()</p>
+                </div>
+            </div>
+
+            <!-- Delivery Details -->
+            <div class="details-card">
+                <h3>📋 Delivery Details</h3>
+                <div class="detail-grid">
+                    <div class="detail-item">
+                        <span class="detail-label">Tracking Number:</span>
+                        <span class="detail-value"><strong>@deliveryInfo.TrackingNumber</strong></span>
+                    </div>
+                    @if (!string.IsNullOrEmpty(deliveryInfo.ParcelBarcode))
+                    {
+                        <div class="detail-item">
+                            <span class="detail-label">Parcel Barcode:</span>
+                            <span class="detail-value"><strong>@deliveryInfo.ParcelBarcode</strong></span>
+                        </div>
+                    }
+                    <div class="detail-item">
+                        <span class="detail-label">Recipient:</span>
+                        <span class="detail-value">@deliveryInfo.CustomerName</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Delivery Address:</span>
+                        <span class="detail-value">@deliveryInfo.DeliveryAddress</span>
+                    </div>
+                    @if (deliveryInfo.EstimatedDeliveryTime.HasValue)
+                    {
+                        <div class="detail-item">
+                            <span class="detail-label">⏰ Estimated Delivery:</span>
+                            <span class="detail-value">@deliveryInfo.EstimatedDeliveryTime.Value.ToString("MMM dd, yyyy HH:mm")</span>
+                        </div>
+                    }
+                    @if (deliveryInfo.ActualDeliveryTime.HasValue)
+                    {
+                        <div class="detail-item">
+                            <span class="detail-label">✅ Delivered At:</span>
+                            <span class="detail-value"><strong>@deliveryInfo.ActualDeliveryTime.Value.ToString("MMM dd, yyyy HH:mm")</strong></span>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <!-- Driver Info -->
+            @if (!string.IsNullOrEmpty(deliveryInfo.DriverName))
+            {
+                <div class="details-card">
+                    <h3>🚚 Driver Information</h3>
+                    <div class="detail-grid">
+                        <div class="detail-item">
+                            <span class="detail-label">Driver Name:</span>
+                            <span class="detail-value">@deliveryInfo.DriverName</span>
+                        </div>
+                        @if (!string.IsNullOrEmpty(deliveryInfo.DriverPhone))
+                        {
+                            <div class="detail-item">
+                                <span class="detail-label">Contact:</span>
+                                <span class="detail-value">
+                                    <a href="tel:@deliveryInfo.DriverPhone">📱 @deliveryInfo.DriverPhone</a>
+                                </span>
+                            </div>
+                        }
+                        <div class="detail-item">
+                            <span class="detail-label">Stop Sequence:</span>
+                            <span class="detail-value">#@deliveryInfo.SequenceNumber</span>
+                        </div>
+                    </div>
+                </div>
+            }
+
+            <!-- Delivery Instructions -->
+            @if (!string.IsNullOrEmpty(deliveryInfo.DeliveryInstructions) || !string.IsNullOrEmpty(deliveryInfo.SafePlace))
+            {
+                <div class="details-card">
+                    <h3>📝 Delivery Instructions</h3>
+                    @if (!string.IsNullOrEmpty(deliveryInfo.SafePlace))
+                    {
+                        <div class="info-box">
+                            <strong>📍 Safe Place:</strong> @deliveryInfo.SafePlace
+                        </div>
+                    }
+                    @if (!string.IsNullOrEmpty(deliveryInfo.DeliveryInstructions))
+                    {
+                        <div class="info-box">
+                            <strong>ℹ️ Instructions:</strong> @deliveryInfo.DeliveryInstructions
+                        </div>
+                    }
+                </div>
+            }
+
+            <!-- Map -->
+            @if (deliveryInfo.Latitude.HasValue && deliveryInfo.Longitude.HasValue)
+            {
+                <div class="details-card">
+                    <h3>🗺️ Delivery Location</h3>
+                    <div class="map-placeholder">
+                        <p>📍 Location: @deliveryInfo.Latitude, @deliveryInfo.Longitude</p>
+                        <p><small>Map integration can be added with Google Maps or similar service</small></p>
+                    </div>
+                </div>
+            }
+
+            <!-- Proof of Delivery -->
+            @if (deliveryInfo.Status == "Completed" && (deliveryInfo.SignatureImagePath != null || deliveryInfo.PhotoEvidencePath != null))
+            {
+                <div class="details-card">
+                    <h3>✍️ Proof of Delivery</h3>
+                    @if (deliveryInfo.SignatureImagePath != null)
+                    {
+                        <div class="proof-item">
+                            <strong>Signature Captured</strong>
+                            <p><small>Signed by recipient</small></p>
+                        </div>
+                    }
+                    @if (deliveryInfo.PhotoEvidencePath != null)
+                    {
+                        <div class="proof-item">
+                            <strong>Photo Evidence Available</strong>
+                            <p><small>Delivery location photographed</small></p>
+                        </div>
+                    }
+                    @if (deliveryInfo.OtpVerified)
+                    {
+                        <div class="proof-item">
+                            <strong>✅ Age Verification Completed</strong>
+                            <p><small>OTP verified for restricted items</small></p>
+                        </div>
+                    }
+                </div>
+            }
+
+            <!-- Status Timeline -->
+            <div class="timeline">
+                <h3>📅 Delivery Timeline</h3>
+                <div class="timeline-items">
+                    <div class="timeline-item @(deliveryInfo.Status == "Completed" || deliveryInfo.Status == "Failed" || deliveryInfo.Status == "InProgress" ? "completed" : "")">
+                        <div class="timeline-marker"></div>
+                        <div class="timeline-content">
+                            <strong>Order Confirmed</strong>
+                            <p>@(deliveryInfo.RouteDate?.ToString("MMM dd, yyyy") ?? "Scheduled")</p>
+                        </div>
+                    </div>
+                    <div class="timeline-item @(deliveryInfo.Status == "Completed" || deliveryInfo.Status == "InProgress" ? "completed" : "")">
+                        <div class="timeline-marker"></div>
+                        <div class="timeline-content">
+                            <strong>Out for Delivery</strong>
+                            <p>@(deliveryInfo.Status == "InProgress" || deliveryInfo.Status == "Completed" ? "In transit" : "Pending")</p>
+                        </div>
+                    </div>
+                    <div class="timeline-item @(deliveryInfo.Status == "Completed" ? "completed" : "")">
+                        <div class="timeline-marker"></div>
+                        <div class="timeline-content">
+                            <strong>@(deliveryInfo.Status == "Completed" ? "Delivered" : deliveryInfo.Status == "Failed" ? "Delivery Failed" : "Pending Delivery")</strong>
+                            <p>@(deliveryInfo.ActualDeliveryTime?.ToString("MMM dd, yyyy HH:mm") ?? "Not yet delivered")</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public string? TrackingNumber { get; set; }
+
+    private string searchTrackingNumber = string.Empty;
+    private DeliveryTrackingInfo? deliveryInfo;
+    private bool isLoading = false;
+    private string? errorMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!string.IsNullOrWhiteSpace(TrackingNumber))
+        {
+            searchTrackingNumber = TrackingNumber;
+            await SearchDelivery();
+        }
+    }
+
+    private async Task HandleKeyPress(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+            await SearchDelivery();
+        }
+    }
+
+    private async Task SearchDelivery()
+    {
+        if (string.IsNullOrWhiteSpace(searchTrackingNumber))
+        {
+            errorMessage = "Please enter a tracking number";
+            return;
+        }
+
+        isLoading = true;
+        errorMessage = null;
+        deliveryInfo = null;
+
+        try
+        {
+            deliveryInfo = await Http.GetFromJsonAsync<DeliveryTrackingInfo>($"api/tracking/delivery/{searchTrackingNumber}");
+        }
+        catch (HttpRequestException ex)
+        {
+            if (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
+            {
+                errorMessage = "Tracking number not found. Please check and try again.";
+            }
+            else
+            {
+                errorMessage = "Unable to retrieve tracking information. Please try again later.";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"An error occurred: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private string GetStatusClass()
+    {
+        return deliveryInfo?.Status switch
+        {
+            "Completed" => "status-completed",
+            "InProgress" => "status-in-progress",
+            "Failed" => "status-failed",
+            _ => "status-pending"
+        };
+    }
+
+    private string GetStatusIcon()
+    {
+        return deliveryInfo?.Status switch
+        {
+            "Completed" => "✅",
+            "InProgress" => "🚚",
+            "Failed" => "❌",
+            _ => "📦"
+        };
+    }
+
+    private string GetStatusTitle()
+    {
+        return deliveryInfo?.Status switch
+        {
+            "Completed" => "Delivered",
+            "InProgress" => "Out for Delivery",
+            "Failed" => "Delivery Attempted",
+            _ => "Scheduled for Delivery"
+        };
+    }
+
+    private string GetStatusDescription()
+    {
+        return deliveryInfo?.Status switch
+        {
+            "Completed" => "Your package has been successfully delivered",
+            "InProgress" => "Your package is on its way and will arrive soon",
+            "Failed" => "We were unable to complete the delivery. Please contact customer service.",
+            _ => "Your package is ready for delivery"
+        };
+    }
+
+    public class DeliveryTrackingInfo
+    {
+        public string TrackingNumber { get; set; } = string.Empty;
+        public string Status { get; set; } = string.Empty;
+        public string CustomerName { get; set; } = string.Empty;
+        public string DeliveryAddress { get; set; } = string.Empty;
+        public DateTime? EstimatedDeliveryTime { get; set; }
+        public DateTime? ActualDeliveryTime { get; set; }
+        public string? DriverName { get; set; }
+        public string? DriverPhone { get; set; }
+        public DateTime? RouteDate { get; set; }
+        public int SequenceNumber { get; set; }
+        public string? SafePlace { get; set; }
+        public string? DeliveryInstructions { get; set; }
+        public string? SignatureImagePath { get; set; }
+        public string? PhotoEvidencePath { get; set; }
+        public decimal? Latitude { get; set; }
+        public decimal? Longitude { get; set; }
+        public bool OtpVerified { get; set; }
+        public string? ParcelBarcode { get; set; }
+        public string? ParcelStatus { get; set; }
+    }
+}
+
+<style>
+    .tracking-container {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+
+    .tracking-header {
+        text-align: center;
+        margin-bottom: 30px;
+    }
+
+    .tracking-header h1 {
+        font-size: 2.5em;
+        margin-bottom: 10px;
+    }
+
+    .tracking-header p {
+        color: #666;
+        font-size: 1.1em;
+    }
+
+    .search-box {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 30px;
+        max-width: 600px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .tracking-input {
+        flex: 1;
+        padding: 15px;
+        border: 2px solid #ddd;
+        border-radius: 8px;
+        font-size: 1.1em;
+    }
+
+    .tracking-input:focus {
+        outline: none;
+        border-color: #667eea;
+    }
+
+    .search-box button {
+        padding: 15px 30px;
+        font-size: 1.1em;
+    }
+
+    .alert {
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+    }
+
+    .alert-danger {
+        background: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+    }
+
+    .tracking-result {
+        animation: fadeIn 0.5s;
+    }
+
+    @@keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .status-header {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        padding: 30px;
+        border-radius: 12px;
+        margin-bottom: 30px;
+        color: white;
+    }
+
+    .status-header.status-completed {
+        background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+    }
+
+    .status-header.status-in-progress {
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    }
+
+    .status-header.status-failed {
+        background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+    }
+
+    .status-header.status-pending {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+
+    .status-icon {
+        font-size: 4em;
+    }
+
+    .status-info h2 {
+        margin: 0 0 5px 0;
+        font-size: 2em;
+    }
+
+    .status-info p {
+        margin: 0;
+        opacity: 0.9;
+    }
+
+    .details-card {
+        background: white;
+        border: 1px solid #ddd;
+        border-radius: 12px;
+        padding: 25px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+
+    .details-card h3 {
+        margin-top: 0;
+        margin-bottom: 20px;
+        color: #333;
+        font-size: 1.3em;
+    }
+
+    .detail-grid {
+        display: grid;
+        gap: 15px;
+    }
+
+    .detail-item {
+        display: flex;
+        justify-content: space-between;
+        padding-bottom: 15px;
+        border-bottom: 1px solid #f0f0f0;
+    }
+
+    .detail-item:last-child {
+        border-bottom: none;
+        padding-bottom: 0;
+    }
+
+    .detail-label {
+        color: #666;
+        font-weight: 500;
+    }
+
+    .detail-value {
+        text-align: right;
+        font-weight: 600;
+    }
+
+    .detail-value a {
+        color: #667eea;
+        text-decoration: none;
+    }
+
+    .info-box {
+        background: #f8f9fa;
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 10px;
+    }
+
+    .info-box:last-child {
+        margin-bottom: 0;
+    }
+
+    .map-placeholder {
+        background: #f0f0f0;
+        padding: 40px;
+        border-radius: 8px;
+        text-align: center;
+        color: #666;
+    }
+
+    .proof-item {
+        background: #e8f5e9;
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 10px;
+        border-left: 4px solid #28a745;
+    }
+
+    .proof-item strong {
+        display: block;
+        margin-bottom: 5px;
+        color: #28a745;
+    }
+
+    .proof-item p {
+        margin: 0;
+        color: #666;
+    }
+
+    .timeline {
+        background: white;
+        border: 1px solid #ddd;
+        border-radius: 12px;
+        padding: 25px;
+    }
+
+    .timeline h3 {
+        margin-top: 0;
+        margin-bottom: 25px;
+    }
+
+    .timeline-items {
+        position: relative;
+    }
+
+    .timeline-item {
+        display: flex;
+        gap: 20px;
+        margin-bottom: 30px;
+        position: relative;
+    }
+
+    .timeline-item:last-child {
+        margin-bottom: 0;
+    }
+
+    .timeline-marker {
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        background: #ddd;
+        border: 3px solid white;
+        box-shadow: 0 0 0 2px #ddd;
+        flex-shrink: 0;
+    }
+
+    .timeline-item.completed .timeline-marker {
+        background: #28a745;
+        box-shadow: 0 0 0 2px #28a745;
+    }
+
+    .timeline-item:not(:last-child)::before {
+        content: '';
+        position: absolute;
+        left: 15px;
+        top: 30px;
+        width: 2px;
+        height: calc(100% + 10px);
+        background: #ddd;
+    }
+
+    .timeline-item.completed:not(:last-child)::before {
+        background: #28a745;
+    }
+
+    .timeline-content {
+        flex: 1;
+    }
+
+    .timeline-content strong {
+        display: block;
+        margin-bottom: 5px;
+        font-size: 1.1em;
+    }
+
+    .timeline-content p {
+        margin: 0;
+        color: #666;
+    }
+
+    @@media (max-width: 768px) {
+        .tracking-header h1 {
+            font-size: 2em;
+        }
+
+        .search-box {
+            flex-direction: column;
+        }
+
+        .status-header {
+            flex-direction: column;
+            text-align: center;
+        }
+
+        .status-icon {
+            font-size: 3em;
+        }
+
+        .detail-item {
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .detail-value {
+            text-align: left;
+        }
+    }
+</style>

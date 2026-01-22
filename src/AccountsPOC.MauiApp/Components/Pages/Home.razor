@@ -7,10 +7,22 @@
     <p>Welcome to the AccountsPOC Fulfillment mobile application.</p>
 
     <div class="feature-cards">
+        <a href="/driver-dashboard" class="feature-card featured">
+            <div class="icon">📊</div>
+            <h3>My Dashboard</h3>
+            <p>View your performance & active routes</p>
+        </a>
+
         <a href="/parcel-scanning" class="feature-card">
             <div class="icon">📦</div>
             <h3>Parcel Scanning</h3>
             <p>Scan parcels to bags/cages</p>
+        </a>
+
+        <a href="/delivery-routes" class="feature-card">
+            <div class="icon">🚚</div>
+            <h3>Delivery Routes</h3>
+            <p>Manage delivery routes with maps</p>
         </a>
 
         <a href="/stock-check" class="feature-card">
@@ -23,12 +35,6 @@
             <div class="icon">📋</div>
             <h3>Pick Lists</h3>
             <p>View and complete pick lists</p>
-        </a>
-
-        <a href="/delivery-routes" class="feature-card">
-            <div class="icon">🚚</div>
-            <h3>Delivery Routes</h3>
-            <p>Manage delivery routes with maps</p>
         </a>
 
         <a href="/stock-counts" class="feature-card">
@@ -65,6 +71,16 @@
     .feature-card:hover {
         transform: translateY(-4px);
         box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+
+    .feature-card.featured {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+
+    .feature-card.featured h3,
+    .feature-card.featured p {
+        color: white;
     }
 
     .feature-card .icon {

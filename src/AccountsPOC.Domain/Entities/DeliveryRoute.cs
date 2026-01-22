@@ -5,12 +5,15 @@ public class DeliveryRoute
     public int Id { get; set; }
     public int TenantId { get; set; }
     public required string RouteNumber { get; set; }
+    public string RouteName { get; set; } = string.Empty; // Display name for route
     public DateTime RouteDate { get; set; }
     public string Status { get; set; } = "Planned"; // Planned, InProgress, Completed
     public int? DriverId { get; set; }
     public string? VehicleRegistration { get; set; }
     public DateTime? StartedDate { get; set; }
     public DateTime? CompletedDate { get; set; }
+    public DateTime? ActualStartTime { get; set; } // When driver actually started the route
+    public DateTime? EstimatedEndTime { get; set; } // Estimated completion time
     public string? Notes { get; set; }
     public DateTime CreatedDate { get; set; }
     public DateTime? LastModifiedDate { get; set; }

@@ -1,0 +1,655 @@
+@page "/management-dashboard"
+@inject HttpClient Http
+@inject NavigationManager Navigation
+@using System.Timers
+
+<PageTitle>Management Dashboard</PageTitle>
+
+<div class="dashboard-container">
+    <div class="dashboard-header">
+        <h1>📊 Delivery Management Dashboard</h1>
+        <div class="refresh-info">
+            <span class="last-update">Last updated: @lastUpdated.ToString("HH:mm:ss")</span>
+            <button class="btn btn-primary" @onclick="RefreshData" disabled="@isLoading">
+                @if (isLoading)
+                {
+                    <span class="spinner-border spinner-border-sm me-2"></span>
+                }
+                🔄 Refresh
+            </button>
+        </div>
+    </div>
+
+    @if (overview != null)
+    {
+        <!-- Key Metrics -->
+        <div class="metrics-grid">
+            <div class="metric-card">
+                <div class="metric-icon">👥</div>
+                <div class="metric-value">@overview.ActiveDrivers</div>
+                <div class="metric-label">Active Drivers</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-icon">🚚</div>
+                <div class="metric-value">@overview.ActiveRoutes / @overview.TodayRoutes</div>
+                <div class="metric-label">Active Routes</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-icon">📍</div>
+                <div class="metric-value">@overview.CompletedStops / @overview.TotalStops</div>
+                <div class="metric-label">Deliveries Today</div>
+            </div>
+            <div class="metric-card success">
+                <div class="metric-icon">✅</div>
+                <div class="metric-value">@overview.CompletionRate%</div>
+                <div class="metric-label">Completion Rate</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-icon">📦</div>
+                <div class="metric-value">@overview.ScannedParcels</div>
+                <div class="metric-label">Parcels Scanned</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-icon">🎯</div>
+                <div class="metric-value">@overview.DeliveredParcels</div>
+                <div class="metric-label">Parcels Delivered</div>
+            </div>
+        </div>
+
+        <!-- Status Breakdown -->
+        <div class="status-breakdown">
+            <div class="status-item completed">
+                <span class="status-count">@overview.CompletedStops</span>
+                <span class="status-label">Completed</span>
+            </div>
+            <div class="status-item in-progress">
+                <span class="status-count">@overview.InProgressStops</span>
+                <span class="status-label">In Progress</span>
+            </div>
+            <div class="status-item pending">
+                <span class="status-count">@overview.PendingStops</span>
+                <span class="status-label">Pending</span>
+            </div>
+            <div class="status-item failed">
+                <span class="status-count">@overview.FailedStops</span>
+                <span class="status-label">Failed</span>
+            </div>
+        </div>
+    }
+
+    <!-- Active Routes -->
+    <div class="section">
+        <h2>🗺️ Active Routes</h2>
+        @if (activeRoutes != null && activeRoutes.Any())
+        {
+            <div class="routes-grid">
+                @foreach (var route in activeRoutes)
+                {
+                    <div class="route-card">
+                        <div class="route-header">
+                            <h3>@route.RouteName</h3>
+                            <span class="status-badge @route.Status.ToLower()">@route.Status</span>
+                        </div>
+                        <div class="route-info">
+                            <div class="info-row">
+                                <span class="label">👤 Driver:</span>
+                                <span class="value">@route.DriverName</span>
+                            </div>
+                            @if (!string.IsNullOrEmpty(route.DriverPhone))
+                            {
+                                <div class="info-row">
+                                    <span class="label">📱 Phone:</span>
+                                    <span class="value">@route.DriverPhone</span>
+                                </div>
+                            }
+                            <div class="info-row">
+                                <span class="label">📍 Stops:</span>
+                                <span class="value">@route.CompletedStops / @route.TotalStops</span>
+                            </div>
+                            @if (route.CurrentStopSequence > 0)
+                            {
+                                <div class="info-row">
+                                    <span class="label">🎯 Current:</span>
+                                    <span class="value">Stop #@route.CurrentStopSequence</span>
+                                </div>
+                            }
+                        </div>
+                        <div class="progress-bar-container">
+                            <div class="progress-bar" style="width: @route.Progress%"></div>
+                            <span class="progress-text">@route.Progress%</span>
+                        </div>
+                        <div class="stop-counts">
+                            <span class="stop-count completed">✅ @route.CompletedStops</span>
+                            <span class="stop-count in-progress">🚚 @route.InProgressStops</span>
+                            <span class="stop-count pending">⏳ @route.PendingStops</span>
+                            @if (route.FailedStops > 0)
+                            {
+                                <span class="stop-count failed">❌ @route.FailedStops</span>
+                            }
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+        else
+        {
+            <p class="no-data">No active routes today</p>
+        }
+    </div>
+
+    <!-- Driver Performance -->
+    <div class="section">
+        <h2>👥 Driver Performance (Last 7 Days)</h2>
+        @if (driverPerformance != null && driverPerformance.Any())
+        {
+            <div class="table-responsive">
+                <table class="performance-table">
+                    <thead>
+                        <tr>
+                            <th>Driver</th>
+                            <th>Status</th>
+                            <th>Vehicle</th>
+                            <th>Routes</th>
+                            <th>Deliveries</th>
+                            <th>Success Rate</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var driver in driverPerformance)
+                        {
+                            <tr>
+                                <td>
+                                    <strong>@driver.DriverName</strong>
+                                    @if (!string.IsNullOrEmpty(driver.Phone))
+                                    {
+                                        <br /><small>@driver.Phone</small>
+                                    }
+                                </td>
+                                <td><span class="status-badge @driver.CurrentStatus.ToLower().Replace(" ", "-")">@driver.CurrentStatus</span></td>
+                                <td>@(driver.VehicleRegistration ?? "N/A")</td>
+                                <td>@driver.CompletedRoutes / @driver.TotalRoutes</td>
+                                <td>
+                                    @driver.CompletedDeliveries / @driver.TotalDeliveries
+                                    @if (driver.FailedDeliveries > 0)
+                                    {
+                                        <span class="failed-count">(❌ @driver.FailedDeliveries)</span>
+                                    }
+                                </td>
+                                <td>
+                                    <div class="success-rate">
+                                        <div class="rate-bar" style="width: @driver.SuccessRate%"></div>
+                                        <span>@driver.SuccessRate%</span>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else
+        {
+            <p class="no-data">No driver data available</p>
+        }
+    </div>
+
+    <!-- Recent Activity -->
+    <div class="section">
+        <h2>📝 Recent Activity</h2>
+        @if (recentActivity != null && recentActivity.Any())
+        {
+            <div class="activity-list">
+                @foreach (var activity in recentActivity.Take(15))
+                {
+                    <div class="activity-item">
+                        <div class="activity-time">@activity.Timestamp.ToString("HH:mm")</div>
+                        <div class="activity-details">
+                            <div class="activity-action">@activity.Action</div>
+                            <div class="activity-info">
+                                <strong>@activity.DriverName</strong> → @activity.CustomerName
+                                <br /><small>@activity.Address</small>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+        else
+        {
+            <p class="no-data">No recent activity</p>
+        }
+    </div>
+</div>
+
+@code {
+    private DashboardOverview? overview;
+    private List<RouteProgress>? activeRoutes;
+    private List<DriverPerformance>? driverPerformance;
+    private List<ActivityLog>? recentActivity;
+    private bool isLoading = false;
+    private DateTime lastUpdated = DateTime.Now;
+    private Timer? autoRefreshTimer;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadDashboardData();
+
+        // Auto-refresh every 30 seconds
+        autoRefreshTimer = new Timer(30000);
+        autoRefreshTimer.Elapsed += async (sender, e) => await InvokeAsync(async () =>
+        {
+            await LoadDashboardData();
+            StateHasChanged();
+        });
+        autoRefreshTimer.Start();
+    }
+
+    private async Task RefreshData()
+    {
+        await LoadDashboardData();
+    }
+
+    private async Task LoadDashboardData()
+    {
+        isLoading = true;
+        try
+        {
+            var overviewTask = Http.GetFromJsonAsync<DashboardOverview>("api/dashboard/overview");
+            var routesTask = Http.GetFromJsonAsync<List<RouteProgress>>("api/dashboard/active-routes");
+            var performanceTask = Http.GetFromJsonAsync<List<DriverPerformance>>("api/dashboard/driver-performance");
+            var activityTask = Http.GetFromJsonAsync<List<ActivityLog>>("api/dashboard/recent-activity");
+
+            await Task.WhenAll(overviewTask, routesTask, performanceTask, activityTask);
+
+            overview = await overviewTask;
+            activeRoutes = await routesTask;
+            driverPerformance = await performanceTask;
+            recentActivity = await activityTask;
+
+            lastUpdated = DateTime.Now;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading dashboard: {ex.Message}");
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    public void Dispose()
+    {
+        autoRefreshTimer?.Stop();
+        autoRefreshTimer?.Dispose();
+    }
+
+    // Data models matching API responses
+    public class DashboardOverview
+    {
+        public int ActiveDrivers { get; set; }
+        public int TodayRoutes { get; set; }
+        public int ActiveRoutes { get; set; }
+        public int TotalStops { get; set; }
+        public int CompletedStops { get; set; }
+        public int InProgressStops { get; set; }
+        public int PendingStops { get; set; }
+        public int FailedStops { get; set; }
+        public double CompletionRate { get; set; }
+        public int ScannedParcels { get; set; }
+        public int DeliveredParcels { get; set; }
+    }
+
+    public class RouteProgress
+    {
+        public int RouteId { get; set; }
+        public string RouteName { get; set; } = string.Empty;
+        public string DriverName { get; set; } = string.Empty;
+        public string? DriverPhone { get; set; }
+        public string Status { get; set; } = string.Empty;
+        public int TotalStops { get; set; }
+        public int CompletedStops { get; set; }
+        public int InProgressStops { get; set; }
+        public int PendingStops { get; set; }
+        public int FailedStops { get; set; }
+        public double Progress { get; set; }
+        public int CurrentStopSequence { get; set; }
+    }
+
+    public class DriverPerformance
+    {
+        public string DriverName { get; set; } = string.Empty;
+        public string? Phone { get; set; }
+        public int TotalRoutes { get; set; }
+        public int CompletedRoutes { get; set; }
+        public int TotalDeliveries { get; set; }
+        public int CompletedDeliveries { get; set; }
+        public int FailedDeliveries { get; set; }
+        public double SuccessRate { get; set; }
+        public string? VehicleRegistration { get; set; }
+        public string CurrentStatus { get; set; } = string.Empty;
+    }
+
+    public class ActivityLog
+    {
+        public DateTime Timestamp { get; set; }
+        public string DriverName { get; set; } = string.Empty;
+        public string CustomerName { get; set; } = string.Empty;
+        public string Address { get; set; } = string.Empty;
+        public string Action { get; set; } = string.Empty;
+    }
+}
+
+<style>
+    .dashboard-container {
+        padding: 20px;
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+
+    .dashboard-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+    }
+
+    .dashboard-header h1 {
+        margin: 0;
+        font-size: 2em;
+    }
+
+    .refresh-info {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .last-update {
+        color: #666;
+        font-size: 0.9em;
+    }
+
+    .metrics-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 20px;
+        margin-bottom: 30px;
+    }
+
+    .metric-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 20px;
+        border-radius: 12px;
+        text-align: center;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+
+    .metric-card.success {
+        background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+    }
+
+    .metric-icon {
+        font-size: 2em;
+        margin-bottom: 10px;
+    }
+
+    .metric-value {
+        font-size: 2em;
+        font-weight: bold;
+        margin-bottom: 5px;
+    }
+
+    .metric-label {
+        font-size: 0.9em;
+        opacity: 0.9;
+    }
+
+    .status-breakdown {
+        display: flex;
+        gap: 15px;
+        margin-bottom: 30px;
+        flex-wrap: wrap;
+    }
+
+    .status-item {
+        flex: 1;
+        min-width: 150px;
+        padding: 15px;
+        border-radius: 8px;
+        text-align: center;
+        background: #f8f9fa;
+    }
+
+    .status-item.completed { border-left: 4px solid #28a745; }
+    .status-item.in-progress { border-left: 4px solid #ffc107; }
+    .status-item.pending { border-left: 4px solid #6c757d; }
+    .status-item.failed { border-left: 4px solid #dc3545; }
+
+    .status-count {
+        display: block;
+        font-size: 1.8em;
+        font-weight: bold;
+        margin-bottom: 5px;
+    }
+
+    .status-label {
+        font-size: 0.9em;
+        color: #666;
+    }
+
+    .section {
+        margin-bottom: 40px;
+    }
+
+    .section h2 {
+        margin-bottom: 20px;
+        color: #333;
+    }
+
+    .routes-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+        gap: 20px;
+    }
+
+    .route-card {
+        background: white;
+        border: 1px solid #ddd;
+        border-radius: 10px;
+        padding: 20px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+
+    .route-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+    }
+
+    .route-header h3 {
+        margin: 0;
+        font-size: 1.2em;
+    }
+
+    .status-badge {
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.85em;
+        font-weight: 600;
+    }
+
+    .status-badge.inprogress { background: #ffc107; color: #000; }
+    .status-badge.pending { background: #6c757d; color: white; }
+    .status-badge.completed { background: #28a745; color: white; }
+    .status-badge.on-route { background: #17a2b8; color: white; }
+    .status-badge.available { background: #28a745; color: white; }
+
+    .route-info {
+        margin-bottom: 15px;
+    }
+
+    .info-row {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 8px;
+    }
+
+    .info-row .label {
+        color: #666;
+        font-size: 0.9em;
+    }
+
+    .info-row .value {
+        font-weight: 600;
+    }
+
+    .progress-bar-container {
+        background: #e9ecef;
+        height: 30px;
+        border-radius: 15px;
+        position: relative;
+        margin-bottom: 10px;
+        overflow: hidden;
+    }
+
+    .progress-bar {
+        background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+        height: 100%;
+        transition: width 0.5s ease;
+    }
+
+    .progress-text {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-weight: bold;
+        font-size: 0.9em;
+    }
+
+    .stop-counts {
+        display: flex;
+        gap: 10px;
+        justify-content: space-around;
+        font-size: 0.85em;
+    }
+
+    .stop-count {
+        padding: 4px 8px;
+        border-radius: 4px;
+    }
+
+    .stop-count.completed { background: #d4edda; }
+    .stop-count.in-progress { background: #fff3cd; }
+    .stop-count.pending { background: #e2e3e5; }
+    .stop-count.failed { background: #f8d7da; }
+
+    .performance-table {
+        width: 100%;
+        background: white;
+        border-radius: 8px;
+        overflow: hidden;
+    }
+
+    .performance-table thead {
+        background: #f8f9fa;
+    }
+
+    .performance-table th,
+    .performance-table td {
+        padding: 12px;
+        text-align: left;
+        border-bottom: 1px solid #dee2e6;
+    }
+
+    .success-rate {
+        position: relative;
+        height: 25px;
+        background: #e9ecef;
+        border-radius: 12px;
+        overflow: hidden;
+    }
+
+    .rate-bar {
+        height: 100%;
+        background: linear-gradient(90deg, #28a745 0%, #38ef7d 100%);
+    }
+
+    .success-rate span {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 0.85em;
+        font-weight: bold;
+    }
+
+    .failed-count {
+        color: #dc3545;
+        font-size: 0.9em;
+    }
+
+    .activity-list {
+        background: white;
+        border-radius: 8px;
+        border: 1px solid #ddd;
+    }
+
+    .activity-item {
+        display: flex;
+        gap: 15px;
+        padding: 15px;
+        border-bottom: 1px solid #f0f0f0;
+    }
+
+    .activity-item:last-child {
+        border-bottom: none;
+    }
+
+    .activity-time {
+        font-weight: bold;
+        color: #667eea;
+        min-width: 60px;
+    }
+
+    .activity-details {
+        flex: 1;
+    }
+
+    .activity-action {
+        font-weight: 600;
+        margin-bottom: 5px;
+    }
+
+    .activity-info {
+        font-size: 0.9em;
+        color: #666;
+    }
+
+    .no-data {
+        text-align: center;
+        padding: 40px;
+        color: #999;
+        background: #f8f9fa;
+        border-radius: 8px;
+    }
+
+    @@media (max-width: 768px) {
+        .dashboard-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 15px;
+        }
+
+        .metrics-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .routes-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>

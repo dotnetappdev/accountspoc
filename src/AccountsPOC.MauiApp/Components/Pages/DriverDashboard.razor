@@ -1,0 +1,433 @@
+@page "/driver-dashboard"
+@inject HttpClient Http
+@using System.Timers
+
+<h3>📊 My Dashboard</h3>
+
+<div class="driver-dashboard">
+    @if (isLoading && performance == null)
+    {
+        <div class="loading-spinner">
+            <div class="spinner"></div>
+            <p>Loading your dashboard...</p>
+        </div>
+    }
+    else if (performance != null)
+    {
+        <!-- Performance Summary -->
+        <div class="summary-card">
+            <h4>👤 @performance.DriverName</h4>
+            <div class="status-badge @performance.CurrentStatus.ToLower().Replace(" ", "-")">
+                @performance.CurrentStatus
+            </div>
+        </div>
+
+        <!-- Key Metrics -->
+        <div class="metrics-grid">
+            <div class="metric-box">
+                <div class="metric-value">@performance.TotalRoutes</div>
+                <div class="metric-label">Total Routes</div>
+            </div>
+            <div class="metric-box">
+                <div class="metric-value">@performance.CompletedRoutes</div>
+                <div class="metric-label">Completed</div>
+            </div>
+            <div class="metric-box success">
+                <div class="metric-value">@performance.CompletedDeliveries</div>
+                <div class="metric-label">Deliveries</div>
+            </div>
+            <div class="metric-box rate">
+                <div class="metric-value">@performance.SuccessRate%</div>
+                <div class="metric-label">Success Rate</div>
+            </div>
+        </div>
+
+        @if (performance.FailedDeliveries > 0)
+        {
+            <div class="alert alert-warning">
+                <strong>⚠️ @performance.FailedDeliveries Failed Deliveries</strong>
+                <p>Review and update failed delivery attempts</p>
+            </div>
+        }
+
+        <!-- Vehicle Info -->
+        @if (!string.IsNullOrEmpty(performance.VehicleRegistration))
+        {
+            <div class="info-card">
+                <strong>🚚 Vehicle:</strong> @performance.VehicleRegistration
+            </div>
+        }
+
+        <!-- Active Route Section -->
+        @if (activeRoute != null)
+        {
+            <div class="active-route-section">
+                <h4>🗺️ Active Route: @activeRoute.RouteName</h4>
+                
+                <div class="progress-container">
+                    <div class="progress-bar" style="width: @activeRoute.Progress%"></div>
+                    <span class="progress-text">@activeRoute.Progress% Complete</span>
+                </div>
+
+                <div class="route-stats">
+                    <div class="stat">
+                        <span class="stat-label">Total Stops:</span>
+                        <span class="stat-value">@activeRoute.TotalStops</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-label">Completed:</span>
+                        <span class="stat-value">✅ @activeRoute.CompletedStops</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-label">Remaining:</span>
+                        <span class="stat-value">⏳ @(activeRoute.TotalStops - activeRoute.CompletedStops)</span>
+                    </div>
+                    @if (activeRoute.CurrentStopSequence > 0)
+                    {
+                        <div class="stat">
+                            <span class="stat-label">Current Stop:</span>
+                            <span class="stat-value">#@activeRoute.CurrentStopSequence</span>
+                        </div>
+                    }
+                </div>
+
+                <button class="btn btn-primary btn-block" @onclick="() => Navigation.NavigateTo($\"/delivery-routes\")">
+                    View Route Details →
+                </button>
+            </div>
+        }
+        else if (performance.CurrentStatus == "Available")
+        {
+            <div class="info-message">
+                <p>✅ No active routes. You're ready for assignment!</p>
+            </div>
+        }
+
+        <button class="btn btn-secondary btn-block" @onclick="RefreshDashboard">
+            🔄 Refresh Dashboard
+        </button>
+    }
+    else if (errorMessage != null)
+    {
+        <div class="alert alert-danger">
+            ❌ @errorMessage
+        </div>
+        <button class="btn btn-primary" @onclick="LoadDashboard">
+            Try Again
+        </button>
+    }
+</div>
+
+@code {
+    [Inject] private NavigationManager Navigation { get; set; } = default!;
+    
+    private DriverPerformance? performance;
+    private RouteProgress? activeRoute;
+    private bool isLoading = false;
+    private string? errorMessage;
+    private Timer? refreshTimer;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadDashboard();
+
+        // Auto-refresh every 30 seconds
+        refreshTimer = new Timer(30000);
+        refreshTimer.Elapsed += async (sender, e) => await InvokeAsync(async () =>
+        {
+            await LoadDashboard();
+            StateHasChanged();
+        });
+        refreshTimer.Start();
+    }
+
+    private async Task LoadDashboard()
+    {
+        isLoading = true;
+        errorMessage = null;
+
+        try
+        {
+            // In a real app, you'd get the driver ID from authentication
+            // For now, we'll get the first driver's data
+            var allPerformance = await Http.GetFromJsonAsync<List<DriverPerformance>>("api/dashboard/driver-performance");
+            performance = allPerformance?.FirstOrDefault();
+
+            if (performance != null && performance.CurrentStatus == "On Route")
+            {
+                var routes = await Http.GetFromJsonAsync<List<RouteProgress>>("api/dashboard/active-routes");
+                activeRoute = routes?.FirstOrDefault(r => r.DriverName == performance.DriverName);
+            }
+            else
+            {
+                activeRoute = null;
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Unable to load dashboard: {ex.Message}";
+            Console.WriteLine($"Dashboard error: {ex}");
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task RefreshDashboard()
+    {
+        await LoadDashboard();
+    }
+
+    public void Dispose()
+    {
+        refreshTimer?.Stop();
+        refreshTimer?.Dispose();
+    }
+
+    public class DriverPerformance
+    {
+        public int DriverId { get; set; }
+        public string DriverName { get; set; } = string.Empty;
+        public string? Phone { get; set; }
+        public int TotalRoutes { get; set; }
+        public int CompletedRoutes { get; set; }
+        public int TotalDeliveries { get; set; }
+        public int CompletedDeliveries { get; set; }
+        public int FailedDeliveries { get; set; }
+        public double SuccessRate { get; set; }
+        public string? VehicleRegistration { get; set; }
+        public string CurrentStatus { get; set; } = string.Empty;
+    }
+
+    public class RouteProgress
+    {
+        public int RouteId { get; set; }
+        public string RouteName { get; set; } = string.Empty;
+        public string DriverName { get; set; } = string.Empty;
+        public string? DriverPhone { get; set; }
+        public string Status { get; set; } = string.Empty;
+        public int TotalStops { get; set; }
+        public int CompletedStops { get; set; }
+        public int InProgressStops { get; set; }
+        public int PendingStops { get; set; }
+        public int FailedStops { get; set; }
+        public double Progress { get; set; }
+        public int CurrentStopSequence { get; set; }
+    }
+}
+
+<style>
+    .driver-dashboard {
+        padding: 15px;
+    }
+
+    .loading-spinner {
+        text-align: center;
+        padding: 60px 20px;
+    }
+
+    .spinner {
+        width: 50px;
+        height: 50px;
+        border: 4px solid #f3f3f3;
+        border-top: 4px solid #667eea;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin: 0 auto 20px;
+    }
+
+    @@keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
+    .summary-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 20px;
+        border-radius: 12px;
+        margin-bottom: 20px;
+        text-align: center;
+    }
+
+    .summary-card h4 {
+        margin: 0 0 10px 0;
+        font-size: 1.5em;
+    }
+
+    .status-badge {
+        display: inline-block;
+        padding: 6px 16px;
+        border-radius: 20px;
+        font-size: 0.9em;
+        font-weight: 600;
+        background: rgba(255, 255, 255, 0.3);
+    }
+
+    .metrics-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 15px;
+        margin-bottom: 20px;
+    }
+
+    .metric-box {
+        background: white;
+        border: 2px solid #e0e0e0;
+        border-radius: 10px;
+        padding: 20px;
+        text-align: center;
+    }
+
+    .metric-box.success {
+        border-color: #28a745;
+    }
+
+    .metric-box.rate {
+        border-color: #667eea;
+    }
+
+    .metric-value {
+        font-size: 2em;
+        font-weight: bold;
+        color: #333;
+        margin-bottom: 5px;
+    }
+
+    .metric-label {
+        font-size: 0.9em;
+        color: #666;
+    }
+
+    .alert {
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+    }
+
+    .alert-warning {
+        background: #fff3cd;
+        border: 1px solid #ffc107;
+        color: #856404;
+    }
+
+    .alert-danger {
+        background: #f8d7da;
+        border: 1px solid #dc3545;
+        color: #721c24;
+    }
+
+    .info-card {
+        background: #f8f9fa;
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+    }
+
+    .active-route-section {
+        background: white;
+        border: 2px solid #667eea;
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 20px;
+    }
+
+    .active-route-section h4 {
+        margin-top: 0;
+        margin-bottom: 15px;
+        color: #667eea;
+    }
+
+    .progress-container {
+        background: #e9ecef;
+        height: 40px;
+        border-radius: 20px;
+        position: relative;
+        margin-bottom: 15px;
+        overflow: hidden;
+    }
+
+    .progress-bar {
+        background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+        height: 100%;
+        transition: width 0.5s ease;
+    }
+
+    .progress-text {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-weight: bold;
+        color: #333;
+    }
+
+    .route-stats {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+        margin-bottom: 15px;
+    }
+
+    .stat {
+        display: flex;
+        justify-content: space-between;
+        padding: 10px;
+        background: #f8f9fa;
+        border-radius: 6px;
+    }
+
+    .stat-label {
+        font-size: 0.9em;
+        color: #666;
+    }
+
+    .stat-value {
+        font-weight: 600;
+    }
+
+    .info-message {
+        background: #d4edda;
+        border: 1px solid #c3e6cb;
+        color: #155724;
+        padding: 20px;
+        border-radius: 8px;
+        text-align: center;
+        margin-bottom: 20px;
+    }
+
+    .info-message p {
+        margin: 0;
+        font-size: 1.1em;
+    }
+
+    .btn-block {
+        width: 100%;
+        margin-bottom: 10px;
+    }
+
+    .btn {
+        padding: 12px 20px;
+        border-radius: 8px;
+        border: none;
+        font-size: 1em;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+
+    .btn-primary:active {
+        transform: scale(0.98);
+    }
+
+    .btn-secondary {
+        background: #6c757d;
+        color: white;
+    }
+</style>
