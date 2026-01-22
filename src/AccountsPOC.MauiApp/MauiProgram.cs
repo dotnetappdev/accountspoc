@@ -1,6 +1,9 @@
 using Microsoft.Extensions.Logging;
 using CommunityToolkit.Maui;
 using ZXing.Net.Maui.Controls;
+using Microsoft.EntityFrameworkCore;
+using AccountsPOC.MauiApp.Data;
+using AccountsPOC.MauiApp.Services;
 
 namespace AccountsPOC.MauiApp;
 
@@ -25,6 +28,15 @@ public static class MauiProgram
         builder.Services.AddBlazorWebViewDeveloperTools();
         builder.Logging.AddDebug();
 #endif
+
+        // Configure SQLite database for offline storage
+        var dbPath = Path.Combine(FileSystem.AppDataDirectory, "accountspoc.db3");
+        builder.Services.AddDbContext<LocalDbContext>(options =>
+            options.UseSqlite($"Data Source={dbPath}"));
+
+        // Register services
+        builder.Services.AddSingleton(Connectivity.Current);
+        builder.Services.AddScoped<ISyncService, SyncService>();
 
         // Register HTTP client for API calls
         builder.Services.AddHttpClient("AccountsPOCAPI", client =>
