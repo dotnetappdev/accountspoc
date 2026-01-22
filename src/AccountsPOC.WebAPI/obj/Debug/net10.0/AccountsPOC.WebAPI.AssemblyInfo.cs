@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("AccountsPOC.WebAPI")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+ff756eb531a482e2ef729549ad55f8c9ba6b2e87")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+8d324f4fd11b6d10512c16d61038e19464c2da3f")]
 [assembly: System.Reflection.AssemblyProductAttribute("AccountsPOC.WebAPI")]
 [assembly: System.Reflection.AssemblyTitleAttribute("AccountsPOC.WebAPI")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
