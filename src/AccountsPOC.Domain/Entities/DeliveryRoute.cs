@@ -7,8 +7,7 @@ public class DeliveryRoute
     public required string RouteNumber { get; set; }
     public DateTime RouteDate { get; set; }
     public string Status { get; set; } = "Planned"; // Planned, InProgress, Completed
-    public string? DriverUserId { get; set; }
-    public string? DriverUserName { get; set; }
+    public int? DriverId { get; set; }
     public string? VehicleRegistration { get; set; }
     public DateTime? StartedDate { get; set; }
     public DateTime? CompletedDate { get; set; }
@@ -17,6 +16,7 @@ public class DeliveryRoute
     public DateTime? LastModifiedDate { get; set; }
     
     // Navigation properties
+    public Driver? Driver { get; set; }
     public ICollection<DeliveryStop> Stops { get; set; } = new List<DeliveryStop>();
 }
 

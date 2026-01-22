@@ -63,7 +63,20 @@
                     RouteNumber = "ROUTE-001",
                     RouteDate = DateTime.Today,
                     Status = "Planned",
-                    DriverUserName = "Jane Smith",
+                    DriverId = 1,
+                    Driver = new Driver
+                    {
+                        Id = 1,
+                        TenantId = 1,
+                        DriverCode = "DRV-001",
+                        FirstName = "Jane",
+                        LastName = "Smith",
+                        Email = "jane.smith@example.com",
+                        Phone = "+1234567890",
+                        LicenseNumber = "DL123456",
+                        IsActive = true,
+                        CreatedDate = DateTime.Now
+                    },
                     VehicleRegistration = "ABC-123",
                     CreatedDate = DateTime.Now,
                     Stops = new List<DeliveryStop>
@@ -76,9 +89,27 @@
                             DeliveryAddress = "123 Main St, City",
                             ContactName = "Customer 1",
                             ContactPhone = "+1234567890",
+                            ContactEmail = "customer1@example.com",
                             Status = "Pending",
                             Latitude = 40.7128,
-                            Longitude = -74.0060
+                            Longitude = -74.0060,
+                            CustomerId = 1,
+                            Customer = new Customer
+                            {
+                                Id = 1,
+                                TenantId = 1,
+                                CustomerCode = "CUST-001",
+                                CompanyName = "ABC Company",
+                                ContactName = "John Doe",
+                                Email = "john@abc.com",
+                                Phone = "+1234567890",
+                                Address = "123 Main St",
+                                DeliveryContactPhone = "+1234567890",
+                                DeliveryContactMobile = "+9876543210",
+                                DeliveryInstructions = "Ring doorbell",
+                                IsActive = true,
+                                CreatedDate = DateTime.Now
+                            }
                         }
                     }
                 }

@@ -21,6 +21,7 @@ public class DeliveryRoutesController : ControllerBase
     public async Task<ActionResult<IEnumerable<DeliveryRoute>>> GetDeliveryRoutes([FromQuery] string? status = null, [FromQuery] DateTime? routeDate = null)
     {
         var query = _context.DeliveryRoutes
+            .Include(d => d.Driver)
             .Include(d => d.Stops)
                 .ThenInclude(s => s.Customer)
             .Include(d => d.Stops)
@@ -44,6 +45,7 @@ public class DeliveryRoutesController : ControllerBase
     public async Task<ActionResult<DeliveryRoute>> GetDeliveryRoute(int id)
     {
         var deliveryRoute = await _context.DeliveryRoutes
+            .Include(d => d.Driver)
             .Include(d => d.Stops)
                 .ThenInclude(s => s.Customer)
             .Include(d => d.Stops)

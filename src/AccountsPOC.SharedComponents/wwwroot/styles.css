@@ -170,6 +170,16 @@
     margin-bottom: 8px;
 }
 
+.delivery-instructions {
+    color: #0066cc;
+    font-style: italic;
+    font-size: 0.875rem;
+    margin-top: 4px;
+    padding: 4px 8px;
+    background: #e3f2fd;
+    border-radius: 4px;
+}
+
 .address {
     color: #666;
     font-size: 0.875rem;

@@ -44,6 +44,7 @@ public class ApplicationDbContext : DbContext
     public DbSet<StockCountItem> StockCountItems => Set<StockCountItem>();
     public DbSet<DeliveryRoute> DeliveryRoutes => Set<DeliveryRoute>();
     public DbSet<DeliveryStop> DeliveryStops => Set<DeliveryStop>();
+    public DbSet<Driver> Drivers => Set<Driver>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -249,6 +250,19 @@ public class ApplicationDbContext : DbContext
             entity.Property(e => e.VATNumber).HasMaxLength(50);
             entity.Property(e => e.CreditLimit).HasPrecision(18, 2);
             entity.Property(e => e.CurrentBalance).HasPrecision(18, 2);
+            
+            // Delivery-specific fields
+            entity.Property(e => e.DeliveryAddress).HasMaxLength(500);
+            entity.Property(e => e.DeliveryCity).HasMaxLength(100);
+            entity.Property(e => e.DeliveryPostCode).HasMaxLength(20);
+            entity.Property(e => e.DeliveryCountry).HasMaxLength(100);
+            entity.Property(e => e.DeliveryContactName).HasMaxLength(200);
+            entity.Property(e => e.DeliveryContactPhone).HasMaxLength(50);
+            entity.Property(e => e.DeliveryContactMobile).HasMaxLength(50);
+            entity.Property(e => e.DeliveryInstructions).HasMaxLength(1000);
+            entity.Property(e => e.PreferredDeliveryTime).HasMaxLength(100);
+            entity.Property(e => e.AccessCode).HasMaxLength(50);
+            
             entity.HasIndex(e => e.CustomerCode).IsUnique();
             entity.HasIndex(e => e.TenantId);
             
@@ -647,11 +661,15 @@ public class ApplicationDbContext : DbContext
             entity.HasKey(e => e.Id);
             entity.Property(e => e.RouteNumber).IsRequired().HasMaxLength(50);
             entity.Property(e => e.Status).IsRequired().HasMaxLength(50);
-            entity.Property(e => e.DriverUserName).HasMaxLength(200);
             entity.Property(e => e.VehicleRegistration).HasMaxLength(50);
             entity.Property(e => e.Notes).HasMaxLength(2000);
             entity.HasIndex(e => e.TenantId);
             entity.HasIndex(e => new { e.TenantId, e.RouteNumber }).IsUnique();
+            
+            entity.HasOne(e => e.Driver)
+                .WithMany(d => d.DeliveryRoutes)
+                .HasForeignKey(e => e.DriverId)
+                .OnDelete(DeleteBehavior.Restrict);
             
             entity.HasMany(e => e.Stops)
                 .WithOne(e => e.DeliveryRoute)
@@ -684,6 +702,32 @@ public class ApplicationDbContext : DbContext
                 .WithMany()
                 .HasForeignKey(e => e.SalesOrderId)
                 .OnDelete(DeleteBehavior.Restrict);
+        });
+        
+        // Driver configuration
+        modelBuilder.Entity<Driver>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.DriverCode).IsRequired().HasMaxLength(50);
+            entity.Property(e => e.FirstName).IsRequired().HasMaxLength(100);
+            entity.Property(e => e.LastName).IsRequired().HasMaxLength(100);
+            entity.Property(e => e.Email).IsRequired().HasMaxLength(200);
+            entity.Property(e => e.Phone).IsRequired().HasMaxLength(50);
+            entity.Property(e => e.MobilePhone).HasMaxLength(50);
+            entity.Property(e => e.Address).HasMaxLength(500);
+            entity.Property(e => e.City).HasMaxLength(100);
+            entity.Property(e => e.PostCode).HasMaxLength(20);
+            entity.Property(e => e.Country).HasMaxLength(100);
+            entity.Property(e => e.LicenseNumber).HasMaxLength(50);
+            entity.Property(e => e.EmergencyContactName).HasMaxLength(200);
+            entity.Property(e => e.EmergencyContactPhone).HasMaxLength(50);
+            entity.Property(e => e.VehicleRegistration).HasMaxLength(50);
+            entity.Property(e => e.VehicleType).HasMaxLength(100);
+            entity.Property(e => e.VehicleCapacity).HasMaxLength(100);
+            entity.Property(e => e.Notes).HasMaxLength(2000);
+            entity.HasIndex(e => e.TenantId);
+            entity.HasIndex(e => new { e.TenantId, e.DriverCode }).IsUnique();
+            entity.HasIndex(e => e.Email);
         });
     }
 }
