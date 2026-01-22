@@ -25,32 +25,39 @@
             </div>
             <div class="card-body">
                 <EditForm Model="currentBOM" OnValidSubmit="SaveBOM">
+                    <FluentValidationValidator />
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label class="form-label">BOM Number</label>
+                            <label class="form-label">BOM Number <span class="text-danger">*</span></label>
                             <InputText class="form-control" @bind-Value="currentBOM.BOMNumber" />
+                            <ValidationMessage For="@(() => currentBOM.BOMNumber)" />
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label class="form-label">Name</label>
+                            <label class="form-label">Name <span class="text-danger">*</span></label>
                             <InputText class="form-control" @bind-Value="currentBOM.Name" />
+                            <ValidationMessage For="@(() => currentBOM.Name)" />
                         </div>
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Description</label>
                         <InputTextArea class="form-control" @bind-Value="currentBOM.Description" rows="3" />
+                        <ValidationMessage For="@(() => currentBOM.Description)" />
                     </div>
                     <div class="row">
                         <div class="col-md-4 mb-3">
                             <label class="form-label">Product ID</label>
                             <InputNumber class="form-control" @bind-Value="currentBOM.ProductId" />
+                            <ValidationMessage For="@(() => currentBOM.ProductId)" />
                         </div>
                         <div class="col-md-4 mb-3">
                             <label class="form-label">Quantity</label>
                             <InputNumber class="form-control" @bind-Value="currentBOM.Quantity" />
+                            <ValidationMessage For="@(() => currentBOM.Quantity)" />
                         </div>
                         <div class="col-md-4 mb-3">
                             <label class="form-label">Estimated Cost</label>
                             <InputNumber class="form-control" @bind-Value="currentBOM.EstimatedCost" />
+                            <ValidationMessage For="@(() => currentBOM.EstimatedCost)" />
                         </div>
                     </div>
                     <div class="mb-3">

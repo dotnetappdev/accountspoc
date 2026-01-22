@@ -25,28 +25,34 @@
             </div>
             <div class="card-body">
                 <EditForm Model="currentPriceList" OnValidSubmit="SavePriceList">
+                    <FluentValidationValidator />
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label class="form-label">Price List Code</label>
+                            <label class="form-label">Price List Code <span class="text-danger">*</span></label>
                             <InputText class="form-control" @bind-Value="currentPriceList.PriceListCode" />
+                            <ValidationMessage For="@(() => currentPriceList.PriceListCode)" />
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label class="form-label">Description</label>
+                            <label class="form-label">Description <span class="text-danger">*</span></label>
                             <InputText class="form-control" @bind-Value="currentPriceList.Description" />
+                            <ValidationMessage For="@(() => currentPriceList.Description)" />
                         </div>
                     </div>
                     <div class="row">
                         <div class="col-md-4 mb-3">
                             <label class="form-label">Currency</label>
                             <InputText class="form-control" @bind-Value="currentPriceList.Currency" />
+                            <ValidationMessage For="@(() => currentPriceList.Currency)" />
                         </div>
                         <div class="col-md-4 mb-3">
                             <label class="form-label">Effective Date</label>
                             <InputDate class="form-control" @bind-Value="currentPriceList.EffectiveDate" />
+                            <ValidationMessage For="@(() => currentPriceList.EffectiveDate)" />
                         </div>
                         <div class="col-md-4 mb-3">
                             <label class="form-label">Expiry Date</label>
                             <InputDate class="form-control" @bind-Value="currentPriceList.ExpiryDate" />
+                            <ValidationMessage For="@(() => currentPriceList.ExpiryDate)" />
                         </div>
                     </div>
                     <div class="row">

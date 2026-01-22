@@ -97,24 +97,29 @@
              Size="lg">
     <Body>
         <EditForm Model="currentAccount" OnValidSubmit="SaveBankAccount">
+            <FluentValidationValidator />
             <div class="row">
                 <div class="col-md-6 mb-3">
-                    <label class="form-label">Account Name</label>
+                    <label class="form-label">Account Name <span class="text-danger">*</span></label>
                     <InputText class="form-control" @bind-Value="currentAccount.AccountName" placeholder="Business Checking" />
+                    <ValidationMessage For="@(() => currentAccount.AccountName)" />
                 </div>
                 <div class="col-md-6 mb-3">
-                    <label class="form-label">Account Number</label>
+                    <label class="form-label">Account Number <span class="text-danger">*</span></label>
                     <InputText class="form-control" @bind-Value="currentAccount.AccountNumber" placeholder="1234567890" />
+                    <ValidationMessage For="@(() => currentAccount.AccountNumber)" />
                 </div>
             </div>
             <div class="row">
                 <div class="col-md-6 mb-3">
-                    <label class="form-label">Bank Name</label>
+                    <label class="form-label">Bank Name <span class="text-danger">*</span></label>
                     <InputText class="form-control" @bind-Value="currentAccount.BankName" placeholder="First National Bank" />
+                    <ValidationMessage For="@(() => currentAccount.BankName)" />
                 </div>
                 <div class="col-md-6 mb-3">
                     <label class="form-label">Branch Code</label>
                     <InputText class="form-control" @bind-Value="currentAccount.BranchCode" placeholder="001" />
+                    <ValidationMessage For="@(() => currentAccount.BranchCode)" />
                 </div>
             </div>
             <div class="row">
@@ -123,7 +128,7 @@
                     <CurrencyInput @bind-Value="currentAccount.Balance" Currency="@currentAccount.Currency" />
                 </div>
                 <div class="col-md-6 mb-3">
-                    <label class="form-label">Currency</label>
+                    <label class="form-label">Currency <span class="text-danger">*</span></label>
                     <InputSelect class="form-select" @bind-Value="currentAccount.Currency">
                         <option value="USD">USD - US Dollar</option>
                         <option value="EUR">EUR - Euro</option>
@@ -131,6 +136,7 @@
                         <option value="AUD">AUD - Australian Dollar</option>
                         <option value="CAD">CAD - Canadian Dollar</option>
                     </InputSelect>
+                    <ValidationMessage For="@(() => currentAccount.Currency)" />
                 </div>
             </div>
             <div class="mb-3 form-check">

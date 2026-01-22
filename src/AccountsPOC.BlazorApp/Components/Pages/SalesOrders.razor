@@ -25,24 +25,29 @@
             </div>
             <div class="card-body">
                 <EditForm Model="currentOrder" OnValidSubmit="SaveSalesOrder">
+                    <FluentValidationValidator />
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label class="form-label">Order Number</label>
+                            <label class="form-label">Order Number <span class="text-danger">*</span></label>
                             <InputText class="form-control" @bind-Value="currentOrder.OrderNumber" />
+                            <ValidationMessage For="@(() => currentOrder.OrderNumber)" />
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label class="form-label">Customer Name</label>
+                            <label class="form-label">Customer Name <span class="text-danger">*</span></label>
                             <InputText class="form-control" @bind-Value="currentOrder.CustomerName" />
+                            <ValidationMessage For="@(() => currentOrder.CustomerName)" />
                         </div>
                     </div>
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label class="form-label">Customer Email</label>
                             <InputText class="form-control" type="email" @bind-Value="currentOrder.CustomerEmail" />
+                            <ValidationMessage For="@(() => currentOrder.CustomerEmail)" />
                         </div>
                         <div class="col-md-6 mb-3">
                             <label class="form-label">Customer Phone</label>
                             <InputText class="form-control" @bind-Value="currentOrder.CustomerPhone" />
+                            <ValidationMessage For="@(() => currentOrder.CustomerPhone)" />
                         </div>
                     </div>
                     <div class="mb-3">
@@ -53,6 +58,7 @@
                             <option value="Completed">Completed</option>
                             <option value="Cancelled">Cancelled</option>
                         </InputSelect>
+                        <ValidationMessage For="@(() => currentOrder.Status)" />
                     </div>
                     <button type="submit" class="btn btn-success">Save</button>
                     <button type="button" class="btn btn-secondary" @onclick="CancelForm">Cancel</button>

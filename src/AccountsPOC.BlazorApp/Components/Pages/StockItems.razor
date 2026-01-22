@@ -25,24 +25,29 @@
             </div>
             <div class="card-body">
                 <EditForm Model="currentItem" OnValidSubmit="SaveStockItem">
+                    <FluentValidationValidator />
                     <div class="row">
                         <div class="col-md-4 mb-3">
-                            <label class="form-label">Stock Code</label>
+                            <label class="form-label">Stock Code <span class="text-danger">*</span></label>
                             <InputText class="form-control" @bind-Value="currentItem.StockCode" />
+                            <ValidationMessage For="@(() => currentItem.StockCode)" />
                         </div>
                         <div class="col-md-8 mb-3">
-                            <label class="form-label">Description</label>
+                            <label class="form-label">Description <span class="text-danger">*</span></label>
                             <InputText class="form-control" @bind-Value="currentItem.Description" />
+                            <ValidationMessage For="@(() => currentItem.Description)" />
                         </div>
                     </div>
                     <div class="row">
                         <div class="col-md-4 mb-3">
                             <label class="form-label">Cost Price (£)</label>
                             <InputNumber class="form-control" @bind-Value="currentItem.CostPrice" />
+                            <ValidationMessage For="@(() => currentItem.CostPrice)" />
                         </div>
                         <div class="col-md-4 mb-3">
                             <label class="form-label">Selling Price (£)</label>
                             <InputNumber class="form-control" @bind-Value="currentItem.SellingPrice" />
+                            <ValidationMessage For="@(() => currentItem.SellingPrice)" />
                         </div>
                         <div class="col-md-4 mb-3">
                             <label class="form-label">Unit of Measure</label>
@@ -52,6 +57,7 @@
                         <div class="col-md-3 mb-3">
                             <label class="form-label">Quantity On Hand</label>
                             <InputNumber class="form-control" @bind-Value="currentItem.QuantityOnHand" />
+                            <ValidationMessage For="@(() => currentItem.QuantityOnHand)" />
                         </div>
                         <div class="col-md-3 mb-3">
                             <label class="form-label">Quantity Available</label>
@@ -59,16 +65,19 @@
                         <div class="col-md-3 mb-3">
                             <label class="form-label">Reorder Level</label>
                             <InputNumber class="form-control" @bind-Value="currentItem.ReorderLevel" />
+                            <ValidationMessage For="@(() => currentItem.ReorderLevel)" />
                         </div>
                         <div class="col-md-3 mb-3">
                             <label class="form-label">Warehouse ID</label>
                             <InputNumber class="form-control" @bind-Value="currentItem.WarehouseId" />
+                            <ValidationMessage For="@(() => currentItem.WarehouseId)" />
                         </div>
                     </div>
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label class="form-label">Bin Location</label>
                             <InputText class="form-control" @bind-Value="currentItem.BinLocation" />
+                            <ValidationMessage For="@(() => currentItem.BinLocation)" />
                         </div>
                         <div class="col-md-6 mb-3">
                             <label class="form-check-label mt-4">

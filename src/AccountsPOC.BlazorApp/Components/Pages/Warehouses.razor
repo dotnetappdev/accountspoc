@@ -25,42 +25,51 @@
             </div>
             <div class="card-body">
                 <EditForm Model="currentWarehouse" OnValidSubmit="SaveWarehouse">
+                    <FluentValidationValidator />
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label class="form-label">Warehouse Code</label>
+                            <label class="form-label">Warehouse Code <span class="text-danger">*</span></label>
                             <InputText class="form-control" @bind-Value="currentWarehouse.WarehouseCode" />
+                            <ValidationMessage For="@(() => currentWarehouse.WarehouseCode)" />
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label class="form-label">Warehouse Name</label>
+                            <label class="form-label">Warehouse Name <span class="text-danger">*</span></label>
                             <InputText class="form-control" @bind-Value="currentWarehouse.WarehouseName" />
+                            <ValidationMessage For="@(() => currentWarehouse.WarehouseName)" />
                         </div>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Address</label>
+                        <label class="form-label">Address <span class="text-danger">*</span></label>
                         <InputText class="form-control" @bind-Value="currentWarehouse.Address" />
+                        <ValidationMessage For="@(() => currentWarehouse.Address)" />
                     </div>
                     <div class="row">
                         <div class="col-md-4 mb-3">
                             <label class="form-label">City</label>
                             <InputText class="form-control" @bind-Value="currentWarehouse.City" />
+                            <ValidationMessage For="@(() => currentWarehouse.City)" />
                         </div>
                         <div class="col-md-4 mb-3">
                             <label class="form-label">Post Code</label>
                             <InputText class="form-control" @bind-Value="currentWarehouse.PostCode" />
+                            <ValidationMessage For="@(() => currentWarehouse.PostCode)" />
                         </div>
                         <div class="col-md-4 mb-3">
                             <label class="form-label">Country</label>
                             <InputText class="form-control" @bind-Value="currentWarehouse.Country" />
+                            <ValidationMessage For="@(() => currentWarehouse.Country)" />
                         </div>
                     </div>
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label class="form-label">Contact Name</label>
                             <InputText class="form-control" @bind-Value="currentWarehouse.ContactName" />
+                            <ValidationMessage For="@(() => currentWarehouse.ContactName)" />
                         </div>
                         <div class="col-md-6 mb-3">
                             <label class="form-label">Contact Phone</label>
                             <InputText class="form-control" @bind-Value="currentWarehouse.ContactPhone" />
+                            <ValidationMessage For="@(() => currentWarehouse.ContactPhone)" />
                         </div>
                     </div>
                     <div class="mb-3">

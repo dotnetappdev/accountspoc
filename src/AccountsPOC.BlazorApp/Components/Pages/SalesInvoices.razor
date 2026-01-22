@@ -102,28 +102,34 @@
              Size="lg">
     <Body>
         <EditForm Model="currentInvoice" OnValidSubmit="SaveSalesInvoice">
+            <FluentValidationValidator />
             <div class="row">
                 <div class="col-md-6 mb-3">
-                    <label class="form-label">Invoice Number</label>
+                    <label class="form-label">Invoice Number <span class="text-danger">*</span></label>
                     <InputText class="form-control" @bind-Value="currentInvoice.InvoiceNumber" />
+                    <ValidationMessage For="@(() => currentInvoice.InvoiceNumber)" />
                 </div>
                 <div class="col-md-6 mb-3">
                     <label class="form-label">Sales Order ID</label>
                     <InputNumber class="form-control" @bind-Value="currentInvoice.SalesOrderId" />
+                    <ValidationMessage For="@(() => currentInvoice.SalesOrderId)" />
                 </div>
             </div>
             <div class="row">
                 <div class="col-md-4 mb-3">
                     <label class="form-label">Sub Total</label>
                     <CurrencyInput @bind-Value="currentInvoice.SubTotal" Currency="USD" />
+                    <ValidationMessage For="@(() => currentInvoice.SubTotal)" />
                 </div>
                 <div class="col-md-4 mb-3">
                     <label class="form-label">Tax Amount</label>
                     <CurrencyInput @bind-Value="currentInvoice.TaxAmount" Currency="USD" />
+                    <ValidationMessage For="@(() => currentInvoice.TaxAmount)" />
                 </div>
                 <div class="col-md-4 mb-3">
                     <label class="form-label">Total Amount</label>
                     <CurrencyInput @bind-Value="currentInvoice.TotalAmount" Currency="USD" />
+                    <ValidationMessage For="@(() => currentInvoice.TotalAmount)" />
                 </div>
             </div>
             <div class="mb-3">
@@ -134,6 +140,7 @@
                     <option value="Overdue">Overdue</option>
                     <option value="Cancelled">Cancelled</option>
                 </InputSelect>
+                <ValidationMessage For="@(() => currentInvoice.Status)" />
             </div>
             <div class="modal-actions">
                 <button type="submit" class="btn-gradient btn-success">
