@@ -18,6 +18,12 @@ public class StockItem
     public int ReorderQuantity { get; set; }
     public string? BinLocation { get; set; }
     public bool IsActive { get; set; } = true;
+    
+    // Age-restricted product fields
+    public bool IsAgeRestricted { get; set; } = false;
+    public int? MinimumAge { get; set; } = 18;
+    public bool RequiresOTPVerification { get; set; } = false;
+    
     public DateTime CreatedDate { get; set; }
     public DateTime? LastModifiedDate { get; set; }
     

@@ -169,6 +169,81 @@ public class DeliveryRoutesController : ControllerBase
         return NoContent();
     }
 
+    [HttpPost("stops/{stopId}/generate-otp")]
+    public async Task<ActionResult<string>> GenerateOTP(int stopId)
+    {
+        var stop = await _context.DeliveryStops.FindAsync(stopId);
+        if (stop == null)
+        {
+            return NotFound();
+        }
+
+        // Generate a 6-digit OTP
+        var random = new Random();
+        var otp = random.Next(100000, 999999).ToString();
+        
+        stop.OTPCode = otp;
+        stop.OTPGeneratedAt = DateTime.UtcNow;
+        stop.OTPVerified = false;
+        
+        await _context.SaveChangesAsync();
+
+        // In production, this would send SMS/email to customer
+        return Ok(new { OTPCode = otp, ExpiresInMinutes = 15 });
+    }
+
+    [HttpPost("stops/{stopId}/verify-otp")]
+    public async Task<IActionResult> VerifyOTP(int stopId, [FromBody] VerifyOTPRequest request)
+    {
+        var stop = await _context.DeliveryStops.FindAsync(stopId);
+        if (stop == null)
+        {
+            return NotFound();
+        }
+
+        if (string.IsNullOrEmpty(stop.OTPCode))
+        {
+            return BadRequest("No OTP has been generated for this delivery.");
+        }
+
+        // Check if OTP is expired (15 minutes)
+        if (stop.OTPGeneratedAt.HasValue && 
+            DateTime.UtcNow - stop.OTPGeneratedAt.Value > TimeSpan.FromMinutes(15))
+        {
+            return BadRequest("OTP has expired. Please generate a new one.");
+        }
+
+        if (stop.OTPCode != request.OTPCode)
+        {
+            return BadRequest("Invalid OTP code.");
+        }
+
+        stop.OTPVerified = true;
+        stop.OTPVerifiedAt = DateTime.UtcNow;
+        await _context.SaveChangesAsync();
+
+        return Ok(new { Message = "Age verification successful", Verified = true });
+    }
+
+    [HttpPatch("stops/{stopId}/update-safe-place")]
+    public async Task<IActionResult> UpdateSafePlace(int stopId, [FromBody] UpdateSafePlaceRequest request)
+    {
+        var stop = await _context.DeliveryStops.FindAsync(stopId);
+        if (stop == null)
+        {
+            return NotFound();
+        }
+
+        stop.SafePlace = request.SafePlace;
+        stop.DoorAccessCode = request.DoorAccessCode;
+        stop.PostBoxCode = request.PostBoxCode;
+        stop.BuildingAccessInstructions = request.BuildingAccessInstructions;
+        
+        await _context.SaveChangesAsync();
+
+        return NoContent();
+    }
+
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteDeliveryRoute(int id)
     {

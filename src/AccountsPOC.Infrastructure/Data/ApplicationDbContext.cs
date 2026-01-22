@@ -689,6 +689,16 @@ public class ApplicationDbContext : DbContext
             entity.Property(e => e.DeliveryNotes).HasMaxLength(2000);
             entity.Property(e => e.SignatureImagePath).HasMaxLength(500);
             entity.Property(e => e.PhotoEvidencePaths).HasMaxLength(2000);
+            
+            // Safe place and access configuration
+            entity.Property(e => e.SafePlace).HasMaxLength(200);
+            entity.Property(e => e.DoorAccessCode).HasMaxLength(50);
+            entity.Property(e => e.PostBoxCode).HasMaxLength(50);
+            entity.Property(e => e.BuildingAccessInstructions).HasMaxLength(1000);
+            
+            // OTP configuration
+            entity.Property(e => e.OTPCode).HasMaxLength(10);
+            
             entity.HasIndex(e => e.DeliveryRouteId);
             entity.HasIndex(e => e.CustomerId);
             entity.HasIndex(e => e.SalesOrderId);

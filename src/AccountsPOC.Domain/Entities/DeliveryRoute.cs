@@ -41,6 +41,19 @@ public class DeliveryStop
     public string? PhotoEvidencePaths { get; set; } // JSON array of image paths
     public bool EvidenceCaptured { get; set; }
     
+    // Safe place and access details (Amazon-style)
+    public string? SafePlace { get; set; } // e.g., "Porch", "Rear Porch", "Garage", "Behind Gate"
+    public string? DoorAccessCode { get; set; }
+    public string? PostBoxCode { get; set; }
+    public string? BuildingAccessInstructions { get; set; }
+    
+    // Age-restricted delivery
+    public bool RequiresAgeVerification { get; set; } = false;
+    public string? OTPCode { get; set; }
+    public DateTime? OTPGeneratedAt { get; set; }
+    public DateTime? OTPVerifiedAt { get; set; }
+    public bool OTPVerified { get; set; } = false;
+    
     // Navigation properties
     public DeliveryRoute? DeliveryRoute { get; set; }
     public Customer? Customer { get; set; }
