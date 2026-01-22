@@ -5,3 +5,4 @@ public record CaptureEvidenceRequest(string? SignatureImagePath, string? PhotoEv
 public record VerifyOTPRequest(string OTPCode);
 public record UpdateSafePlaceRequest(string? SafePlace, string? DoorAccessCode, string? PostBoxCode, string? BuildingAccessInstructions);
 public record ReorderStopsRequest(List<int> StopIds);
+public record UpdateDeliveryStatusRequest(string DeliveryStatus, string? NeighborDoorNumber, string? DeliveryNotes);

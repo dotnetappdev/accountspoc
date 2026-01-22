@@ -1,0 +1,653 @@
+@page "/route-map/{RouteId:int}"
+@using AccountsPOC.Domain.Entities
+@using Microsoft.Maui.Controls.Maps
+@using Microsoft.Maui.Maps
+@inject NavigationManager Navigation
+@inject IHttpClientFactory HttpClientFactory
+
+<PageTitle>Route Map</PageTitle>
+
+<div class="route-map-page">
+    <div class="header">
+        <button class="back-button" @onclick="GoBack">← Back</button>
+        <h2>🗺️ Route @routeNumber</h2>
+        <button class="optimize-button" @onclick="OptimizeRoute">⚡ Optimize</button>
+    </div>
+
+    @if (isLoading)
+    {
+        <div class="loading">Loading route...</div>
+    }
+    else if (deliveryRoute != null)
+    {
+        <div class="route-info-bar">
+            <div class="info-item">
+                <span class="label">Stops:</span>
+                <span class="value">@deliveryRoute.Stops.Count</span>
+            </div>
+            <div class="info-item">
+                <span class="label">Status:</span>
+                <span class="value status-@deliveryRoute.Status.ToLower()">@deliveryRoute.Status</span>
+            </div>
+            @if (totalDistance > 0)
+            {
+                <div class="info-item">
+                    <span class="label">Distance:</span>
+                    <span class="value">@totalDistance.ToString("F2") km</span>
+                </div>
+            }
+        </div>
+
+        <div class="map-container">
+            @if (hasMapSupport)
+            {
+                <p class="map-placeholder">
+                    📍 Interactive map will be displayed here on device.<br/>
+                    Showing @deliveryRoute.Stops.Count delivery locations.
+                </p>
+            }
+            else
+            {
+                <p class="map-info">Map view requires device with GPS support.</p>
+            }
+        </div>
+
+        <div class="stops-list">
+            <h3>Delivery Stops</h3>
+            @foreach (var stop in deliveryRoute.Stops.OrderBy(s => s.SequenceNumber))
+            {
+                <div class="stop-card @(selectedStop?.Id == stop.Id ? "selected" : "")" @onclick="() => SelectStop(stop)">
+                    <div class="stop-header">
+                        <div class="sequence-circle">@stop.SequenceNumber</div>
+                        <div class="stop-details">
+                            <div class="stop-name">@stop.ContactName</div>
+                            <div class="stop-address">@stop.DeliveryAddress</div>
+                            @if (!string.IsNullOrEmpty(stop.DoorNumber))
+                            {
+                                <div class="door-number">🚪 Door: @stop.DoorNumber</div>
+                            }
+                        </div>
+                        <div class="stop-metrics">
+                            @if (stop.ParcelCount > 0)
+                            {
+                                <div class="parcel-badge">📦 @stop.ParcelCount</div>
+                            }
+                            @if (stop.Latitude.HasValue && stop.Longitude.HasValue)
+                            {
+                                <div class="gps-badge">📍</div>
+                            }
+                        </div>
+                    </div>
+                    
+                    @if (selectedStop?.Id == stop.Id)
+                    {
+                        <div class="stop-actions">
+                            <button class="action-btn" @onclick="() => NavigateToStop(stop)" @onclick:stopPropagation="true">
+                                🧭 Navigate
+                            </button>
+                            <button class="action-btn" @onclick="() => ShowDeliveryOptions(stop)" @onclick:stopPropagation="true">
+                                ✓ Mark Delivered
+                            </button>
+                        </div>
+                        
+                        @if (stop.Latitude.HasValue && stop.Longitude.HasValue)
+                        {
+                            <div class="gps-info">
+                                <small>GPS: @stop.Latitude.Value.ToString("F6"), @stop.Longitude.Value.ToString("F6")</small>
+                            </div>
+                        }
+                    }
+                </div>
+            }
+        </div>
+
+        @if (showDeliveryModal)
+        {
+            <div class="modal-overlay" @onclick="CloseDeliveryModal">
+                <div class="modal-content" @onclick:stopPropagation="true">
+                    <h3>Mark Delivery Status</h3>
+                    <p>@selectedStop?.ContactName - @selectedStop?.DeliveryAddress</p>
+                    
+                    <div class="delivery-options">
+                        <button class="option-btn delivered" @onclick='() => UpdateDeliveryStatus("Delivered")'>
+                            ✓ Delivered
+                        </button>
+                        <button class="option-btn safe-place" @onclick='() => UpdateDeliveryStatus("SafePlace")'>
+                            🏠 Left at Safe Place
+                        </button>
+                        <button class="option-btn neighbor" @onclick="ShowNeighborInput">
+                            👥 Left with Neighbor
+                        </button>
+                    </div>
+
+                    @if (showNeighborInput)
+                    {
+                        <div class="neighbor-input">
+                            <label>Neighbor's Door Number:</label>
+                            <input type="text" @bind="neighborDoorNumber" placeholder="e.g., 12B" class="form-control" />
+                            <button class="btn-primary" @onclick='() => UpdateDeliveryStatus("LeftWithNeighbor")'>
+                                Confirm
+                            </button>
+                        </div>
+                    }
+
+                    <button class="close-btn" @onclick="CloseDeliveryModal">Cancel</button>
+                </div>
+            </div>
+        }
+    }
+</div>
+
+@code {
+    [Parameter]
+    public int RouteId { get; set; }
+
+    private DeliveryRoute? deliveryRoute;
+    private DeliveryStop? selectedStop;
+    private string routeNumber = "";
+    private bool isLoading = true;
+    private bool hasMapSupport = true;
+    private bool showDeliveryModal = false;
+    private bool showNeighborInput = false;
+    private string neighborDoorNumber = "";
+    private double totalDistance = 0;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadRoute();
+    }
+
+    private async Task LoadRoute()
+    {
+        isLoading = true;
+
+        try
+        {
+            var httpClient = HttpClientFactory.CreateClient("AccountsPOCAPI");
+            deliveryRoute = await httpClient.GetFromJsonAsync<DeliveryRoute>($"api/deliveryroutes/{RouteId}");
+            
+            if (deliveryRoute != null)
+            {
+                routeNumber = deliveryRoute.RouteNumber;
+                totalDistance = deliveryRoute.Stops.Sum(s => s.OptimizedDistance ?? 0);
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading route: {ex.Message}");
+            // Use mock data for development
+            deliveryRoute = new DeliveryRoute
+            {
+                Id = RouteId,
+                TenantId = 1,
+                RouteNumber = "ROUTE-001",
+                RouteDate = DateTime.Today,
+                Status = "Planned",
+                CreatedDate = DateTime.Now,
+                Stops = new List<DeliveryStop>
+                {
+                    new DeliveryStop
+                    {
+                        Id = 1,
+                        DeliveryRouteId = RouteId,
+                        SequenceNumber = 1,
+                        DeliveryAddress = "123 Main St, London",
+                        ContactName = "John Smith",
+                        ContactPhone = "+44 20 1234 5678",
+                        Status = "Pending",
+                        Latitude = 51.5074,
+                        Longitude = -0.1278,
+                        DoorNumber = "12A",
+                        ParcelCount = 3
+                    },
+                    new DeliveryStop
+                    {
+                        Id = 2,
+                        DeliveryRouteId = RouteId,
+                        SequenceNumber = 2,
+                        DeliveryAddress = "456 Oxford Street, London",
+                        ContactName = "Jane Doe",
+                        ContactPhone = "+44 20 9876 5432",
+                        Status = "Pending",
+                        Latitude = 51.5155,
+                        Longitude = -0.1415,
+                        DoorNumber = "45B",
+                        ParcelCount = 5
+                    },
+                    new DeliveryStop
+                    {
+                        Id = 3,
+                        DeliveryRouteId = RouteId,
+                        SequenceNumber = 3,
+                        DeliveryAddress = "789 Baker Street, London",
+                        ContactName = "Bob Johnson",
+                        ContactPhone = "+44 20 5555 1234",
+                        Status = "Pending",
+                        Latitude = 51.5236,
+                        Longitude = -0.1586,
+                        DoorNumber = "221B",
+                        ParcelCount = 2
+                    }
+                }
+            };
+            routeNumber = deliveryRoute.RouteNumber;
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task OptimizeRoute()
+    {
+        try
+        {
+            var httpClient = HttpClientFactory.CreateClient("AccountsPOCAPI");
+            var response = await httpClient.PostAsync($"api/deliveryroutes/{RouteId}/optimize-route", null);
+            
+            if (response.IsSuccessStatusCode)
+            {
+                await LoadRoute(); // Reload to get updated sequence
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error optimizing route: {ex.Message}");
+        }
+    }
+
+    private void SelectStop(DeliveryStop stop)
+    {
+        selectedStop = selectedStop?.Id == stop.Id ? null : stop;
+    }
+
+    private void NavigateToStop(DeliveryStop stop)
+    {
+        if (stop.Latitude.HasValue && stop.Longitude.HasValue)
+        {
+            // On device, this would open the native maps app
+#if ANDROID || IOS
+            var location = new Location(stop.Latitude.Value, stop.Longitude.Value);
+            var options = new MapLaunchOptions { Name = stop.ContactName };
+            Map.OpenAsync(location, options);
+#endif
+        }
+    }
+
+    private void ShowDeliveryOptions(DeliveryStop stop)
+    {
+        selectedStop = stop;
+        showDeliveryModal = true;
+        showNeighborInput = false;
+        neighborDoorNumber = "";
+    }
+
+    private void CloseDeliveryModal()
+    {
+        showDeliveryModal = false;
+        showNeighborInput = false;
+    }
+
+    private void ShowNeighborInput()
+    {
+        showNeighborInput = true;
+    }
+
+    private async Task UpdateDeliveryStatus(string status)
+    {
+        if (selectedStop == null) return;
+
+        try
+        {
+            var httpClient = HttpClientFactory.CreateClient("AccountsPOCAPI");
+            var request = new
+            {
+                DeliveryStatus = status,
+                NeighborDoorNumber = status == "LeftWithNeighbor" ? neighborDoorNumber : null,
+                DeliveryNotes = $"Marked as {status} via mobile app"
+            };
+
+            var response = await httpClient.PatchAsJsonAsync(
+                $"api/deliveryroutes/stops/{selectedStop.Id}/update-delivery-status",
+                request
+            );
+
+            if (response.IsSuccessStatusCode)
+            {
+                selectedStop.DeliveryStatus = status;
+                selectedStop.Status = "Delivered";
+                CloseDeliveryModal();
+                StateHasChanged();
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error updating delivery status: {ex.Message}");
+            // Update locally even if API fails (for offline support)
+            selectedStop.DeliveryStatus = status;
+            selectedStop.Status = "Delivered";
+            CloseDeliveryModal();
+            StateHasChanged();
+        }
+    }
+
+    private void GoBack()
+    {
+        Navigation.NavigateTo("/delivery-routes");
+    }
+}
+
+<style>
+    .route-map-page {
+        padding: 16px;
+        padding-bottom: 80px;
+    }
+
+    .header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 16px;
+        gap: 12px;
+    }
+
+    .back-button, .optimize-button {
+        padding: 10px 16px;
+        border: none;
+        border-radius: 8px;
+        font-size: 0.875rem;
+        cursor: pointer;
+        font-weight: 500;
+    }
+
+    .back-button {
+        background: #6c757d;
+        color: white;
+    }
+
+    .optimize-button {
+        background: #ffc107;
+        color: #000;
+    }
+
+    .route-info-bar {
+        display: flex;
+        gap: 12px;
+        margin-bottom: 16px;
+        padding: 12px;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .info-item {
+        flex: 1;
+        text-align: center;
+    }
+
+    .info-item .label {
+        display: block;
+        font-size: 0.75rem;
+        color: #666;
+        margin-bottom: 4px;
+    }
+
+    .info-item .value {
+        display: block;
+        font-weight: bold;
+        font-size: 1rem;
+    }
+
+    .status-planned {
+        color: #ffc107;
+    }
+
+    .status-inprogress {
+        color: #007bff;
+    }
+
+    .status-completed {
+        color: #28a745;
+    }
+
+    .map-container {
+        height: 300px;
+        background: #f5f5f5;
+        border-radius: 12px;
+        margin-bottom: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 2px dashed #ddd;
+    }
+
+    .map-placeholder {
+        text-align: center;
+        color: #666;
+        padding: 20px;
+    }
+
+    .stops-list {
+        margin-top: 20px;
+    }
+
+    .stops-list h3 {
+        margin-bottom: 12px;
+        font-size: 1.1rem;
+    }
+
+    .stop-card {
+        background: white;
+        border: 2px solid #e0e0e0;
+        border-radius: 12px;
+        padding: 16px;
+        margin-bottom: 12px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .stop-card.selected {
+        border-color: #667eea;
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+    }
+
+    .stop-header {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    .sequence-circle {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        font-size: 1.1rem;
+        flex-shrink: 0;
+    }
+
+    .stop-details {
+        flex: 1;
+    }
+
+    .stop-name {
+        font-weight: bold;
+        margin-bottom: 4px;
+    }
+
+    .stop-address {
+        font-size: 0.875rem;
+        color: #666;
+        margin-bottom: 4px;
+    }
+
+    .door-number {
+        font-size: 0.875rem;
+        color: #764ba2;
+        font-weight: 500;
+    }
+
+    .stop-metrics {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        align-items: flex-end;
+    }
+
+    .parcel-badge, .gps-badge {
+        background: #e7f3ff;
+        color: #0066cc;
+        padding: 4px 8px;
+        border-radius: 12px;
+        font-size: 0.75rem;
+        font-weight: 500;
+    }
+
+    .gps-badge {
+        background: #e8f5e9;
+        color: #2e7d32;
+    }
+
+    .stop-actions {
+        display: flex;
+        gap: 8px;
+        margin-top: 12px;
+        padding-top: 12px;
+        border-top: 1px solid #f0f0f0;
+    }
+
+    .action-btn {
+        flex: 1;
+        padding: 8px 16px;
+        border: none;
+        border-radius: 8px;
+        background: #667eea;
+        color: white;
+        font-size: 0.875rem;
+        cursor: pointer;
+        font-weight: 500;
+    }
+
+    .gps-info {
+        margin-top: 8px;
+        padding: 8px;
+        background: #f8f9fa;
+        border-radius: 4px;
+        font-family: monospace;
+    }
+
+    .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+    }
+
+    .modal-content {
+        background: white;
+        border-radius: 16px;
+        padding: 24px;
+        max-width: 400px;
+        width: 90%;
+        max-height: 80vh;
+        overflow-y: auto;
+    }
+
+    .modal-content h3 {
+        margin-top: 0;
+        margin-bottom: 12px;
+    }
+
+    .delivery-options {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        margin: 20px 0;
+    }
+
+    .option-btn {
+        padding: 16px;
+        border: 2px solid #e0e0e0;
+        border-radius: 12px;
+        background: white;
+        font-size: 1rem;
+        cursor: pointer;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+
+    .option-btn.delivered {
+        border-color: #28a745;
+        color: #28a745;
+    }
+
+    .option-btn.safe-place {
+        border-color: #ffc107;
+        color: #856404;
+    }
+
+    .option-btn.neighbor {
+        border-color: #007bff;
+        color: #007bff;
+    }
+
+    .neighbor-input {
+        margin: 16px 0;
+        padding: 16px;
+        background: #f8f9fa;
+        border-radius: 8px;
+    }
+
+    .neighbor-input label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 500;
+    }
+
+    .neighbor-input input {
+        width: 100%;
+        padding: 8px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        margin-bottom: 12px;
+    }
+
+    .btn-primary {
+        width: 100%;
+        padding: 10px;
+        background: #007bff;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: 500;
+    }
+
+    .close-btn {
+        width: 100%;
+        padding: 10px;
+        background: #6c757d;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        margin-top: 12px;
+    }
+
+    .loading {
+        text-align: center;
+        padding: 40px;
+        color: #666;
+    }
+</style>

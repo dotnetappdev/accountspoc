@@ -279,6 +279,125 @@ public class DeliveryRoutesController : ControllerBase
         return Ok(new { Message = "Stops reordered successfully" });
     }
 
+    [HttpPost("{id}/optimize-route")]
+    public async Task<IActionResult> OptimizeRoute(int id)
+    {
+        var route = await _context.DeliveryRoutes
+            .Include(r => r.Stops)
+            .FirstOrDefaultAsync(r => r.Id == id);
+
+        if (route == null)
+        {
+            return NotFound();
+        }
+
+        // Filter stops with valid GPS coordinates
+        var stopsWithGPS = route.Stops
+            .Where(s => s.Latitude.HasValue && s.Longitude.HasValue)
+            .ToList();
+
+        if (stopsWithGPS.Count < 2)
+        {
+            return BadRequest("At least 2 stops with GPS coordinates are required for optimization");
+        }
+
+        // Simple nearest-neighbor optimization algorithm
+        var optimizedStops = new List<DeliveryStop>();
+        var remainingStops = new List<DeliveryStop>(stopsWithGPS);
+        
+        // Start with the first stop (or could use depot/warehouse location)
+        var currentStop = remainingStops.First();
+        optimizedStops.Add(currentStop);
+        remainingStops.Remove(currentStop);
+
+        // Find nearest unvisited stop iteratively
+        while (remainingStops.Any())
+        {
+            var nearest = remainingStops
+                .Select(s => new
+                {
+                    Stop = s,
+                    Distance = CalculateDistance(
+                        currentStop.Latitude!.Value,
+                        currentStop.Longitude!.Value,
+                        s.Latitude!.Value,
+                        s.Longitude!.Value
+                    )
+                })
+                .OrderBy(x => x.Distance)
+                .First();
+
+            nearest.Stop.OptimizedDistance = nearest.Distance;
+            optimizedStops.Add(nearest.Stop);
+            remainingStops.Remove(nearest.Stop);
+            currentStop = nearest.Stop;
+        }
+
+        // Update sequence numbers based on optimized order
+        for (int i = 0; i < optimizedStops.Count; i++)
+        {
+            optimizedStops[i].SequenceNumber = i + 1;
+        }
+
+        // Update stops without GPS to come after optimized ones
+        var stopsWithoutGPS = route.Stops.Except(stopsWithGPS).ToList();
+        for (int i = 0; i < stopsWithoutGPS.Count; i++)
+        {
+            stopsWithoutGPS[i].SequenceNumber = optimizedStops.Count + i + 1;
+        }
+
+        route.LastModifiedDate = DateTime.UtcNow;
+        await _context.SaveChangesAsync();
+
+        var totalDistance = optimizedStops.Sum(s => s.OptimizedDistance ?? 0);
+
+        return Ok(new
+        {
+            Message = "Route optimized successfully",
+            OptimizedStops = optimizedStops.Count,
+            TotalDistance = Math.Round(totalDistance, 2),
+            StopOrder = optimizedStops.Select(s => new { s.Id, s.SequenceNumber, s.DeliveryAddress }).ToList()
+        });
+    }
+
+    // Haversine formula to calculate distance between two GPS coordinates
+    private double CalculateDistance(double lat1, double lon1, double lat2, double lon2)
+    {
+        const double R = 6371; // Earth's radius in kilometers
+        var dLat = ToRadians(lat2 - lat1);
+        var dLon = ToRadians(lon2 - lon1);
+        var a = Math.Sin(dLat / 2) * Math.Sin(dLat / 2) +
+                Math.Cos(ToRadians(lat1)) * Math.Cos(ToRadians(lat2)) *
+                Math.Sin(dLon / 2) * Math.Sin(dLon / 2);
+        var c = 2 * Math.Atan2(Math.Sqrt(a), Math.Sqrt(1 - a));
+        return R * c;
+    }
+
+    private double ToRadians(double degrees)
+    {
+        return degrees * Math.PI / 180;
+    }
+
+    [HttpPatch("stops/{stopId}/update-delivery-status")]
+    public async Task<IActionResult> UpdateDeliveryStatus(int stopId, [FromBody] UpdateDeliveryStatusRequest request)
+    {
+        var stop = await _context.DeliveryStops.FindAsync(stopId);
+        if (stop == null)
+        {
+            return NotFound();
+        }
+
+        stop.DeliveryStatus = request.DeliveryStatus;
+        stop.NeighborDoorNumber = request.NeighborDoorNumber;
+        stop.DeliveryNotes = request.DeliveryNotes;
+        stop.Status = "Delivered";
+        stop.DeliveryTime = DateTime.UtcNow;
+
+        await _context.SaveChangesAsync();
+
+        return NoContent();
+    }
+
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteDeliveryRoute(int id)
     {
