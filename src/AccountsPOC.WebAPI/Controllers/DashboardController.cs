@@ -1,3 +1,4 @@
+using AccountsPOC.Domain.Entities;
 using AccountsPOC.Infrastructure.Data;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -37,10 +38,10 @@ public class DashboardController : ControllerBase
             .ToListAsync();
 
         var totalStops = todayStops.Count;
-        var completedStops = todayStops.Count(s => s.Status == "Completed");
-        var inProgressStops = todayStops.Count(s => s.Status == "InProgress");
-        var pendingStops = todayStops.Count(s => s.Status == "Pending");
-        var failedStops = todayStops.Count(s => s.Status == "Failed");
+        var completedStops = todayStops.Count(s => s.Status == DeliveryStopStatus.Delivered);
+        var inProgressStops = todayStops.Count(s => s.Status == DeliveryStopStatus.Arrived);
+        var pendingStops = todayStops.Count(s => s.Status == DeliveryStopStatus.Pending);
+        var failedStops = todayStops.Count(s => s.Status == DeliveryStopStatus.Failed);
 
         var scannedParcels = await _context.Parcels
             .Where(p => p.ScannedToVanAt != null && p.ScannedToVanAt.Value.Date == today)
@@ -90,17 +91,17 @@ public class DashboardController : ControllerBase
             DriverPhone = r.Driver?.MobilePhone,
             Status = r.Status,
             TotalStops = r.Stops.Count,
-            CompletedStops = r.Stops.Count(s => s.Status == "Completed"),
-            InProgressStops = r.Stops.Count(s => s.Status == "InProgress"),
-            PendingStops = r.Stops.Count(s => s.Status == "Pending"),
-            FailedStops = r.Stops.Count(s => s.Status == "Failed"),
+            CompletedStops = r.Stops.Count(s => s.Status == DeliveryStopStatus.Delivered),
+            InProgressStops = r.Stops.Count(s => s.Status == DeliveryStopStatus.Arrived),
+            PendingStops = r.Stops.Count(s => s.Status == DeliveryStopStatus.Pending),
+            FailedStops = r.Stops.Count(s => s.Status == DeliveryStopStatus.Failed),
             Progress = r.Stops.Count > 0 
-                ? Math.Round((double)r.Stops.Count(s => s.Status == "Completed") / r.Stops.Count * 100, 1) 
+                ? Math.Round((double)r.Stops.Count(s => s.Status == DeliveryStopStatus.Delivered) / r.Stops.Count * 100, 1) 
                 : 0,
             StartTime = r.ActualStartTime,
             EstimatedCompletion = r.EstimatedEndTime,
             CurrentStopSequence = r.Stops
-                .Where(s => s.Status == "InProgress")
+                .Where(s => s.Status == DeliveryStopStatus.Arrived)
                 .Select(s => s.SequenceNumber)
                 .FirstOrDefault()
         }).ToList();
@@ -127,7 +128,7 @@ public class DashboardController : ControllerBase
         {
             var routes = d.DeliveryRoutes.ToList();
             var allStops = routes.SelectMany(r => r.Stops).ToList();
-            var completedStops = allStops.Count(s => s.Status == "Completed");
+            var completedStops = allStops.Count(s => s.Status == DeliveryStopStatus.Delivered);
             var totalStops = allStops.Count;
 
             return new DriverPerformance
@@ -139,7 +140,7 @@ public class DashboardController : ControllerBase
                 CompletedRoutes = routes.Count(r => r.Status == "Completed"),
                 TotalDeliveries = totalStops,
                 CompletedDeliveries = completedStops,
-                FailedDeliveries = allStops.Count(s => s.Status == "Failed"),
+                FailedDeliveries = allStops.Count(s => s.Status == DeliveryStopStatus.Failed),
                 SuccessRate = totalStops > 0 ? Math.Round((double)completedStops / totalStops * 100, 1) : 0,
                 VehicleRegistration = d.VehicleRegistration,
                 CurrentStatus = routes.Any(r => r.Status == "InProgress" && r.RouteDate.Date == today) 
@@ -161,7 +162,7 @@ public class DashboardController : ControllerBase
             .Include(s => s.DeliveryRoute)
                 .ThenInclude(r => r.Driver)
             .Include(s => s.Customer)
-            .Where(s => s.DeliveryTime != null || s.Status != "Pending")
+            .Where(s => s.DeliveryTime != null || s.Status != DeliveryStopStatus.Pending)
             .OrderByDescending(s => s.DeliveryTime ?? s.DeliveryRoute.RouteDate)
             .Take(50)
             .ToListAsync();

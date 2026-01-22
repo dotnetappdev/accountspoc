@@ -1,19 +1,19 @@
 namespace AccountsPOC.Domain.Entities;
 
 // Enums for type safety
-public static class DeliveryStatusType
+public enum DeliveryStatusType
 {
-    public const string Delivered = "Delivered";
-    public const string SafePlace = "SafePlace";
-    public const string LeftWithNeighbor = "LeftWithNeighbor";
+    Delivered,
+    SafePlace,
+    LeftWithNeighbor
 }
 
-public static class DeliveryStopStatus
+public enum DeliveryStopStatus
 {
-    public const string Pending = "Pending";
-    public const string Arrived = "Arrived";
-    public const string Delivered = "Delivered";
-    public const string Failed = "Failed";
+    Pending,
+    Arrived,
+    Delivered,
+    Failed
 }
 
 public class DeliveryRoute
@@ -52,7 +52,7 @@ public class DeliveryStop
     public string? ContactEmail { get; set; }
     public double? Latitude { get; set; }
     public double? Longitude { get; set; }
-    public string Status { get; set; } = "Pending"; // Pending, Arrived, Delivered, Failed
+    public DeliveryStopStatus Status { get; set; } = DeliveryStopStatus.Pending;
     public DateTime? ArrivalTime { get; set; }
     public DateTime? DeliveryTime { get; set; }
     public string? DeliveryNotes { get; set; }
@@ -63,7 +63,7 @@ public class DeliveryStop
     // Delivery details for GPS and route optimization
     public string? DoorNumber { get; set; } // Door/apartment number for the delivery
     public int ParcelCount { get; set; } = 0; // Number of parcels to deliver at this stop
-    public string? DeliveryStatus { get; set; } // "Delivered", "SafePlace", "LeftWithNeighbor"
+    public DeliveryStatusType? DeliveryStatus { get; set; } // Delivered, SafePlace, LeftWithNeighbor
     public string? NeighborDoorNumber { get; set; } // If left with neighbor, their door number
     public double? OptimizedDistance { get; set; } // Distance in km from previous stop (for optimization)
     

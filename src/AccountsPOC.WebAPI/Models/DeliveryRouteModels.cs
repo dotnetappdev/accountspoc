@@ -1,3 +1,5 @@
+using AccountsPOC.Domain.Entities;
+
 namespace AccountsPOC.WebAPI.Models;
 
 public record UpdateContactRequest(string? ContactName, string? ContactPhone, string? ContactEmail);
@@ -5,4 +7,4 @@ public record CaptureEvidenceRequest(string? SignatureImagePath, string? PhotoEv
 public record VerifyOTPRequest(string OTPCode);
 public record UpdateSafePlaceRequest(string? SafePlace, string? DoorAccessCode, string? PostBoxCode, string? BuildingAccessInstructions);
 public record ReorderStopsRequest(List<int> StopIds);
-public record UpdateDeliveryStatusRequest(string DeliveryStatus, string? NeighborDoorNumber, string? DeliveryNotes);
+public record UpdateDeliveryStatusRequest(DeliveryStatusType DeliveryStatus, string? NeighborDoorNumber, string? DeliveryNotes);

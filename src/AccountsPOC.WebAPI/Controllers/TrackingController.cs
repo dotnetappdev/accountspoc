@@ -78,7 +78,7 @@ public class TrackingController : ControllerBase
         return new DeliveryTrackingInfo
         {
             TrackingNumber = stop.Id.ToString(),
-            Status = stop.Status,
+            Status = stop.Status.ToString(),
             CustomerName = stop.ContactName ?? stop.Customer?.CompanyName ?? "Customer",
             DeliveryAddress = stop.DeliveryAddress,
             EstimatedDeliveryTime = stop.ArrivalTime,

@@ -293,7 +293,7 @@
         showNeighborInput = true;
     }
 
-    private async Task UpdateDeliveryStatus(string status)
+    private async Task UpdateDeliveryStatus(DeliveryStatusType status)
     {
         if (selectedStop == null) return;
 
@@ -303,7 +303,7 @@
             var request = new
             {
                 DeliveryStatus = status,
-                NeighborDoorNumber = status == "LeftWithNeighbor" ? neighborDoorNumber : null,
+                NeighborDoorNumber = status == DeliveryStatusType.LeftWithNeighbor ? neighborDoorNumber : null,
                 DeliveryNotes = $"Marked as {status} via mobile app"
             };
 

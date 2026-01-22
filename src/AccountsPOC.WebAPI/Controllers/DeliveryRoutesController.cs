@@ -64,6 +64,21 @@ public class DeliveryRoutesController : ControllerBase
     public async Task<ActionResult<DeliveryRoute>> PostDeliveryRoute(DeliveryRoute deliveryRoute)
     {
         deliveryRoute.CreatedDate = DateTime.UtcNow;
+        
+        // Populate GPS coordinates from Customer delivery address if not already set
+        foreach (var stop in deliveryRoute.Stops)
+        {
+            if (stop.CustomerId.HasValue && (!stop.Latitude.HasValue || !stop.Longitude.HasValue))
+            {
+                var customer = await _context.Customers.FindAsync(stop.CustomerId.Value);
+                if (customer != null)
+                {
+                    stop.Latitude = customer.DeliveryLatitude ?? stop.Latitude;
+                    stop.Longitude = customer.DeliveryLongitude ?? stop.Longitude;
+                }
+            }
+        }
+        
         _context.DeliveryRoutes.Add(deliveryRoute);
         await _context.SaveChangesAsync();
 
@@ -79,6 +94,21 @@ public class DeliveryRoutesController : ControllerBase
         }
 
         deliveryRoute.LastModifiedDate = DateTime.UtcNow;
+        
+        // Populate GPS coordinates from Customer delivery address if not already set
+        foreach (var stop in deliveryRoute.Stops)
+        {
+            if (stop.CustomerId.HasValue && (!stop.Latitude.HasValue || !stop.Longitude.HasValue))
+            {
+                var customer = await _context.Customers.FindAsync(stop.CustomerId.Value);
+                if (customer != null)
+                {
+                    stop.Latitude = customer.DeliveryLatitude ?? stop.Latitude;
+                    stop.Longitude = customer.DeliveryLongitude ?? stop.Longitude;
+                }
+            }
+        }
+        
         _context.Entry(deliveryRoute).State = EntityState.Modified;
 
         try
@@ -162,7 +192,7 @@ public class DeliveryRoutesController : ControllerBase
         stop.PhotoEvidencePaths = request.PhotoEvidencePaths;
         stop.EvidenceCaptured = true;
         stop.DeliveryTime = DateTime.UtcNow;
-        stop.Status = "Delivered";
+        stop.Status = DeliveryStopStatus.Delivered;
         
         await _context.SaveChangesAsync();
 
