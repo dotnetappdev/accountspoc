@@ -1,0 +1,686 @@
+@page "/settings"
+@using System.Net.Http.Json
+@using AccountsPOC.BlazorApp.Models
+@inject HttpClient Http
+@rendermode InteractiveServer
+
+<PageTitle>System Settings</PageTitle>
+
+<div class="container-fluid">
+    <div class="page-header">
+        <h1 class="page-title">
+            <i class="bi bi-gear-fill"></i> System Settings
+        </h1>
+        <p class="text-muted">Configure your company and system preferences</p>
+    </div>
+
+    @if (loading)
+    {
+        <div class="text-center py-5">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+    }
+    else if (settings == null)
+    {
+        <div class="alert alert-info">
+            <i class="bi bi-info-circle"></i> No settings found. Creating default settings...
+        </div>
+    }
+    else
+    {
+        <div class="row g-4">
+            <!-- Company Information Card -->
+            <div class="col-lg-6">
+                <div class="settings-card">
+                    <div class="card-icon">
+                        <i class="bi bi-building"></i>
+                    </div>
+                    <h3 class="card-title">Company Information</h3>
+                    <div class="settings-details">
+                        <div class="detail-item">
+                            <label>Company Name</label>
+                            <div class="detail-value">@settings.CompanyName</div>
+                        </div>
+                        <div class="detail-item">
+                            <label>Address</label>
+                            <div class="detail-value">@(settings.CompanyAddress ?? "Not set")</div>
+                        </div>
+                        <div class="detail-item">
+                            <label>Tax Number</label>
+                            <div class="detail-value">@(settings.TaxNumber ?? "Not set")</div>
+                        </div>
+                    </div>
+                    <button class="btn btn-primary mt-3" @onclick="() => ShowEditModal()">
+                        <i class="bi bi-pencil"></i> Edit Company Details
+                    </button>
+                </div>
+            </div>
+
+            <!-- Currency & Tax Card -->
+            <div class="col-lg-6">
+                <div class="settings-card">
+                    <div class="card-icon">
+                        <i class="bi bi-currency-dollar"></i>
+                    </div>
+                    <h3 class="card-title">Currency & Tax</h3>
+                    <div class="settings-details">
+                        <div class="detail-item">
+                            <label>Default Currency</label>
+                            <div class="detail-value">@settings.DefaultCurrency (@settings.CurrencySymbol)</div>
+                        </div>
+                        <div class="detail-item">
+                            <label>Decimal Places</label>
+                            <div class="detail-value">@settings.CurrencyDecimalPlaces</div>
+                        </div>
+                        <div class="detail-item">
+                            <label>Default Tax Rate</label>
+                            <div class="detail-value">@settings.DefaultTaxRate%</div>
+                        </div>
+                        <div class="detail-item">
+                            <label>Date Format</label>
+                            <div class="detail-value">@settings.DateFormat</div>
+                        </div>
+                    </div>
+                    <button class="btn btn-primary mt-3" @onclick="() => ShowEditModal()">
+                        <i class="bi bi-pencil"></i> Edit Currency & Tax
+                    </button>
+                </div>
+            </div>
+
+            <!-- Email Configuration Card -->
+            <div class="col-lg-6">
+                <div class="settings-card">
+                    <div class="card-icon">
+                        <i class="bi bi-envelope"></i>
+                    </div>
+                    <h3 class="card-title">Email Configuration</h3>
+                    <div class="settings-details">
+                        <div class="detail-item">
+                            <label>From Name</label>
+                            <div class="detail-value">@(settings.EmailFromName ?? "Not set")</div>
+                        </div>
+                        <div class="detail-item">
+                            <label>From Address</label>
+                            <div class="detail-value">@(settings.EmailFromAddress ?? "Not set")</div>
+                        </div>
+                    </div>
+                    <button class="btn btn-primary mt-3" @onclick="() => ShowEditModal()">
+                        <i class="bi bi-pencil"></i> Edit Email Settings
+                    </button>
+                </div>
+            </div>
+
+            <!-- Payment Integration Card -->
+            <div class="col-lg-6">
+                <div class="settings-card">
+                    <div class="card-icon">
+                        <i class="bi bi-credit-card"></i>
+                    </div>
+                    <h3 class="card-title">Payment Integration</h3>
+                    <div class="settings-details">
+                        <div class="detail-item">
+                            <label>Stripe Integration</label>
+                            <div class="detail-value">
+                                @if (settings.EnablePaymentIntegration)
+                                {
+                                    <span class="badge bg-success">Enabled</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary">Disabled</span>
+                                }
+                            </div>
+                        </div>
+                        @if (settings.EnablePaymentIntegration)
+                        {
+                            <div class="detail-item">
+                                <label>Publishable Key</label>
+                                <div class="detail-value text-muted">••••••••@(settings.StripePublishableKey?.Substring(Math.Max(0, settings.StripePublishableKey.Length - 4)))</div>
+                            </div>
+                        }
+                    </div>
+                    <button class="btn btn-primary mt-3" @onclick="() => ShowEditModal()">
+                        <i class="bi bi-pencil"></i> Edit Payment Settings
+                    </button>
+                </div>
+            </div>
+
+            <!-- PDF Generation Card -->
+            <div class="col-lg-6">
+                <div class="settings-card">
+                    <div class="card-icon">
+                        <i class="bi bi-file-pdf"></i>
+                    </div>
+                    <h3 class="card-title">PDF Generation</h3>
+                    <div class="settings-details">
+                        <div class="detail-item">
+                            <label>Page Size</label>
+                            <div class="detail-value">@settings.PdfPageSize (@settings.PdfOrientation)</div>
+                        </div>
+                        <div class="detail-item">
+                            <label>Show Logo</label>
+                            <div class="detail-value">
+                                @if (settings.PdfShowLogo)
+                                {
+                                    <span class="badge bg-success">Yes (@settings.PdfLogoPosition)</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary">No</span>
+                                }
+                            </div>
+                        </div>
+                        <div class="detail-item">
+                            <label>Header/Footer</label>
+                            <div class="detail-value">
+                                @((settings.PdfShowHeader ? "Header" : "") + (settings.PdfShowHeader && settings.PdfShowFooter ? " & " : "") + (settings.PdfShowFooter ? "Footer" : "") + (settings.PdfShowPageNumbers ? " + Page Numbers" : ""))
+                            </div>
+                        </div>
+                    </div>
+                    <button class="btn btn-primary mt-3" @onclick="() => ShowEditModal()">
+                        <i class="bi bi-pencil"></i> Edit PDF Settings
+                    </button>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@if (showModal)
+{
+    <ModalDialog Title="Edit System Settings" 
+                 IsVisible="@showModal" 
+                 OnClose="CloseModal"
+                 Size="lg">
+        <Body>
+            <EditForm Model="currentSettings" OnValidSubmit="SaveSettings">
+                <div class="accordion" id="settingsAccordion">
+                    <!-- Company Information -->
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#companyCollapse">
+                                <i class="bi bi-building me-2"></i> Company Information
+                            </button>
+                        </h2>
+                        <div id="companyCollapse" class="accordion-collapse collapse show">
+                            <div class="accordion-body">
+                                <div class="mb-3">
+                                    <label class="form-label">Company Name</label>
+                                    <InputText class="form-control" @bind-Value="currentSettings.CompanyName" />
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Company Address</label>
+                                    <InputTextArea class="form-control" @bind-Value="currentSettings.CompanyAddress" rows="3" />
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Tax Number</label>
+                                    <InputText class="form-control" @bind-Value="currentSettings.TaxNumber" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Currency & Tax -->
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#currencyCollapse">
+                                <i class="bi bi-currency-dollar me-2"></i> Currency & Tax
+                            </button>
+                        </h2>
+                        <div id="currencyCollapse" class="accordion-collapse collapse">
+                            <div class="accordion-body">
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">Default Currency</label>
+                                        <InputSelect class="form-select" @bind-Value="currentSettings.DefaultCurrency">
+                                            <option value="USD">USD - US Dollar</option>
+                                            <option value="EUR">EUR - Euro</option>
+                                            <option value="GBP">GBP - British Pound</option>
+                                            <option value="JPY">JPY - Japanese Yen</option>
+                                            <option value="AUD">AUD - Australian Dollar</option>
+                                            <option value="CAD">CAD - Canadian Dollar</option>
+                                            <option value="CHF">CHF - Swiss Franc</option>
+                                            <option value="CNY">CNY - Chinese Yuan</option>
+                                            <option value="INR">INR - Indian Rupee</option>
+                                            <option value="NZD">NZD - New Zealand Dollar</option>
+                                        </InputSelect>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">Currency Symbol</label>
+                                        <InputText class="form-control" @bind-Value="currentSettings.CurrencySymbol" />
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">Decimal Places</label>
+                                        <InputNumber class="form-control" @bind-Value="currentSettings.CurrencyDecimalPlaces" />
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">Default Tax Rate (%)</label>
+                                        <InputNumber class="form-control" @bind-Value="currentSettings.DefaultTaxRate" />
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Date Format</label>
+                                    <InputSelect class="form-select" @bind-Value="currentSettings.DateFormat">
+                                        <option value="MM/dd/yyyy">MM/dd/yyyy (US)</option>
+                                        <option value="dd/MM/yyyy">dd/MM/yyyy (EU)</option>
+                                        <option value="yyyy-MM-dd">yyyy-MM-dd (ISO)</option>
+                                        <option value="dd-MMM-yyyy">dd-MMM-yyyy</option>
+                                    </InputSelect>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Email Configuration -->
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#emailCollapse">
+                                <i class="bi bi-envelope me-2"></i> Email Configuration
+                            </button>
+                        </h2>
+                        <div id="emailCollapse" class="accordion-collapse collapse">
+                            <div class="accordion-body">
+                                <div class="mb-3">
+                                    <label class="form-label">From Name</label>
+                                    <InputText class="form-control" @bind-Value="currentSettings.EmailFromName" placeholder="Your Company" />
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">From Email Address</label>
+                                    <InputText class="form-control" @bind-Value="currentSettings.EmailFromAddress" placeholder="noreply@yourcompany.com" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Payment Integration -->
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#paymentCollapse">
+                                <i class="bi bi-credit-card me-2"></i> Payment Integration
+                            </button>
+                        </h2>
+                        <div id="paymentCollapse" class="accordion-collapse collapse">
+                            <div class="accordion-body">
+                                <div class="mb-3">
+                                    <div class="form-check form-switch">
+                                        <InputCheckbox class="form-check-input" @bind-Value="currentSettings.EnablePaymentIntegration" id="enablePayment" />
+                                        <label class="form-check-label" for="enablePayment">Enable Stripe Integration</label>
+                                    </div>
+                                </div>
+                                @if (currentSettings.EnablePaymentIntegration)
+                                {
+                                    <div class="mb-3">
+                                        <label class="form-label">Stripe Publishable Key</label>
+                                        <InputText class="form-control" @bind-Value="currentSettings.StripePublishableKey" placeholder="pk_test_..." />
+                                        <small class="form-text text-muted">Your public API key from Stripe</small>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Stripe Secret Key</label>
+                                        <InputText class="form-control" type="password" @bind-Value="currentSettings.StripeSecretKey" placeholder="sk_test_..." />
+                                        <small class="form-text text-muted">Your secret API key from Stripe (keep secure)</small>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- PDF Generation Settings -->
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#pdfCollapse">
+                                <i class="bi bi-file-pdf me-2"></i> PDF Generation Settings
+                            </button>
+                        </h2>
+                        <div id="pdfCollapse" class="accordion-collapse collapse">
+                            <div class="accordion-body">
+                                <!-- Page Layout -->
+                                <h6 class="mb-3 fw-bold">Page Layout</h6>
+                                <div class="row">
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label">Page Size</label>
+                                        <InputSelect class="form-select" @bind-Value="currentSettings.PdfPageSize">
+                                            <option value="A4">A4 (210 × 297 mm)</option>
+                                            <option value="Letter">Letter (8.5 × 11 in)</option>
+                                            <option value="Legal">Legal (8.5 × 14 in)</option>
+                                        </InputSelect>
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label">Orientation</label>
+                                        <InputSelect class="form-select" @bind-Value="currentSettings.PdfOrientation">
+                                            <option value="Portrait">Portrait</option>
+                                            <option value="Landscape">Landscape</option>
+                                        </InputSelect>
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label">Font Family</label>
+                                        <InputSelect class="form-select" @bind-Value="currentSettings.PdfFontFamily">
+                                            <option value="Arial">Arial</option>
+                                            <option value="Helvetica">Helvetica</option>
+                                            <option value="Times New Roman">Times New Roman</option>
+                                            <option value="Courier">Courier</option>
+                                        </InputSelect>
+                                    </div>
+                                </div>
+
+                                <!-- Margins -->
+                                <h6 class="mb-3 fw-bold mt-3">Margins (mm)</h6>
+                                <div class="row">
+                                    <div class="col-md-3 mb-3">
+                                        <label class="form-label">Top</label>
+                                        <InputNumber class="form-control" @bind-Value="currentSettings.PdfMarginTop" />
+                                    </div>
+                                    <div class="col-md-3 mb-3">
+                                        <label class="form-label">Bottom</label>
+                                        <InputNumber class="form-control" @bind-Value="currentSettings.PdfMarginBottom" />
+                                    </div>
+                                    <div class="col-md-3 mb-3">
+                                        <label class="form-label">Left</label>
+                                        <InputNumber class="form-control" @bind-Value="currentSettings.PdfMarginLeft" />
+                                    </div>
+                                    <div class="col-md-3 mb-3">
+                                        <label class="form-label">Right</label>
+                                        <InputNumber class="form-control" @bind-Value="currentSettings.PdfMarginRight" />
+                                    </div>
+                                </div>
+
+                                <!-- Logo Settings -->
+                                <h6 class="mb-3 fw-bold mt-3">Logo Settings</h6>
+                                <div class="mb-3">
+                                    <div class="form-check form-switch">
+                                        <InputCheckbox class="form-check-input" @bind-Value="currentSettings.PdfShowLogo" id="showLogo" />
+                                        <label class="form-check-label" for="showLogo">Show Logo on PDFs</label>
+                                    </div>
+                                    <small class="form-text text-muted">Logo image can be configured in Branding page</small>
+                                </div>
+                                @if (currentSettings.PdfShowLogo)
+                                {
+                                    <div class="row">
+                                        <div class="col-md-4 mb-3">
+                                            <label class="form-label">Logo Position</label>
+                                            <InputSelect class="form-select" @bind-Value="currentSettings.PdfLogoPosition">
+                                                <option value="TopLeft">Top Left</option>
+                                                <option value="TopCenter">Top Center</option>
+                                                <option value="TopRight">Top Right</option>
+                                            </InputSelect>
+                                        </div>
+                                        <div class="col-md-4 mb-3">
+                                            <label class="form-label">Max Width (px)</label>
+                                            <InputNumber class="form-control" @bind-Value="currentSettings.PdfLogoMaxWidth" />
+                                        </div>
+                                        <div class="col-md-4 mb-3">
+                                            <label class="form-label">Max Height (px)</label>
+                                            <InputNumber class="form-control" @bind-Value="currentSettings.PdfLogoMaxHeight" />
+                                        </div>
+                                    </div>
+                                }
+
+                                <!-- Header & Footer -->
+                                <h6 class="mb-3 fw-bold mt-3">Header & Footer</h6>
+                                <div class="mb-3">
+                                    <div class="form-check form-switch mb-2">
+                                        <InputCheckbox class="form-check-input" @bind-Value="currentSettings.PdfShowHeader" id="showHeader" />
+                                        <label class="form-check-label" for="showHeader">Show Header</label>
+                                    </div>
+                                    @if (currentSettings.PdfShowHeader)
+                                    {
+                                        <InputTextArea class="form-control" @bind-Value="currentSettings.PdfHeaderText" 
+                                                     placeholder="Custom header text (optional)" rows="2" />
+                                    }
+                                </div>
+                                <div class="mb-3">
+                                    <div class="form-check form-switch mb-2">
+                                        <InputCheckbox class="form-check-input" @bind-Value="currentSettings.PdfShowFooter" id="showFooter" />
+                                        <label class="form-check-label" for="showFooter">Show Footer</label>
+                                    </div>
+                                    @if (currentSettings.PdfShowFooter)
+                                    {
+                                        <InputTextArea class="form-control" @bind-Value="currentSettings.PdfFooterText" 
+                                                     placeholder="Custom footer text (optional)" rows="2" />
+                                    }
+                                </div>
+
+                                <!-- Page Numbers -->
+                                <h6 class="mb-3 fw-bold mt-3">Page Numbers</h6>
+                                <div class="mb-3">
+                                    <div class="form-check form-switch mb-2">
+                                        <InputCheckbox class="form-check-input" @bind-Value="currentSettings.PdfShowPageNumbers" id="showPageNum" />
+                                        <label class="form-check-label" for="showPageNum">Show Page Numbers</label>
+                                    </div>
+                                    @if (currentSettings.PdfShowPageNumbers)
+                                    {
+                                        <InputText class="form-control" @bind-Value="currentSettings.PdfPageNumberFormat" 
+                                                 placeholder="Page {0} of {1}" />
+                                        <small class="form-text text-muted">Use {0} for current page and {1} for total pages</small>
+                                    }
+                                </div>
+
+                                <!-- Styling -->
+                                <h6 class="mb-3 fw-bold mt-3">Styling</h6>
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">Font Size (pt)</label>
+                                        <InputNumber class="form-control" @bind-Value="currentSettings.PdfFontSize" min="8" max="16" />
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">Primary Color (Hex)</label>
+                                        <InputText class="form-control" @bind-Value="currentSettings.PdfPrimaryColor" placeholder="#2563eb" />
+                                        <small class="form-text text-muted">Used for accents and borders</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-4 d-flex justify-content-end gap-2">
+                    <button type="button" class="btn btn-secondary" @onclick="CloseModal">Cancel</button>
+                    <button type="submit" class="btn btn-success">
+                        <i class="bi bi-check-circle"></i> Save Settings
+                    </button>
+                </div>
+            </EditForm>
+        </Body>
+    </ModalDialog>
+}
+
+<style>
+    .page-header {
+        margin-bottom: 2rem;
+    }
+
+    .page-title {
+        font-size: 2rem;
+        font-weight: 700;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 0.5rem;
+    }
+
+    .settings-card {
+        background: white;
+        border-radius: 12px;
+        padding: 2rem;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        height: 100%;
+    }
+
+    .settings-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+    }
+
+    .card-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 12px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 1.5rem;
+        color: white;
+        font-size: 1.75rem;
+    }
+
+    .card-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        margin-bottom: 1.5rem;
+        color: #2c3e50;
+    }
+
+    .settings-details {
+        margin-bottom: 1rem;
+    }
+
+    .detail-item {
+        padding: 0.75rem 0;
+        border-bottom: 1px solid #e9ecef;
+    }
+
+    .detail-item:last-child {
+        border-bottom: none;
+    }
+
+    .detail-item label {
+        display: block;
+        font-size: 0.875rem;
+        color: #6c757d;
+        margin-bottom: 0.25rem;
+        font-weight: 500;
+    }
+
+    .detail-value {
+        font-size: 1rem;
+        color: #2c3e50;
+        font-weight: 500;
+    }
+
+    .accordion-button {
+        background-color: #f8f9fa;
+        color: #2c3e50;
+        font-weight: 600;
+    }
+
+    .accordion-button:not(.collapsed) {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+
+    .accordion-button:focus {
+        box-shadow: none;
+        border-color: rgba(102, 126, 234, 0.5);
+    }
+</style>
+
+@code {
+    private SystemSettings? settings;
+    private SystemSettings currentSettings = new();
+    private bool loading = true;
+    private bool showModal = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadSettings();
+    }
+
+    private async Task LoadSettings()
+    {
+        try
+        {
+            loading = true;
+            settings = await Http.GetFromJsonAsync<SystemSettings>("api/systemsettings");
+            
+            if (settings == null)
+            {
+                // Create default settings
+                settings = new SystemSettings
+                {
+                    TenantId = 1,
+                    DefaultCurrency = "USD",
+                    CurrencySymbol = "$",
+                    CurrencyDecimalPlaces = 2,
+                    DateFormat = "MM/dd/yyyy",
+                    CompanyName = "My Company",
+                    DefaultTaxRate = 10,
+                    CreatedDate = DateTime.UtcNow
+                };
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading settings: {ex.Message}");
+        }
+        finally
+        {
+            loading = false;
+        }
+    }
+
+    private void ShowEditModal()
+    {
+        currentSettings = new SystemSettings
+        {
+            Id = settings?.Id ?? 0,
+            TenantId = settings?.TenantId ?? 1,
+            DefaultCurrency = settings?.DefaultCurrency ?? "USD",
+            CurrencySymbol = settings?.CurrencySymbol ?? "$",
+            CurrencyDecimalPlaces = settings?.CurrencyDecimalPlaces ?? 2,
+            DateFormat = settings?.DateFormat ?? "MM/dd/yyyy",
+            CompanyName = settings?.CompanyName ?? "",
+            CompanyAddress = settings?.CompanyAddress,
+            TaxNumber = settings?.TaxNumber,
+            DefaultTaxRate = settings?.DefaultTaxRate ?? 0,
+            EmailFromName = settings?.EmailFromName,
+            EmailFromAddress = settings?.EmailFromAddress,
+            EnablePaymentIntegration = settings?.EnablePaymentIntegration ?? false,
+            StripePublishableKey = settings?.StripePublishableKey,
+            StripeSecretKey = settings?.StripeSecretKey,
+            CreatedDate = settings?.CreatedDate ?? DateTime.UtcNow
+        };
+        showModal = true;
+    }
+
+    private void CloseModal()
+    {
+        showModal = false;
+    }
+
+    private async Task SaveSettings()
+    {
+        try
+        {
+            currentSettings.LastModifiedDate = DateTime.UtcNow;
+            
+            if (currentSettings.Id == 0)
+            {
+                var response = await Http.PostAsJsonAsync("api/systemsettings", currentSettings);
+                if (response.IsSuccessStatusCode)
+                {
+                    settings = await response.Content.ReadFromJsonAsync<SystemSettings>();
+                }
+            }
+            else
+            {
+                var response = await Http.PutAsJsonAsync($"api/systemsettings/{currentSettings.Id}", currentSettings);
+                if (response.IsSuccessStatusCode)
+                {
+                    settings = currentSettings;
+                }
+            }
+            
+            CloseModal();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error saving settings: {ex.Message}");
+        }
+    }
+}

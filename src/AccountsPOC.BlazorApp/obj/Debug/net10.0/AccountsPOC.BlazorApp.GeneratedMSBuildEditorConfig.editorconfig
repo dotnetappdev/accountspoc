@@ -1,0 +1,159 @@
+is_global = true
+build_property.TargetFramework = net10.0
+build_property.TargetFrameworkIdentifier = .NETCoreApp
+build_property.TargetFrameworkVersion = v10.0
+build_property.TargetPlatformMinVersion = 
+build_property.UsingMicrosoftNETSdkWeb = true
+build_property.ProjectTypeGuids = 
+build_property.InvariantGlobalization = 
+build_property.PlatformNeutralAssembly = 
+build_property.EnforceExtendedAnalyzerRules = 
+build_property._SupportedPlatformList = Linux,macOS,Windows
+build_property.RootNamespace = AccountsPOC.BlazorApp
+build_property.RootNamespace = AccountsPOC.BlazorApp
+build_property.ProjectDir = /home/runner/work/accountspoc/accountspoc/src/AccountsPOC.BlazorApp/
+build_property.EnableComHosting = 
+build_property.EnableGeneratedComInterfaceComImportInterop = 
+build_property.RazorLangVersion = 9.0
+build_property.SupportLocalizedComponentNames = 
+build_property.GenerateRazorMetadataSourceChecksumAttributes = 
+build_property.MSBuildProjectDirectory = /home/runner/work/accountspoc/accountspoc/src/AccountsPOC.BlazorApp
+build_property._RazorSourceGeneratorDebug = 
+build_property.EffectiveAnalysisLevelStyle = 10.0
+build_property.EnableCodeStyleSeverity = 
+
+[/home/runner/work/accountspoc/accountspoc/src/AccountsPOC.BlazorApp/Components/App.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9BcHAucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/runner/work/accountspoc/accountspoc/src/AccountsPOC.BlazorApp/Components/Layout/ModernNavMenu.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9MYXlvdXQvTW9kZXJuTmF2TWVudS5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/runner/work/accountspoc/accountspoc/src/AccountsPOC.BlazorApp/Components/Layout/ThemeToggle.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9MYXlvdXQvVGhlbWVUb2dnbGUucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/runner/work/accountspoc/accountspoc/src/AccountsPOC.BlazorApp/Components/Pages/ApiKeyManagement.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9QYWdlcy9BcGlLZXlNYW5hZ2VtZW50LnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/runner/work/accountspoc/accountspoc/src/AccountsPOC.BlazorApp/Components/Pages/BankAccounts.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9QYWdlcy9CYW5rQWNjb3VudHMucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/runner/work/accountspoc/accountspoc/src/AccountsPOC.BlazorApp/Components/Pages/BillOfMaterials.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9QYWdlcy9CaWxsT2ZNYXRlcmlhbHMucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/runner/work/accountspoc/accountspoc/src/AccountsPOC.BlazorApp/Components/Pages/Branding.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9QYWdlcy9CcmFuZGluZy5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/runner/work/accountspoc/accountspoc/src/AccountsPOC.BlazorApp/Components/Pages/ConfigurationSettings.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9QYWdlcy9Db25maWd1cmF0aW9uU2V0dGluZ3MucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/runner/work/accountspoc/accountspoc/src/AccountsPOC.BlazorApp/Components/Pages/Counter.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9QYWdlcy9Db3VudGVyLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/runner/work/accountspoc/accountspoc/src/AccountsPOC.BlazorApp/Components/Pages/Customers.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9QYWdlcy9DdXN0b21lcnMucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/runner/work/accountspoc/accountspoc/src/AccountsPOC.BlazorApp/Components/Pages/CustomFields.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9QYWdlcy9DdXN0b21GaWVsZHMucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/runner/work/accountspoc/accountspoc/src/AccountsPOC.BlazorApp/Components/Pages/EmailTemplates.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9QYWdlcy9FbWFpbFRlbXBsYXRlcy5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/runner/work/accountspoc/accountspoc/src/AccountsPOC.BlazorApp/Components/Pages/Error.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9QYWdlcy9FcnJvci5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/runner/work/accountspoc/accountspoc/src/AccountsPOC.BlazorApp/Components/Pages/ExchangeRates.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9QYWdlcy9FeGNoYW5nZVJhdGVzLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/runner/work/accountspoc/accountspoc/src/AccountsPOC.BlazorApp/Components/Pages/Home.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9QYWdlcy9Ib21lLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/runner/work/accountspoc/accountspoc/src/AccountsPOC.BlazorApp/Components/Pages/InvoicePayment.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9QYWdlcy9JbnZvaWNlUGF5bWVudC5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/runner/work/accountspoc/accountspoc/src/AccountsPOC.BlazorApp/Components/Pages/NotFound.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9QYWdlcy9Ob3RGb3VuZC5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/runner/work/accountspoc/accountspoc/src/AccountsPOC.BlazorApp/Components/Pages/PaymentProviderConfigs.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9QYWdlcy9QYXltZW50UHJvdmlkZXJDb25maWdzLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/runner/work/accountspoc/accountspoc/src/AccountsPOC.BlazorApp/Components/Pages/PriceLists.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9QYWdlcy9QcmljZUxpc3RzLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/runner/work/accountspoc/accountspoc/src/AccountsPOC.BlazorApp/Components/Pages/Products.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9QYWdlcy9Qcm9kdWN0cy5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/runner/work/accountspoc/accountspoc/src/AccountsPOC.BlazorApp/Components/Pages/SalesInvoices.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9QYWdlcy9TYWxlc0ludm9pY2VzLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/runner/work/accountspoc/accountspoc/src/AccountsPOC.BlazorApp/Components/Pages/SalesOrders.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9QYWdlcy9TYWxlc09yZGVycy5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/runner/work/accountspoc/accountspoc/src/AccountsPOC.BlazorApp/Components/Pages/Settings.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9QYWdlcy9TZXR0aW5ncy5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/runner/work/accountspoc/accountspoc/src/AccountsPOC.BlazorApp/Components/Pages/StockItems.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9QYWdlcy9TdG9ja0l0ZW1zLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/runner/work/accountspoc/accountspoc/src/AccountsPOC.BlazorApp/Components/Pages/TaxExport.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9QYWdlcy9UYXhFeHBvcnQucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/runner/work/accountspoc/accountspoc/src/AccountsPOC.BlazorApp/Components/Pages/Warehouses.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9QYWdlcy9XYXJlaG91c2VzLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/runner/work/accountspoc/accountspoc/src/AccountsPOC.BlazorApp/Components/Pages/Weather.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9QYWdlcy9XZWF0aGVyLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/runner/work/accountspoc/accountspoc/src/AccountsPOC.BlazorApp/Components/Routes.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9Sb3V0ZXMucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/runner/work/accountspoc/accountspoc/src/AccountsPOC.BlazorApp/Components/Shared/CurrencyInput.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9TaGFyZWQvQ3VycmVuY3lJbnB1dC5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/runner/work/accountspoc/accountspoc/src/AccountsPOC.BlazorApp/Components/Shared/ModalDialog.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9TaGFyZWQvTW9kYWxEaWFsb2cucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/runner/work/accountspoc/accountspoc/src/AccountsPOC.BlazorApp/Components/_Imports.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9fSW1wb3J0cy5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/runner/work/accountspoc/accountspoc/src/AccountsPOC.BlazorApp/Components/Layout/MainLayout.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9MYXlvdXQvTWFpbkxheW91dC5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = b-0xnmx1i9tw
+
+[/home/runner/work/accountspoc/accountspoc/src/AccountsPOC.BlazorApp/Components/Layout/NavMenu.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9MYXlvdXQvTmF2TWVudS5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = b-h6djlikj61
+
+[/home/runner/work/accountspoc/accountspoc/src/AccountsPOC.BlazorApp/Components/Layout/ReconnectModal.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9MYXlvdXQvUmVjb25uZWN0TW9kYWwucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = b-bb7n0r8jsj

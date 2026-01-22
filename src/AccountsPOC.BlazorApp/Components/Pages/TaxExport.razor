@@ -1,0 +1,383 @@
+@page "/tax-export"
+@using System.Net.Http.Json
+@inject HttpClient Http
+@inject NavigationManager NavigationManager
+@rendermode InteractiveServer
+
+<PageTitle>UK Tax Export</PageTitle>
+
+<div class="container-fluid">
+    <h1 class="mb-4">
+        <i class="bi bi-file-earmark-spreadsheet"></i> UK Tax Compliance Export
+    </h1>
+
+    <div class="alert alert-info mb-4">
+        <h5 class="alert-heading">
+            <i class="bi bi-info-circle-fill"></i> HMRC Making Tax Digital (MTD) Compliance
+        </h5>
+        <p class="mb-2">
+            Use this page to generate reports for HMRC Making Tax Digital (MTD) VAT submissions and audit compliance.
+            All exports are in CSV format for easy integration with HMRC's MTD-compatible software.
+        </p>
+        <hr>
+        <p class="mb-0">
+            <strong>Important:</strong> Ensure your VAT period dates are correct before exporting. 
+            MTD submissions must be made within one calendar month and seven days of the end of your VAT period.
+        </p>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+            <h5><i class="bi bi-calendar-range"></i> Select VAT Period</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">Start Date</label>
+                    <input type="date" class="form-control" @bind="startDate" />
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">End Date</label>
+                    <input type="date" class="form-control" @bind="endDate" />
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">Quick Select</label>
+                    <select class="form-select" @onchange="OnQuickPeriodChange">
+                        <option value="">-- Select Period --</option>
+                        <option value="current-quarter">Current Quarter</option>
+                        <option value="last-quarter">Last Quarter</option>
+                        <option value="current-month">Current Month</option>
+                        <option value="last-month">Last Month</option>
+                        <option value="current-year">Current Year</option>
+                        <option value="last-year">Last Year</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header bg-success text-white">
+            <h5><i class="bi bi-download"></i> Export Options</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <div class="card h-100 border-primary">
+                        <div class="card-body text-center">
+                            <i class="bi bi-file-earmark-excel fs-1 text-primary"></i>
+                            <h6 class="mt-3">MTD VAT Return</h6>
+                            <p class="text-muted small">Export VAT return data in HMRC-compatible CSV format</p>
+                            <button class="btn btn-primary w-100" @onclick="ExportMTDVATReturn" disabled="@(loading)">
+                                @if (loadingVAT)
+                                {
+                                    <span class="spinner-border spinner-border-sm me-2"></span>
+                                }
+                                <i class="bi bi-download"></i> Export VAT Return
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <div class="card h-100 border-info">
+                        <div class="card-body text-center">
+                            <i class="bi bi-file-earmark-text fs-1 text-info"></i>
+                            <h6 class="mt-3">HMRC Audit File</h6>
+                            <p class="text-muted small">Detailed transaction audit trail for HMRC compliance</p>
+                            <button class="btn btn-info w-100" @onclick="ExportHMRCAuditFile" disabled="@(loading)">
+                                @if (loadingAudit)
+                                {
+                                    <span class="spinner-border spinner-border-sm me-2"></span>
+                                }
+                                <i class="bi bi-download"></i> Export Audit File
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <div class="card h-100 border-warning">
+                        <div class="card-body text-center">
+                            <i class="bi bi-bar-chart fs-1 text-warning"></i>
+                            <h6 class="mt-3">VAT Summary</h6>
+                            <p class="text-muted small">View VAT summary statistics for the selected period</p>
+                            <button class="btn btn-warning w-100" @onclick="ViewVATSummary" disabled="@(loading)">
+                                @if (loadingSummary)
+                                {
+                                    <span class="spinner-border spinner-border-sm me-2"></span>
+                                }
+                                <i class="bi bi-eye"></i> View Summary
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @if (showSummary && vatSummary != null)
+    {
+        <div class="card mb-4 border-success">
+            <div class="card-header bg-success text-white">
+                <h5>
+                    <i class="bi bi-calculator"></i> VAT Summary 
+                    <small class="float-end">@startDate.ToString("dd/MM/yyyy") - @endDate.ToString("dd/MM/yyyy")</small>
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6 class="text-primary mb-3">VAT Output (Sales)</h6>
+                        <table class="table table-sm">
+                            <tr>
+                                <td>Total Sales (excl. VAT)</td>
+                                <td class="text-end"><strong>@vatSummary.TotalSalesExVAT.ToString("C")</strong></td>
+                            </tr>
+                            <tr>
+                                <td>VAT on Sales (20%)</td>
+                                <td class="text-end"><strong>@vatSummary.VATOnSales.ToString("C")</strong></td>
+                            </tr>
+                            <tr class="table-primary">
+                                <td><strong>Total Sales (inc. VAT)</strong></td>
+                                <td class="text-end"><strong>@vatSummary.TotalSalesIncVAT.ToString("C")</strong></td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="text-danger mb-3">VAT Input (Purchases)</h6>
+                        <table class="table table-sm">
+                            <tr>
+                                <td>Total Purchases (excl. VAT)</td>
+                                <td class="text-end"><strong>@vatSummary.TotalPurchasesExVAT.ToString("C")</strong></td>
+                            </tr>
+                            <tr>
+                                <td>VAT on Purchases (20%)</td>
+                                <td class="text-end"><strong>@vatSummary.VATOnPurchases.ToString("C")</strong></td>
+                            </tr>
+                            <tr class="table-danger">
+                                <td><strong>Total Purchases (inc. VAT)</strong></td>
+                                <td class="text-end"><strong>@vatSummary.TotalPurchasesIncVAT.ToString("C")</strong></td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+                <hr>
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="card @(vatSummary.VATPayable >= 0 ? "bg-light border-success" : "bg-light border-info")">
+                            <div class="card-body">
+                                <h5 class="card-title">
+                                    @if (vatSummary.VATPayable >= 0)
+                                    {
+                                        <i class="bi bi-cash-coin text-success"></i>
+                                        <span class="text-success">VAT Payable to HMRC</span>
+                                    }
+                                    else
+                                    {
+                                        <i class="bi bi-cash-stack text-info"></i>
+                                        <span class="text-info">VAT Refund Due from HMRC</span>
+                                    }
+                                </h5>
+                                <h2 class="@(vatSummary.VATPayable >= 0 ? "text-success" : "text-info")">
+                                    @Math.Abs(vatSummary.VATPayable).ToString("C")
+                                </h2>
+                                <p class="text-muted mb-0">
+                                    Box 5 on VAT Return (Output VAT - Input VAT)
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+    <div class="card">
+        <div class="card-header">
+            <h5><i class="bi bi-book"></i> Export Instructions</h5>
+        </div>
+        <div class="card-body">
+            <h6 class="text-primary">MTD VAT Return CSV</h6>
+            <p>
+                This export generates a CSV file containing your VAT return figures in the format required for HMRC Making Tax Digital submissions.
+                The file includes the nine boxes required for your VAT return:
+            </p>
+            <ul class="small">
+                <li><strong>Box 1:</strong> VAT due on sales and other outputs</li>
+                <li><strong>Box 2:</strong> VAT due on acquisitions from other EC Member States</li>
+                <li><strong>Box 3:</strong> Total VAT due (Box 1 + Box 2)</li>
+                <li><strong>Box 4:</strong> VAT reclaimed on purchases and other inputs</li>
+                <li><strong>Box 5:</strong> Net VAT to be paid or reclaimed (Box 3 - Box 4)</li>
+                <li><strong>Box 6:</strong> Total value of sales and all other outputs excluding VAT</li>
+                <li><strong>Box 7:</strong> Total value of purchases and all other inputs excluding VAT</li>
+                <li><strong>Box 8:</strong> Total value of dispatches of goods to other EC Member States excluding VAT</li>
+                <li><strong>Box 9:</strong> Total value of acquisitions from other EC Member States excluding VAT</li>
+            </ul>
+
+            <h6 class="text-primary mt-4">HMRC Audit File CSV</h6>
+            <p>
+                This export provides a detailed transaction-level audit trail including:
+            </p>
+            <ul class="small">
+                <li>All sales and purchase transactions for the period</li>
+                <li>Transaction dates, references, and descriptions</li>
+                <li>Customer/Supplier information</li>
+                <li>Net amounts, VAT amounts, and gross totals</li>
+                <li>VAT rates applied</li>
+            </ul>
+            <p class="small text-muted">
+                Keep this file as part of your digital records. HMRC may request this information during an audit or compliance check.
+            </p>
+
+            <h6 class="text-primary mt-4">Important Notes</h6>
+            <ul class="small">
+                <li>Exports are based on the invoice date, not the payment date (accruals basis)</li>
+                <li>Ensure all transactions for the period are posted before exporting</li>
+                <li>VAT rate is currently set at 20% (standard UK rate)</li>
+                <li>The CSV files can be imported into MTD-compatible accounting software or bridging software</li>
+                <li>Store all export files securely for at least 6 years as required by HMRC</li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+@code {
+    private DateTime startDate = new DateTime(DateTime.Today.Year, DateTime.Today.Month, 1).AddMonths(-1);
+    private DateTime endDate = new DateTime(DateTime.Today.Year, DateTime.Today.Month, 1).AddDays(-1);
+    private bool loading = false;
+    private bool loadingVAT = false;
+    private bool loadingAudit = false;
+    private bool loadingSummary = false;
+    private bool showSummary = false;
+    private VATSummary? vatSummary;
+
+    private async Task ExportMTDVATReturn()
+    {
+        loadingVAT = true;
+        loading = true;
+        try
+        {
+            var response = await Http.GetAsync($"api/Tax/export-vat-return?startDate={startDate:yyyy-MM-dd}&endDate={endDate:yyyy-MM-dd}");
+            if (response.IsSuccessStatusCode)
+            {
+                var content = await response.Content.ReadAsByteArrayAsync();
+                var base64 = Convert.ToBase64String(content);
+                await DownloadFile("VAT_Return_" + startDate.ToString("yyyyMMdd") + "_" + endDate.ToString("yyyyMMdd") + ".csv", base64);
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error exporting VAT return: {ex.Message}");
+        }
+        finally
+        {
+            loadingVAT = false;
+            loading = false;
+        }
+    }
+
+    private async Task ExportHMRCAuditFile()
+    {
+        loadingAudit = true;
+        loading = true;
+        try
+        {
+            var response = await Http.GetAsync($"api/Tax/export-audit-file?startDate={startDate:yyyy-MM-dd}&endDate={endDate:yyyy-MM-dd}");
+            if (response.IsSuccessStatusCode)
+            {
+                var content = await response.Content.ReadAsByteArrayAsync();
+                var base64 = Convert.ToBase64String(content);
+                await DownloadFile("HMRC_Audit_" + startDate.ToString("yyyyMMdd") + "_" + endDate.ToString("yyyyMMdd") + ".csv", base64);
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error exporting audit file: {ex.Message}");
+        }
+        finally
+        {
+            loadingAudit = false;
+            loading = false;
+        }
+    }
+
+    private async Task ViewVATSummary()
+    {
+        loadingSummary = true;
+        loading = true;
+        try
+        {
+            vatSummary = await Http.GetFromJsonAsync<VATSummary>($"api/Tax/vat-summary?startDate={startDate:yyyy-MM-dd}&endDate={endDate:yyyy-MM-dd}");
+            showSummary = true;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading VAT summary: {ex.Message}");
+        }
+        finally
+        {
+            loadingSummary = false;
+            loading = false;
+        }
+    }
+
+    private void OnQuickPeriodChange(ChangeEventArgs e)
+    {
+        var value = e.Value?.ToString();
+        var today = DateTime.Today;
+
+        switch (value)
+        {
+            case "current-quarter":
+                var currentQuarter = (today.Month - 1) / 3;
+                startDate = new DateTime(today.Year, currentQuarter * 3 + 1, 1);
+                endDate = startDate.AddMonths(3).AddDays(-1);
+                break;
+            case "last-quarter":
+                var lastQuarter = (today.Month - 1) / 3 - 1;
+                if (lastQuarter < 0)
+                {
+                    startDate = new DateTime(today.Year - 1, 10, 1);
+                    endDate = new DateTime(today.Year - 1, 12, 31);
+                }
+                else
+                {
+                    startDate = new DateTime(today.Year, lastQuarter * 3 + 1, 1);
+                    endDate = startDate.AddMonths(3).AddDays(-1);
+                }
+                break;
+            case "current-month":
+                startDate = new DateTime(today.Year, today.Month, 1);
+                endDate = startDate.AddMonths(1).AddDays(-1);
+                break;
+            case "last-month":
+                startDate = new DateTime(today.Year, today.Month, 1).AddMonths(-1);
+                endDate = new DateTime(today.Year, today.Month, 1).AddDays(-1);
+                break;
+            case "current-year":
+                startDate = new DateTime(today.Year, 1, 1);
+                endDate = new DateTime(today.Year, 12, 31);
+                break;
+            case "last-year":
+                startDate = new DateTime(today.Year - 1, 1, 1);
+                endDate = new DateTime(today.Year - 1, 12, 31);
+                break;
+        }
+    }
+
+    private async Task DownloadFile(string filename, string base64Content)
+    {
+        // Note: In a real implementation, this would use JavaScript interop to trigger download
+        Console.WriteLine($"Downloading {filename}");
+    }
+
+    private class VATSummary
+    {
+        public decimal TotalSalesExVAT { get; set; }
+        public decimal VATOnSales { get; set; }
+        public decimal TotalSalesIncVAT { get; set; }
+        public decimal TotalPurchasesExVAT { get; set; }
+        public decimal VATOnPurchases { get; set; }
+        public decimal TotalPurchasesIncVAT { get; set; }
+        public decimal VATPayable { get; set; }
+    }
+}

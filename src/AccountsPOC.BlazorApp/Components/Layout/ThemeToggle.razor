@@ -1,0 +1,35 @@
+@inject IJSRuntime JS
+
+<button class="theme-toggle" @onclick="ToggleTheme" title="Toggle Theme">
+    @if (isDarkMode)
+    {
+        <i class="bi bi-sun-fill"></i>
+    }
+    else
+    {
+        <i class="bi bi-moon-fill"></i>
+    }
+</button>
+
+@code {
+    private bool isDarkMode = true;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var theme = await JS.InvokeAsync<string>("localStorage.getItem", "theme");
+            isDarkMode = theme != "light";
+            StateHasChanged();
+        }
+    }
+
+    private async Task ToggleTheme()
+    {
+        isDarkMode = !isDarkMode;
+        var theme = isDarkMode ? "dark" : "light";
+        
+        await JS.InvokeVoidAsync("localStorage.setItem", "theme", theme);
+        await JS.InvokeVoidAsync("eval", $"document.documentElement.setAttribute('data-theme', '{theme}')");
+    }
+}

@@ -1,0 +1,818 @@
+@page "/apikeymanagement"
+@using System.Net.Http.Json
+@using AccountsPOC.BlazorApp.Models
+@using System.Text.Json
+@inject HttpClient Http
+@inject IJSRuntime JSRuntime
+@rendermode InteractiveServer
+
+<PageTitle>API Key Management</PageTitle>
+
+<div class="container-fluid">
+    <div class="page-header">
+        <h1 class="page-title">
+            <i class="bi bi-key-fill"></i> API Key Management
+        </h1>
+        <p class="text-muted">Securely manage API keys for external services</p>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col">
+            <button class="btn btn-primary gradient-btn" @onclick="ShowAddModal">
+                <i class="bi bi-plus-circle"></i> Add API Key
+            </button>
+        </div>
+    </div>
+
+    @if (loading)
+    {
+        <div class="text-center py-5">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+    }
+    else if (apiKeys == null || !apiKeys.Any())
+    {
+        <div class="empty-state">
+            <div class="empty-icon">
+                <i class="bi bi-key"></i>
+            </div>
+            <h3>No API Keys Configured</h3>
+            <p>Add your first API key to integrate with external services</p>
+            <button class="btn btn-primary gradient-btn" @onclick="ShowAddModal">
+                <i class="bi bi-plus-circle"></i> Add API Key
+            </button>
+        </div>
+    }
+    else
+    {
+        <div class="accordion" id="apiKeysAccordion">
+            @foreach (var group in apiKeys.GroupBy(k => k.ServiceName).OrderBy(g => g.Key))
+            {
+                var collapseId = $"collapse{group.Key.Replace(" ", "")}";
+                <div class="accordion-item service-group">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button @(expandedServices.Contains(group.Key) ? "" : "collapsed")" 
+                                type="button" 
+                                @onclick="() => ToggleService(group.Key)">
+                            <div class="service-header">
+                                <div class="service-icon">
+                                    <i class="bi @GetServiceIcon(group.Key)"></i>
+                                </div>
+                                <div class="service-info">
+                                    <span class="service-name">@group.Key</span>
+                                    <span class="service-count">@group.Count() key(s)</span>
+                                </div>
+                            </div>
+                        </button>
+                    </h2>
+                    <div class="accordion-collapse collapse @(expandedServices.Contains(group.Key) ? "show" : "")" 
+                         id="@collapseId">
+                        <div class="accordion-body">
+                            <div class="keys-list">
+                                @foreach (var key in group.OrderByDescending(k => k.CreatedDate))
+                                {
+                                    <div class="key-card">
+                                        <div class="key-header">
+                                            <div class="key-main-info">
+                                                <h4 class="key-name">@key.KeyName</h4>
+                                                <span class="key-type">@key.KeyType</span>
+                                            </div>
+                                            <div class="key-badges">
+                                                @if (key.IsActive)
+                                                {
+                                                    <span class="badge badge-success"><i class="bi bi-check-circle"></i> Active</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge badge-secondary"><i class="bi bi-x-circle"></i> Inactive</span>
+                                                }
+                                                
+                                                @if (key.Environment == "Test")
+                                                {
+                                                    <span class="badge badge-warning"><i class="bi bi-flask"></i> Test</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge badge-production"><i class="bi bi-shield-check"></i> Production</span>
+                                                }
+
+                                                @if (key.ExpiryDate.HasValue)
+                                                {
+                                                    var daysUntilExpiry = (key.ExpiryDate.Value - DateTime.UtcNow).Days;
+                                                    if (daysUntilExpiry < 0)
+                                                    {
+                                                        <span class="badge badge-expired"><i class="bi bi-exclamation-triangle"></i> Expired</span>
+                                                    }
+                                                    else if (daysUntilExpiry <= 30)
+                                                    {
+                                                        <span class="badge badge-expiring"><i class="bi bi-clock"></i> Expiring Soon</span>
+                                                    }
+                                                }
+                                            </div>
+                                        </div>
+
+                                        <div class="key-details">
+                                            @if (!string.IsNullOrEmpty(key.Description))
+                                            {
+                                                <div class="detail-row">
+                                                    <label><i class="bi bi-file-text"></i> Description</label>
+                                                    <span>@key.Description</span>
+                                                </div>
+                                            }
+                                            
+                                            <div class="detail-row">
+                                                <label><i class="bi bi-key"></i> Key Value</label>
+                                                <div class="key-value-container">
+                                                    @if (revealedKeys.Contains(key.Id))
+                                                    {
+                                                        <span class="key-value revealed">@key.KeyValue</span>
+                                                        <button class="btn btn-sm btn-link" @onclick="() => HideKey(key.Id)">
+                                                            <i class="bi bi-eye-slash"></i> Hide
+                                                        </button>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="key-value masked">@MaskKey(key.KeyValue)</span>
+                                                        <button class="btn btn-sm btn-link" @onclick="() => RevealKey(key.Id)">
+                                                            <i class="bi bi-eye"></i> Reveal
+                                                        </button>
+                                                    }
+                                                    <button class="btn btn-sm btn-link" @onclick="() => CopyToClipboard(key.KeyValue)">
+                                                        <i class="bi bi-clipboard"></i> Copy
+                                                    </button>
+                                                </div>
+                                            </div>
+
+                                            @if (key.LastUsed.HasValue)
+                                            {
+                                                <div class="detail-row">
+                                                    <label><i class="bi bi-clock-history"></i> Last Used</label>
+                                                    <span>@FormatLastUsed(key.LastUsed.Value)</span>
+                                                </div>
+                                            }
+
+                                            @if (key.ExpiryDate.HasValue)
+                                            {
+                                                <div class="detail-row">
+                                                    <label><i class="bi bi-calendar-x"></i> Expires</label>
+                                                    <span>@key.ExpiryDate.Value.ToString("MMM dd, yyyy")</span>
+                                                </div>
+                                            }
+
+                                            <div class="detail-row">
+                                                <label><i class="bi bi-calendar-plus"></i> Created</label>
+                                                <span>@key.CreatedDate.ToString("MMM dd, yyyy")</span>
+                                            </div>
+                                        </div>
+
+                                        <div class="key-actions">
+                                            <button class="btn btn-sm btn-outline-primary" @onclick="() => ShowEditModal(key)">
+                                                <i class="bi bi-pencil"></i> Edit
+                                            </button>
+                                            <button class="btn btn-sm btn-outline-warning" @onclick="() => RotateKey(key)">
+                                                <i class="bi bi-arrow-repeat"></i> Rotate
+                                            </button>
+                                            <button class="btn btn-sm btn-outline-danger" @onclick="() => DeleteKey(key.Id)">
+                                                <i class="bi bi-trash"></i> Delete
+                                            </button>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@if (showModal)
+{
+    <ModalDialog Title="@(editingKey != null ? "Edit API Key" : "Add API Key")" 
+                 IsVisible="@showModal" 
+                 OnClose="CloseModal"
+                 Size="lg">
+        <Body>
+            <EditForm Model="currentKey" OnValidSubmit="SaveKey">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Service Name <span class="text-danger">*</span></label>
+                        <InputSelect class="form-select" @bind-Value="currentKey.ServiceName">
+                            <option value="">Select Service</option>
+                            <option value="Stripe">Stripe</option>
+                            <option value="SendGrid">SendGrid</option>
+                            <option value="Twilio">Twilio</option>
+                            <option value="AWS">AWS</option>
+                            <option value="Azure">Azure</option>
+                            <option value="Google Cloud">Google Cloud</option>
+                            <option value="Mailchimp">Mailchimp</option>
+                            <option value="Slack">Slack</option>
+                            <option value="GitHub">GitHub</option>
+                            <option value="Other">Other</option>
+                        </InputSelect>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Key Name <span class="text-danger">*</span></label>
+                        <InputText class="form-control" @bind-Value="currentKey.KeyName" placeholder="Production API Key" />
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Key Type</label>
+                        <InputSelect class="form-select" @bind-Value="currentKey.KeyType">
+                            <option value="API Key">API Key</option>
+                            <option value="Secret Key">Secret Key</option>
+                            <option value="Access Token">Access Token</option>
+                            <option value="Client ID">Client ID</option>
+                            <option value="Client Secret">Client Secret</option>
+                            <option value="Bearer Token">Bearer Token</option>
+                        </InputSelect>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Environment <span class="text-danger">*</span></label>
+                        <InputSelect class="form-select" @bind-Value="currentKey.Environment">
+                            <option value="Test">Test</option>
+                            <option value="Production">Production</option>
+                        </InputSelect>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Key Value <span class="text-danger">*</span></label>
+                    <InputText class="form-control font-monospace" type="password" @bind-Value="currentKey.KeyValue" placeholder="Enter API key value" />
+                    <small class="form-text text-muted">The actual API key or token</small>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Description</label>
+                    <InputTextArea class="form-control" @bind-Value="currentKey.Description" rows="3" 
+                                  placeholder="Describe what this key is used for..." />
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Expiry Date</label>
+                        <InputDate class="form-control" @bind-Value="currentKey.ExpiryDate" />
+                        <small class="form-text text-muted">Optional: Set when this key expires</small>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Status</label>
+                        <div class="mt-2">
+                            <div class="form-check form-switch">
+                                <InputCheckbox class="form-check-input" @bind-Value="currentKey.IsActive" id="isActive" />
+                                <label class="form-check-label" for="isActive">Active</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-4 d-flex justify-content-end gap-2">
+                    <button type="button" class="btn btn-secondary" @onclick="CloseModal">Cancel</button>
+                    <button type="submit" class="btn btn-success gradient-btn">
+                        <i class="bi bi-check-circle"></i> Save API Key
+                    </button>
+                </div>
+            </EditForm>
+        </Body>
+    </ModalDialog>
+}
+
+<style>
+    .page-header {
+        margin-bottom: 2rem;
+    }
+
+    .page-title {
+        font-size: 2rem;
+        font-weight: 700;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 0.5rem;
+    }
+
+    .gradient-btn {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+        color: white;
+        font-weight: 600;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .gradient-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+    }
+
+    .empty-icon {
+        width: 100px;
+        height: 100px;
+        margin: 0 auto 2rem;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 3rem;
+        color: white;
+    }
+
+    .empty-state h3 {
+        color: #2c3e50;
+        margin-bottom: 1rem;
+    }
+
+    .empty-state p {
+        color: #6c757d;
+        margin-bottom: 2rem;
+    }
+
+    .service-group {
+        margin-bottom: 1rem;
+        border: none;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+    }
+
+    .service-group .accordion-header {
+        border: none;
+    }
+
+    .service-group .accordion-button {
+        background: white;
+        border: none;
+        padding: 1.5rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+    .service-group .accordion-button:not(.collapsed) {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        box-shadow: none;
+    }
+
+    .service-group .accordion-button:focus {
+        box-shadow: none;
+        border: none;
+    }
+
+    .service-header {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        width: 100%;
+    }
+
+    .service-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 12px;
+        background: rgba(255, 255, 255, 0.2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+    }
+
+    .accordion-button:not(.collapsed) .service-icon {
+        background: rgba(255, 255, 255, 0.3);
+    }
+
+    .accordion-button.collapsed .service-icon {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+
+    .service-info {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .service-name {
+        font-size: 1.125rem;
+        font-weight: 600;
+    }
+
+    .service-count {
+        font-size: 0.875rem;
+        opacity: 0.8;
+    }
+
+    .accordion-body {
+        padding: 1.5rem;
+        background-color: #f8f9fa;
+    }
+
+    .keys-list {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .key-card {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        border: 1px solid #e9ecef;
+    }
+
+    .key-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 1rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid #e9ecef;
+    }
+
+    .key-main-info {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+
+    .key-name {
+        font-size: 1.125rem;
+        font-weight: 600;
+        color: #2c3e50;
+        margin: 0;
+    }
+
+    .key-type {
+        font-size: 0.875rem;
+        color: #6c757d;
+        font-weight: 500;
+    }
+
+    .key-badges {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+    }
+
+    .badge {
+        padding: 0.375rem 0.75rem;
+        border-radius: 6px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+
+    .badge-success {
+        background-color: #d4edda;
+        color: #155724;
+    }
+
+    .badge-secondary {
+        background-color: #e9ecef;
+        color: #6c757d;
+    }
+
+    .badge-warning {
+        background-color: #fff3cd;
+        color: #856404;
+    }
+
+    .badge-production {
+        background-color: #d1ecf1;
+        color: #0c5460;
+    }
+
+    .badge-expired {
+        background-color: #f8d7da;
+        color: #721c24;
+    }
+
+    .badge-expiring {
+        background-color: #fff3cd;
+        color: #856404;
+    }
+
+    .key-details {
+        margin-bottom: 1rem;
+    }
+
+    .detail-row {
+        padding: 0.75rem 0;
+        border-bottom: 1px solid #e9ecef;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .detail-row:last-child {
+        border-bottom: none;
+    }
+
+    .detail-row label {
+        font-size: 0.875rem;
+        color: #6c757d;
+        font-weight: 500;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .detail-row > span {
+        font-size: 0.875rem;
+        color: #2c3e50;
+    }
+
+    .key-value-container {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .key-value {
+        font-family: monospace;
+        font-size: 0.875rem;
+        padding: 0.375rem 0.75rem;
+        border-radius: 6px;
+        background-color: #f8f9fa;
+    }
+
+    .key-value.masked {
+        color: #6c757d;
+    }
+
+    .key-value.revealed {
+        color: #2c3e50;
+        word-break: break-all;
+    }
+
+    .key-actions {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+        padding-top: 1rem;
+        border-top: 1px solid #e9ecef;
+    }
+
+    .font-monospace {
+        font-family: 'Courier New', Courier, monospace;
+    }
+</style>
+
+@code {
+    private List<ApiKey>? apiKeys;
+    private ApiKey currentKey = new();
+    private ApiKey? editingKey;
+    private bool loading = true;
+    private bool showModal = false;
+    private HashSet<string> expandedServices = new();
+    private HashSet<int> revealedKeys = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadApiKeys();
+    }
+
+    private async Task LoadApiKeys()
+    {
+        try
+        {
+            loading = true;
+            apiKeys = await Http.GetFromJsonAsync<List<ApiKey>>("api/apikeys");
+            if (apiKeys == null)
+            {
+                apiKeys = new List<ApiKey>();
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading API keys: {ex.Message}");
+            apiKeys = new List<ApiKey>();
+        }
+        finally
+        {
+            loading = false;
+        }
+    }
+
+    private void ToggleService(string serviceName)
+    {
+        if (expandedServices.Contains(serviceName))
+        {
+            expandedServices.Remove(serviceName);
+        }
+        else
+        {
+            expandedServices.Add(serviceName);
+        }
+    }
+
+    private void ShowAddModal()
+    {
+        editingKey = null;
+        currentKey = new ApiKey
+        {
+            TenantId = 1,
+            Environment = "Test",
+            IsActive = true,
+            KeyType = "API Key",
+            CreatedDate = DateTime.UtcNow
+        };
+        showModal = true;
+    }
+
+    private void ShowEditModal(ApiKey key)
+    {
+        editingKey = key;
+        currentKey = new ApiKey
+        {
+            Id = key.Id,
+            TenantId = key.TenantId,
+            ServiceName = key.ServiceName,
+            KeyName = key.KeyName,
+            KeyType = key.KeyType,
+            KeyValue = key.KeyValue,
+            Description = key.Description,
+            Environment = key.Environment,
+            IsActive = key.IsActive,
+            ExpiryDate = key.ExpiryDate,
+            LastUsed = key.LastUsed,
+            CreatedDate = key.CreatedDate
+        };
+        showModal = true;
+    }
+
+    private void CloseModal()
+    {
+        showModal = false;
+        editingKey = null;
+    }
+
+    private async Task SaveKey()
+    {
+        try
+        {
+            currentKey.LastModifiedDate = DateTime.UtcNow;
+
+            if (editingKey != null)
+            {
+                var response = await Http.PutAsJsonAsync($"api/apikeys/{currentKey.Id}", currentKey);
+                if (response.IsSuccessStatusCode)
+                {
+                    await LoadApiKeys();
+                }
+            }
+            else
+            {
+                var response = await Http.PostAsJsonAsync("api/apikeys", currentKey);
+                if (response.IsSuccessStatusCode)
+                {
+                    await LoadApiKeys();
+                }
+            }
+
+            CloseModal();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error saving API key: {ex.Message}");
+        }
+    }
+
+    private async Task DeleteKey(int id)
+    {
+        if (!await JSRuntime.InvokeAsync<bool>("confirm", "Are you sure you want to delete this API key?"))
+            return;
+
+        try
+        {
+            var response = await Http.DeleteAsync($"api/apikeys/{id}");
+            if (response.IsSuccessStatusCode)
+            {
+                await LoadApiKeys();
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error deleting API key: {ex.Message}");
+        }
+    }
+
+    private async Task RotateKey(ApiKey key)
+    {
+        if (!await JSRuntime.InvokeAsync<bool>("confirm", $"Are you sure you want to rotate the key for {key.KeyName}? The old key will be deactivated."))
+            return;
+
+        try
+        {
+            // In a real implementation, you would call an API endpoint to rotate the key
+            // For now, just show the edit modal
+            ShowEditModal(key);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error rotating API key: {ex.Message}");
+        }
+    }
+
+    private void RevealKey(int keyId)
+    {
+        revealedKeys.Add(keyId);
+    }
+
+    private void HideKey(int keyId)
+    {
+        revealedKeys.Remove(keyId);
+    }
+
+    private async Task CopyToClipboard(string? value)
+    {
+        if (string.IsNullOrEmpty(value))
+            return;
+
+        try
+        {
+            await JSRuntime.InvokeVoidAsync("navigator.clipboard.writeText", value);
+            // In a real implementation, show a toast notification
+            Console.WriteLine("Copied to clipboard");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error copying to clipboard: {ex.Message}");
+        }
+    }
+
+    private string MaskKey(string? key)
+    {
+        if (string.IsNullOrEmpty(key) || key.Length <= 8)
+            return "••••••••••••••••";
+
+        var first4 = key.Substring(0, Math.Min(4, key.Length));
+        var last4 = key.Length > 4 ? key.Substring(key.Length - 4) : "";
+        return $"{first4}••••••••{last4}";
+    }
+
+    private string GetServiceIcon(string serviceName)
+    {
+        return serviceName.ToLower() switch
+        {
+            "stripe" => "bi-stripe",
+            "sendgrid" => "bi-envelope-at",
+            "twilio" => "bi-phone",
+            "aws" => "bi-cloud",
+            "azure" => "bi-cloud-fill",
+            "google cloud" => "bi-google",
+            "mailchimp" => "bi-mailbox",
+            "slack" => "bi-slack",
+            "github" => "bi-github",
+            _ => "bi-key-fill"
+        };
+    }
+
+    private string FormatLastUsed(DateTime lastUsed)
+    {
+        var timeSpan = DateTime.UtcNow - lastUsed;
+        
+        if (timeSpan.TotalMinutes < 1)
+            return "Just now";
+        if (timeSpan.TotalMinutes < 60)
+            return $"{(int)timeSpan.TotalMinutes} minutes ago";
+        if (timeSpan.TotalHours < 24)
+            return $"{(int)timeSpan.TotalHours} hours ago";
+        if (timeSpan.TotalDays < 30)
+            return $"{(int)timeSpan.TotalDays} days ago";
+        
+        return lastUsed.ToString("MMM dd, yyyy");
+    }
+
+    public class ApiKey
+    {
+        public int Id { get; set; }
+        public int TenantId { get; set; }
+        public string ServiceName { get; set; } = string.Empty;
+        public string KeyName { get; set; } = string.Empty;
+        public string KeyType { get; set; } = "API Key";
+        public string KeyValue { get; set; } = string.Empty;
+        public string? Description { get; set; }
+        public string Environment { get; set; } = "Test";
+        public bool IsActive { get; set; }
+        public DateTime? ExpiryDate { get; set; }
+        public DateTime? LastUsed { get; set; }
+        public DateTime CreatedDate { get; set; }
+        public DateTime? LastModifiedDate { get; set; }
+    }
+}

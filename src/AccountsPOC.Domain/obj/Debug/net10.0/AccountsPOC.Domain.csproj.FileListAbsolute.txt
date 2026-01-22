@@ -1,0 +1,12 @@
+/home/runner/work/accountspoc/accountspoc/src/AccountsPOC.Domain/bin/Debug/net10.0/AccountsPOC.Domain.deps.json
+/home/runner/work/accountspoc/accountspoc/src/AccountsPOC.Domain/bin/Debug/net10.0/AccountsPOC.Domain.dll
+/home/runner/work/accountspoc/accountspoc/src/AccountsPOC.Domain/bin/Debug/net10.0/AccountsPOC.Domain.pdb
+/home/runner/work/accountspoc/accountspoc/src/AccountsPOC.Domain/obj/Debug/net10.0/AccountsPOC.Domain.GeneratedMSBuildEditorConfig.editorconfig
+/home/runner/work/accountspoc/accountspoc/src/AccountsPOC.Domain/obj/Debug/net10.0/AccountsPOC.Domain.AssemblyInfoInputs.cache
+/home/runner/work/accountspoc/accountspoc/src/AccountsPOC.Domain/obj/Debug/net10.0/AccountsPOC.Domain.AssemblyInfo.cs
+/home/runner/work/accountspoc/accountspoc/src/AccountsPOC.Domain/obj/Debug/net10.0/AccountsPOC.Domain.csproj.CoreCompileInputs.cache
+/home/runner/work/accountspoc/accountspoc/src/AccountsPOC.Domain/obj/Debug/net10.0/AccountsPOC.Domain.sourcelink.json
+/home/runner/work/accountspoc/accountspoc/src/AccountsPOC.Domain/obj/Debug/net10.0/AccountsPOC.Domain.dll
+/home/runner/work/accountspoc/accountspoc/src/AccountsPOC.Domain/obj/Debug/net10.0/refint/AccountsPOC.Domain.dll
+/home/runner/work/accountspoc/accountspoc/src/AccountsPOC.Domain/obj/Debug/net10.0/AccountsPOC.Domain.pdb
+/home/runner/work/accountspoc/accountspoc/src/AccountsPOC.Domain/obj/Debug/net10.0/ref/AccountsPOC.Domain.dll
