@@ -134,6 +134,7 @@ public class DriversController : ControllerBase
         }
 
         driver.IsActive = true;
+        driver.EmploymentEndDate = null; // Clear end date when reactivating
         driver.LastModifiedDate = DateTime.UtcNow;
         await _context.SaveChangesAsync();
 
