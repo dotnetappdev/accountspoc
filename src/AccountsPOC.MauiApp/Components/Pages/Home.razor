@@ -1,0 +1,107 @@
+@page "/"
+
+<PageTitle>Home</PageTitle>
+
+<div class="home-page">
+    <h1>📦 Fulfillment App</h1>
+    <p>Welcome to the AccountsPOC Fulfillment mobile application.</p>
+
+    <div class="feature-cards">
+        <a href="/driver-dashboard" class="feature-card featured">
+            <div class="icon">📊</div>
+            <h3>My Dashboard</h3>
+            <p>View your performance & active routes</p>
+        </a>
+
+        <a href="/parcel-scanning" class="feature-card">
+            <div class="icon">📦</div>
+            <h3>Parcel Scanning</h3>
+            <p>Scan parcels to bags/cages</p>
+        </a>
+
+        <a href="/delivery-routes" class="feature-card">
+            <div class="icon">🚚</div>
+            <h3>Delivery Routes</h3>
+            <p>Manage delivery routes with maps</p>
+        </a>
+
+        <a href="/stock-check" class="feature-card">
+            <div class="icon">🔍</div>
+            <h3>Stock Check</h3>
+            <p>Scan and check stock levels</p>
+        </a>
+
+        <a href="/pick-lists" class="feature-card">
+            <div class="icon">📋</div>
+            <h3>Pick Lists</h3>
+            <p>View and complete pick lists</p>
+        </a>
+
+        <a href="/stock-counts" class="feature-card">
+            <div class="icon">📊</div>
+            <h3>Stock Counting</h3>
+            <p>Perform stock counts</p>
+        </a>
+    </div>
+</div>
+
+<style>
+    .home-page {
+        text-align: center;
+        padding: 20px;
+    }
+
+    .feature-cards {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 16px;
+        margin-top: 24px;
+    }
+
+    .feature-card {
+        background: white;
+        border-radius: 12px;
+        padding: 24px;
+        text-decoration: none;
+        color: inherit;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .feature-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+
+    .feature-card.featured {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+
+    .feature-card.featured h3,
+    .feature-card.featured p {
+        color: white;
+    }
+
+    .feature-card .icon {
+        font-size: 3rem;
+        margin-bottom: 12px;
+    }
+
+    .feature-card h3 {
+        margin: 8px 0;
+        color: #333;
+    }
+
+    .feature-card p {
+        margin: 0;
+        color: #666;
+        font-size: 0.875rem;
+    }
+
+    @@media (max-width: 768px) {
+        .feature-cards {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>

@@ -17,6 +17,21 @@ public class Customer
     public decimal CreditLimit { get; set; }
     public decimal CurrentBalance { get; set; }
     public int? DefaultPriceListId { get; set; }
+    
+    // Delivery-specific details
+    public string? DeliveryAddress { get; set; }
+    public string? DeliveryCity { get; set; }
+    public string? DeliveryPostCode { get; set; }
+    public string? DeliveryCountry { get; set; }
+    public string? DeliveryContactName { get; set; }
+    public string? DeliveryContactPhone { get; set; }
+    public string? DeliveryContactMobile { get; set; }
+    public string? DeliveryInstructions { get; set; }
+    public double? DeliveryLatitude { get; set; }
+    public double? DeliveryLongitude { get; set; }
+    public string? PreferredDeliveryTime { get; set; }
+    public string? AccessCode { get; set; }
+    
     public bool IsActive { get; set; } = true;
     public DateTime CreatedDate { get; set; }
     public DateTime? LastModifiedDate { get; set; }

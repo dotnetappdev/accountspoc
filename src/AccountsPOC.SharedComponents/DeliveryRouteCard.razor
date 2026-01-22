@@ -1,0 +1,112 @@
+@using AccountsPOC.Domain.Entities
+
+<div class="delivery-route-card">
+    <div class="route-header">
+        <h3>Route: @DeliveryRoute?.RouteNumber</h3>
+        <span class="status-badge @GetStatusClass()">@DeliveryRoute?.Status</span>
+    </div>
+    
+    @if (DeliveryRoute != null)
+    {
+        <div class="route-info">
+            <div class="info-row">
+                <label>Date:</label>
+                <span>@DeliveryRoute.RouteDate.ToShortDateString()</span>
+            </div>
+            @if (DeliveryRoute.Driver != null)
+            {
+                <div class="info-row">
+                    <label>Driver:</label>
+                    <span>@DeliveryRoute.Driver.FullName</span>
+                </div>
+                @if (!string.IsNullOrEmpty(DeliveryRoute.Driver.Phone))
+                {
+                    <div class="info-row">
+                        <label>Driver Phone:</label>
+                        <span>📞 @DeliveryRoute.Driver.Phone</span>
+                    </div>
+                }
+            }
+            @if (!string.IsNullOrEmpty(DeliveryRoute.VehicleRegistration))
+            {
+                <div class="info-row">
+                    <label>Vehicle:</label>
+                    <span>@DeliveryRoute.VehicleRegistration</span>
+                </div>
+            }
+        </div>
+
+        <div class="delivery-stops">
+            <h4>Stops (@DeliveryRoute.Stops.Count)</h4>
+            @foreach (var stop in DeliveryRoute.Stops.OrderBy(s => s.SequenceNumber))
+            {
+                <div class="delivery-stop @(stop.Status == "Delivered" ? "completed" : "")">
+                    <div class="stop-header">
+                        <span class="sequence-number">#{stop.SequenceNumber}</span>
+                        <span class="status-badge @GetStopStatusClass(stop.Status)">@stop.Status</span>
+                    </div>
+                    <div class="stop-details">
+                        <div class="customer-info">
+                            <strong>@stop.Customer?.CompanyName ?? "Customer"</strong>
+                            @if (!string.IsNullOrEmpty(stop.ContactName))
+                            {
+                                <div>Contact: @stop.ContactName</div>
+                            }
+                            @if (!string.IsNullOrEmpty(stop.ContactPhone))
+                            {
+                                <div>📞 @stop.ContactPhone</div>
+                            }
+                            @if (!string.IsNullOrEmpty(stop.ContactEmail))
+                            {
+                                <div>✉️ @stop.ContactEmail</div>
+                            }
+                            @if (!string.IsNullOrEmpty(stop.Customer?.DeliveryInstructions))
+                            {
+                                <div class="delivery-instructions">
+                                    ℹ️ @stop.Customer.DeliveryInstructions
+                                </div>
+                            }
+                        </div>
+                        <div class="address">
+                            📍 @stop.DeliveryAddress
+                        </div>
+                        @if (stop.EvidenceCaptured)
+                        {
+                            <div class="evidence-captured">
+                                ✓ Evidence captured
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public DeliveryRoute? DeliveryRoute { get; set; }
+
+    private string GetStatusClass()
+    {
+        return DeliveryRoute?.Status?.ToLower() switch
+        {
+            "planned" => "status-planned",
+            "inprogress" => "status-inprogress",
+            "completed" => "status-completed",
+            _ => ""
+        };
+    }
+
+    private string GetStopStatusClass(string? status)
+    {
+        return status?.ToLower() switch
+        {
+            "pending" => "status-pending",
+            "arrived" => "status-arrived",
+            "delivered" => "status-delivered",
+            "failed" => "status-failed",
+            _ => ""
+        };
+    }
+}

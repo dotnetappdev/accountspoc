@@ -1,0 +1,80 @@
+@page "/stock-counts"
+@using AccountsPOC.SharedComponents
+@using AccountsPOC.Domain.Entities
+
+<PageTitle>Stock Counts</PageTitle>
+
+<div class="stock-counts-page">
+    <h1>📊 Stock Counts</h1>
+
+    @if (isLoading)
+    {
+        <div class="loading">Loading stock counts...</div>
+    }
+    else if (stockCounts.Any())
+    {
+        @foreach (var count in stockCounts)
+        {
+            <div @onclick="() => SelectStockCount(count)">
+                <StockCountCard StockCount="@count" />
+            </div>
+        }
+    }
+    else
+    {
+        <p class="text-muted">No stock counts available.</p>
+        <button class="btn btn-primary btn-block" @onclick="StartNewCount">
+            Start New Stock Count
+        </button>
+    }
+</div>
+
+@code {
+    private List<StockCount> stockCounts = new();
+    private bool isLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadStockCounts();
+    }
+
+    private async Task LoadStockCounts()
+    {
+        isLoading = true;
+        
+        try
+        {
+            // TODO: Call API to load stock counts
+            await Task.Delay(500);
+            
+            // Mock data
+            stockCounts = new List<StockCount>();
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private void SelectStockCount(StockCount count)
+    {
+        // TODO: Navigate to stock count details
+    }
+
+    private void StartNewCount()
+    {
+        // TODO: Navigate to new stock count page
+    }
+}
+
+<style>
+    .stock-counts-page {
+        padding: 16px;
+    }
+
+    .text-muted {
+        color: #666;
+        text-align: center;
+        padding: 40px 16px 16px;
+    }
+</style>

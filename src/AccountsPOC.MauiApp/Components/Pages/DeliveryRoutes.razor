@@ -1,0 +1,149 @@
+@page "/delivery-routes"
+@using AccountsPOC.SharedComponents
+@using AccountsPOC.Domain.Entities
+
+<PageTitle>Delivery Routes</PageTitle>
+
+<div class="delivery-routes-page">
+    <h1>🚚 Delivery Routes</h1>
+
+    @if (isLoading)
+    {
+        <div class="loading">Loading delivery routes...</div>
+    }
+    else if (deliveryRoutes.Any())
+    {
+        <div class="filter-section">
+            <select class="form-control" @onchange="FilterByStatus">
+                <option value="">All Statuses</option>
+                <option value="Planned">Planned</option>
+                <option value="InProgress">In Progress</option>
+                <option value="Completed">Completed</option>
+            </select>
+        </div>
+
+        @foreach (var route in deliveryRoutes)
+        {
+            <div @onclick="() => SelectRoute(route)">
+                <DeliveryRouteCard DeliveryRoute="@route" />
+            </div>
+        }
+    }
+    else
+    {
+        <p class="text-muted">No delivery routes available.</p>
+    }
+</div>
+
+@code {
+    private List<DeliveryRoute> deliveryRoutes = new();
+    private bool isLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadDeliveryRoutes();
+    }
+
+    private async Task LoadDeliveryRoutes()
+    {
+        isLoading = true;
+        
+        try
+        {
+            // TODO: Call API to load delivery routes
+            await Task.Delay(500);
+            
+            // Mock data
+            deliveryRoutes = new List<DeliveryRoute>
+            {
+                new DeliveryRoute
+                {
+                    Id = 1,
+                    TenantId = 1,
+                    RouteNumber = "ROUTE-001",
+                    RouteDate = DateTime.Today,
+                    Status = "Planned",
+                    DriverId = 1,
+                    Driver = new Driver
+                    {
+                        Id = 1,
+                        TenantId = 1,
+                        DriverCode = "DRV-001",
+                        FirstName = "Jane",
+                        LastName = "Smith",
+                        Email = "jane.smith@example.com",
+                        Phone = "+1234567890",
+                        LicenseNumber = "DL123456",
+                        IsActive = true,
+                        CreatedDate = DateTime.Now
+                    },
+                    VehicleRegistration = "ABC-123",
+                    CreatedDate = DateTime.Now,
+                    Stops = new List<DeliveryStop>
+                    {
+                        new DeliveryStop
+                        {
+                            Id = 1,
+                            DeliveryRouteId = 1,
+                            SequenceNumber = 1,
+                            DeliveryAddress = "123 Main St, City",
+                            ContactName = "Customer 1",
+                            ContactPhone = "+1234567890",
+                            ContactEmail = "customer1@example.com",
+                            Status = "Pending",
+                            Latitude = 40.7128,
+                            Longitude = -74.0060,
+                            CustomerId = 1,
+                            Customer = new Customer
+                            {
+                                Id = 1,
+                                TenantId = 1,
+                                CustomerCode = "CUST-001",
+                                CompanyName = "ABC Company",
+                                ContactName = "John Doe",
+                                Email = "john@abc.com",
+                                Phone = "+1234567890",
+                                Address = "123 Main St",
+                                DeliveryContactPhone = "+1234567890",
+                                DeliveryContactMobile = "+9876543210",
+                                DeliveryInstructions = "Ring doorbell",
+                                IsActive = true,
+                                CreatedDate = DateTime.Now
+                            }
+                        }
+                    }
+                }
+            };
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task FilterByStatus(ChangeEventArgs e)
+    {
+        await LoadDeliveryRoutes();
+    }
+
+    private void SelectRoute(DeliveryRoute route)
+    {
+        // TODO: Navigate to route details with map
+    }
+}
+
+<style>
+    .delivery-routes-page {
+        padding: 16px;
+    }
+
+    .filter-section {
+        margin-bottom: 16px;
+    }
+
+    .text-muted {
+        color: #666;
+        text-align: center;
+        padding: 40px;
+    }
+</style>

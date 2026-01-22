@@ -38,6 +38,15 @@ public class ApplicationDbContext : DbContext
     public DbSet<PurchaseOrder> PurchaseOrders => Set<PurchaseOrder>();
     public DbSet<PurchaseOrderItem> PurchaseOrderItems => Set<PurchaseOrderItem>();
     public DbSet<BrandingAsset> BrandingAssets => Set<BrandingAsset>();
+    public DbSet<PickList> PickLists => Set<PickList>();
+    public DbSet<PickListItem> PickListItems => Set<PickListItem>();
+    public DbSet<StockCount> StockCounts => Set<StockCount>();
+    public DbSet<StockCountItem> StockCountItems => Set<StockCountItem>();
+    public DbSet<DeliveryRoute> DeliveryRoutes => Set<DeliveryRoute>();
+    public DbSet<DeliveryStop> DeliveryStops => Set<DeliveryStop>();
+    public DbSet<Driver> Drivers => Set<Driver>();
+    public DbSet<Parcel> Parcels => Set<Parcel>();
+    public DbSet<Container> Containers => Set<Container>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -243,6 +252,19 @@ public class ApplicationDbContext : DbContext
             entity.Property(e => e.VATNumber).HasMaxLength(50);
             entity.Property(e => e.CreditLimit).HasPrecision(18, 2);
             entity.Property(e => e.CurrentBalance).HasPrecision(18, 2);
+            
+            // Delivery-specific fields
+            entity.Property(e => e.DeliveryAddress).HasMaxLength(500);
+            entity.Property(e => e.DeliveryCity).HasMaxLength(100);
+            entity.Property(e => e.DeliveryPostCode).HasMaxLength(20);
+            entity.Property(e => e.DeliveryCountry).HasMaxLength(100);
+            entity.Property(e => e.DeliveryContactName).HasMaxLength(200);
+            entity.Property(e => e.DeliveryContactPhone).HasMaxLength(50);
+            entity.Property(e => e.DeliveryContactMobile).HasMaxLength(50);
+            entity.Property(e => e.DeliveryInstructions).HasMaxLength(1000);
+            entity.Property(e => e.PreferredDeliveryTime).HasMaxLength(100);
+            entity.Property(e => e.AccessCode).HasMaxLength(50);
+            
             entity.HasIndex(e => e.CustomerCode).IsUnique();
             entity.HasIndex(e => e.TenantId);
             
@@ -560,6 +582,219 @@ public class ApplicationDbContext : DbContext
             entity.Property(e => e.LastModifiedBy).HasMaxLength(100);
             entity.HasIndex(e => e.TenantId);
             entity.HasIndex(e => new { e.TenantId, e.AssetType, e.IsActive });
+        });
+        
+        // PickList configuration
+        modelBuilder.Entity<PickList>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.PickListNumber).IsRequired().HasMaxLength(50);
+            entity.Property(e => e.Status).IsRequired().HasMaxLength(50);
+            entity.Property(e => e.AssignedToUserName).HasMaxLength(200);
+            entity.Property(e => e.Notes).HasMaxLength(2000);
+            entity.HasIndex(e => e.TenantId);
+            entity.HasIndex(e => new { e.TenantId, e.PickListNumber }).IsUnique();
+            
+            entity.HasOne(e => e.SalesOrder)
+                .WithMany()
+                .HasForeignKey(e => e.SalesOrderId)
+                .OnDelete(DeleteBehavior.Restrict);
+                
+            entity.HasMany(e => e.Items)
+                .WithOne(e => e.PickList)
+                .HasForeignKey(e => e.PickListId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+        
+        // PickListItem configuration
+        modelBuilder.Entity<PickListItem>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.BinLocation).HasMaxLength(50);
+            entity.Property(e => e.Notes).HasMaxLength(500);
+            entity.HasIndex(e => e.PickListId);
+            entity.HasIndex(e => e.StockItemId);
+            
+            entity.HasOne(e => e.StockItem)
+                .WithMany()
+                .HasForeignKey(e => e.StockItemId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+        
+        // StockCount configuration
+        modelBuilder.Entity<StockCount>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.CountNumber).IsRequired().HasMaxLength(50);
+            entity.Property(e => e.Status).IsRequired().HasMaxLength(50);
+            entity.Property(e => e.CountedByUserName).HasMaxLength(200);
+            entity.Property(e => e.Notes).HasMaxLength(2000);
+            entity.HasIndex(e => e.TenantId);
+            entity.HasIndex(e => new { e.TenantId, e.CountNumber }).IsUnique();
+            
+            entity.HasOne(e => e.Warehouse)
+                .WithMany()
+                .HasForeignKey(e => e.WarehouseId)
+                .OnDelete(DeleteBehavior.Restrict);
+                
+            entity.HasMany(e => e.Items)
+                .WithOne(e => e.StockCount)
+                .HasForeignKey(e => e.StockCountId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+        
+        // StockCountItem configuration
+        modelBuilder.Entity<StockCountItem>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Notes).HasMaxLength(500);
+            entity.HasIndex(e => e.StockCountId);
+            entity.HasIndex(e => e.StockItemId);
+            
+            entity.HasOne(e => e.StockItem)
+                .WithMany()
+                .HasForeignKey(e => e.StockItemId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+        
+        // DeliveryRoute configuration
+        modelBuilder.Entity<DeliveryRoute>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.RouteNumber).IsRequired().HasMaxLength(50);
+            entity.Property(e => e.Status).IsRequired().HasMaxLength(50);
+            entity.Property(e => e.VehicleRegistration).HasMaxLength(50);
+            entity.Property(e => e.Notes).HasMaxLength(2000);
+            entity.HasIndex(e => e.TenantId);
+            entity.HasIndex(e => new { e.TenantId, e.RouteNumber }).IsUnique();
+            
+            entity.HasOne(e => e.Driver)
+                .WithMany(d => d.DeliveryRoutes)
+                .HasForeignKey(e => e.DriverId)
+                .OnDelete(DeleteBehavior.Restrict);
+            
+            entity.HasMany(e => e.Stops)
+                .WithOne(e => e.DeliveryRoute)
+                .HasForeignKey(e => e.DeliveryRouteId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+        
+        // DeliveryStop configuration
+        modelBuilder.Entity<DeliveryStop>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.DeliveryAddress).IsRequired().HasMaxLength(500);
+            entity.Property(e => e.ContactName).HasMaxLength(200);
+            entity.Property(e => e.ContactPhone).HasMaxLength(50);
+            entity.Property(e => e.ContactEmail).HasMaxLength(200);
+            entity.Property(e => e.Status).IsRequired().HasMaxLength(50);
+            entity.Property(e => e.DeliveryNotes).HasMaxLength(2000);
+            entity.Property(e => e.SignatureImagePath).HasMaxLength(500);
+            entity.Property(e => e.PhotoEvidencePaths).HasMaxLength(2000);
+            
+            // Safe place and access configuration
+            entity.Property(e => e.SafePlace).HasMaxLength(200);
+            entity.Property(e => e.DoorAccessCode).HasMaxLength(50);
+            entity.Property(e => e.PostBoxCode).HasMaxLength(50);
+            entity.Property(e => e.BuildingAccessInstructions).HasMaxLength(1000);
+            
+            // OTP configuration
+            entity.Property(e => e.OTPCode).HasMaxLength(10);
+            
+            entity.HasIndex(e => e.DeliveryRouteId);
+            entity.HasIndex(e => e.CustomerId);
+            entity.HasIndex(e => e.SalesOrderId);
+            
+            entity.HasOne(e => e.Customer)
+                .WithMany()
+                .HasForeignKey(e => e.CustomerId)
+                .OnDelete(DeleteBehavior.Restrict);
+                
+            entity.HasOne(e => e.SalesOrder)
+                .WithMany()
+                .HasForeignKey(e => e.SalesOrderId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+        
+        // Driver configuration
+        modelBuilder.Entity<Driver>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.DriverCode).IsRequired().HasMaxLength(50);
+            entity.Property(e => e.FirstName).IsRequired().HasMaxLength(100);
+            entity.Property(e => e.LastName).IsRequired().HasMaxLength(100);
+            entity.Property(e => e.Email).IsRequired().HasMaxLength(200);
+            entity.Property(e => e.Phone).IsRequired().HasMaxLength(50);
+            entity.Property(e => e.MobilePhone).HasMaxLength(50);
+            entity.Property(e => e.Address).HasMaxLength(500);
+            entity.Property(e => e.City).HasMaxLength(100);
+            entity.Property(e => e.PostCode).HasMaxLength(20);
+            entity.Property(e => e.Country).HasMaxLength(100);
+            entity.Property(e => e.LicenseNumber).HasMaxLength(50);
+            entity.Property(e => e.EmergencyContactName).HasMaxLength(200);
+            entity.Property(e => e.EmergencyContactPhone).HasMaxLength(50);
+            entity.Property(e => e.VehicleRegistration).HasMaxLength(50);
+            entity.Property(e => e.VehicleType).HasMaxLength(100);
+            entity.Property(e => e.VehicleCapacity).HasMaxLength(100);
+            entity.Property(e => e.Notes).HasMaxLength(2000);
+            entity.HasIndex(e => e.TenantId);
+            entity.HasIndex(e => new { e.TenantId, e.DriverCode }).IsUnique();
+            entity.HasIndex(e => e.Email);
+        });
+        
+        // Parcel configuration
+        modelBuilder.Entity<Parcel>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.ParcelBarcode).IsRequired().HasMaxLength(100);
+            entity.Property(e => e.Status).IsRequired().HasMaxLength(50);
+            entity.Property(e => e.Notes).HasMaxLength(1000);
+            entity.HasIndex(e => e.TenantId);
+            entity.HasIndex(e => e.ParcelBarcode).IsUnique();
+            entity.HasIndex(e => e.DeliveryStopId);
+            entity.HasIndex(e => e.ContainerId);
+            
+            entity.HasOne(e => e.SalesOrder)
+                .WithMany()
+                .HasForeignKey(e => e.SalesOrderId)
+                .OnDelete(DeleteBehavior.SetNull);
+                
+            entity.HasOne(e => e.DeliveryStop)
+                .WithMany()
+                .HasForeignKey(e => e.DeliveryStopId)
+                .OnDelete(DeleteBehavior.SetNull);
+                
+            entity.HasOne(e => e.Container)
+                .WithMany(e => e.Parcels)
+                .HasForeignKey(e => e.ContainerId)
+                .OnDelete(DeleteBehavior.SetNull);
+                
+            entity.HasOne(e => e.ScannedByDriver)
+                .WithMany()
+                .HasForeignKey(e => e.ScannedByDriverId)
+                .OnDelete(DeleteBehavior.SetNull);
+        });
+        
+        // Container configuration
+        modelBuilder.Entity<Container>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.ContainerCode).IsRequired().HasMaxLength(50);
+            entity.Property(e => e.ContainerType).IsRequired().HasMaxLength(50);
+            entity.Property(e => e.Status).IsRequired().HasMaxLength(50);
+            entity.HasIndex(e => e.TenantId);
+            entity.HasIndex(e => new { e.TenantId, e.ContainerCode }).IsUnique();
+            entity.HasIndex(e => e.DeliveryRouteId);
+            
+            entity.HasOne(e => e.DeliveryRoute)
+                .WithMany()
+                .HasForeignKey(e => e.DeliveryRouteId)
+                .OnDelete(DeleteBehavior.SetNull);
+                
+            entity.HasOne(e => e.Driver)
+                .WithMany()
+                .HasForeignKey(e => e.DriverId)
+                .OnDelete(DeleteBehavior.SetNull);
         });
     }
 }
