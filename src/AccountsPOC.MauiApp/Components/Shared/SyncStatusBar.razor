@@ -1,0 +1,294 @@
+@using AccountsPOC.MauiApp.Services
+@inject ISyncService SyncService
+@implements IDisposable
+
+<div class="sync-status-bar">
+    <div class="connection-status">
+        @if (isOnline)
+        {
+            <span class="status-icon online" title="Online">📶</span>
+        }
+        else
+        {
+            <span class="status-icon offline" title="Offline">📵</span>
+        }
+        <span class="status-text">@(isOnline ? "Online" : "Offline")</span>
+    </div>
+
+    <div class="sync-actions">
+        @if (pendingChanges > 0)
+        {
+            <span class="pending-badge" title="@pendingChanges pending changes">@pendingChanges</span>
+        }
+
+        @if (isSyncing)
+        {
+            <button class="sync-button syncing" disabled title="Syncing...">
+                <span class="spinner">⟳</span>
+            </button>
+        }
+        else
+        {
+            <button class="sync-button" @onclick="ManualSync" disabled="@(!isOnline)" title="Manual Sync">
+                <span>🔄</span>
+            </button>
+        }
+    </div>
+
+    @if (!string.IsNullOrEmpty(syncMessage))
+    {
+        <div class="sync-message @syncMessageType">
+            @syncMessage
+        </div>
+    }
+</div>
+
+@code {
+    private bool isOnline;
+    private bool isSyncing;
+    private int pendingChanges;
+    private string? syncMessage;
+    private string syncMessageType = "";
+    private System.Threading.Timer? statusTimer;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await UpdateStatus();
+
+        // Update status every 5 seconds
+        statusTimer = new System.Threading.Timer(async _ =>
+        {
+            await InvokeAsync(async () =>
+            {
+                await UpdateStatus();
+                StateHasChanged();
+            });
+        }, null, TimeSpan.FromSeconds(5), TimeSpan.FromSeconds(5));
+    }
+
+    private async Task UpdateStatus()
+    {
+        isOnline = await SyncService.IsOnlineAsync();
+        var status = await SyncService.GetSyncStatusAsync();
+        pendingChanges = status.PendingChanges;
+
+        if (status.LastSyncTime.HasValue)
+        {
+            var timeSinceSync = DateTime.UtcNow - status.LastSyncTime.Value;
+            if (timeSinceSync.TotalMinutes < 1)
+            {
+                syncMessage = "Synced just now";
+            }
+            else if (timeSinceSync.TotalMinutes < 60)
+            {
+                syncMessage = $"Synced {(int)timeSinceSync.TotalMinutes}m ago";
+            }
+            else if (timeSinceSync.TotalHours < 24)
+            {
+                syncMessage = $"Synced {(int)timeSinceSync.TotalHours}h ago";
+            }
+            else
+            {
+                syncMessage = $"Synced {(int)timeSinceSync.TotalDays}d ago";
+            }
+            syncMessageType = "success";
+        }
+
+        if (!string.IsNullOrEmpty(status.LastError))
+        {
+            syncMessage = $"Sync error: {status.LastError}";
+            syncMessageType = "error";
+        }
+    }
+
+    private async Task ManualSync()
+    {
+        if (!isOnline || isSyncing)
+        {
+            return;
+        }
+
+        isSyncing = true;
+        syncMessage = "Syncing...";
+        syncMessageType = "info";
+        StateHasChanged();
+
+        try
+        {
+            var success = await SyncService.SyncDataAsync();
+            
+            if (success)
+            {
+                syncMessage = "Sync completed successfully";
+                syncMessageType = "success";
+            }
+            else
+            {
+                syncMessage = "Sync failed. Please try again.";
+                syncMessageType = "error";
+            }
+
+            await UpdateStatus();
+        }
+        catch (Exception ex)
+        {
+            syncMessage = $"Sync error: {ex.Message}";
+            syncMessageType = "error";
+        }
+        finally
+        {
+            isSyncing = false;
+            StateHasChanged();
+
+            // Clear message after 3 seconds
+            await Task.Delay(3000);
+            syncMessage = null;
+            StateHasChanged();
+        }
+    }
+
+    public void Dispose()
+    {
+        statusTimer?.Dispose();
+    }
+}
+
+<style>
+    .sync-status-bar {
+        position: fixed;
+        top: 0;
+        right: 0;
+        left: 0;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 8px 16px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        z-index: 1000;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .connection-status {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .status-icon {
+        font-size: 1.2rem;
+    }
+
+    .status-icon.online {
+        animation: pulse 2s infinite;
+    }
+
+    .status-icon.offline {
+        opacity: 0.6;
+    }
+
+    .status-text {
+        font-size: 0.875rem;
+        font-weight: 500;
+    }
+
+    .sync-actions {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .pending-badge {
+        background: #ff6b6b;
+        color: white;
+        padding: 2px 8px;
+        border-radius: 12px;
+        font-size: 0.75rem;
+        font-weight: bold;
+    }
+
+    .sync-button {
+        background: rgba(255, 255, 255, 0.2);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        color: white;
+        padding: 6px 12px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 1.2rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+    }
+
+    .sync-button:hover:not(:disabled) {
+        background: rgba(255, 255, 255, 0.3);
+        transform: scale(1.05);
+    }
+
+    .sync-button:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+    .sync-button.syncing .spinner {
+        animation: spin 1s linear infinite;
+    }
+
+    .sync-message {
+        position: fixed;
+        top: 56px;
+        left: 50%;
+        transform: translateX(-50%);
+        padding: 8px 16px;
+        border-radius: 8px;
+        font-size: 0.875rem;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        z-index: 1001;
+        animation: slideDown 0.3s ease;
+    }
+
+    .sync-message.success {
+        background: #51cf66;
+        color: white;
+    }
+
+    .sync-message.error {
+        background: #ff6b6b;
+        color: white;
+    }
+
+    .sync-message.info {
+        background: #339af0;
+        color: white;
+    }
+
+    @keyframes spin {
+        from {
+            transform: rotate(0deg);
+        }
+        to {
+            transform: rotate(360deg);
+        }
+    }
+
+    @keyframes pulse {
+        0%, 100% {
+            opacity: 1;
+        }
+        50% {
+            opacity: 0.6;
+        }
+    }
+
+    @keyframes slideDown {
+        from {
+            opacity: 0;
+            transform: translateX(-50%) translateY(-10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+    }
+</style>

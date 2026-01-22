@@ -1,6 +1,8 @@
 @inherits LayoutComponentBase
+@using AccountsPOC.MauiApp.Components.Shared
 
 <div class="page">
+    <SyncStatusBar />
     <div class="content">
         @Body
     </div>
@@ -34,6 +36,7 @@
         flex: 1;
         overflow-y: auto;
         padding: 16px;
+        margin-top: 48px; /* Space for sync status bar */
     }
 
     .nav-bar {
