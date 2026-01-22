@@ -306,7 +306,12 @@ public class DeliveryRoutesController : ControllerBase
         var remainingStops = new List<DeliveryStop>(stopsWithGPS);
         
         // Start with the first stop (or could use depot/warehouse location)
-        var currentStop = remainingStops.First();
+        var currentStop = remainingStops.FirstOrDefault();
+        if (currentStop == null)
+        {
+            return BadRequest("No valid stops found");
+        }
+        
         optimizedStops.Add(currentStop);
         remainingStops.Remove(currentStop);
 
@@ -390,7 +395,7 @@ public class DeliveryRoutesController : ControllerBase
         stop.DeliveryStatus = request.DeliveryStatus;
         stop.NeighborDoorNumber = request.NeighborDoorNumber;
         stop.DeliveryNotes = request.DeliveryNotes;
-        stop.Status = "Delivered";
+        stop.Status = DeliveryStopStatus.Delivered;
         stop.DeliveryTime = DateTime.UtcNow;
 
         await _context.SaveChangesAsync();

@@ -1,5 +1,21 @@
 namespace AccountsPOC.Domain.Entities;
 
+// Enums for type safety
+public static class DeliveryStatusType
+{
+    public const string Delivered = "Delivered";
+    public const string SafePlace = "SafePlace";
+    public const string LeftWithNeighbor = "LeftWithNeighbor";
+}
+
+public static class DeliveryStopStatus
+{
+    public const string Pending = "Pending";
+    public const string Arrived = "Arrived";
+    public const string Delivered = "Delivered";
+    public const string Failed = "Failed";
+}
+
 public class DeliveryRoute
 {
     public int Id { get; set; }

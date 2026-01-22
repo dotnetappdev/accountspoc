@@ -109,10 +109,10 @@
                     <p>@selectedStop?.ContactName - @selectedStop?.DeliveryAddress</p>
                     
                     <div class="delivery-options">
-                        <button class="option-btn delivered" @onclick='() => UpdateDeliveryStatus("Delivered")'>
+                        <button class="option-btn delivered" @onclick='() => UpdateDeliveryStatus(DeliveryStatusType.Delivered)'>
                             ✓ Delivered
                         </button>
-                        <button class="option-btn safe-place" @onclick='() => UpdateDeliveryStatus("SafePlace")'>
+                        <button class="option-btn safe-place" @onclick='() => UpdateDeliveryStatus(DeliveryStatusType.SafePlace)'>
                             🏠 Left at Safe Place
                         </button>
                         <button class="option-btn neighbor" @onclick="ShowNeighborInput">
@@ -125,7 +125,7 @@
                         <div class="neighbor-input">
                             <label>Neighbor's Door Number:</label>
                             <input type="text" @bind="neighborDoorNumber" placeholder="e.g., 12B" class="form-control" />
-                            <button class="btn-primary" @onclick='() => UpdateDeliveryStatus("LeftWithNeighbor")'>
+                            <button class="btn-primary" @onclick='() => UpdateDeliveryStatus(DeliveryStatusType.LeftWithNeighbor)'>
                                 Confirm
                             </button>
                         </div>
@@ -315,7 +315,7 @@
             if (response.IsSuccessStatusCode)
             {
                 selectedStop.DeliveryStatus = status;
-                selectedStop.Status = "Delivered";
+                selectedStop.Status = DeliveryStopStatus.Delivered;
                 CloseDeliveryModal();
                 StateHasChanged();
             }
@@ -325,7 +325,7 @@
             Console.WriteLine($"Error updating delivery status: {ex.Message}");
             // Update locally even if API fails (for offline support)
             selectedStop.DeliveryStatus = status;
-            selectedStop.Status = "Delivered";
+            selectedStop.Status = DeliveryStopStatus.Delivered;
             CloseDeliveryModal();
             StateHasChanged();
         }
