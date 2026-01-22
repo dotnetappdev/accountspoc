@@ -460,7 +460,9 @@ public class DataSeeder
                 Status = "Pending",
                 SafePlace = "Front Porch",
                 BuildingAccessInstructions = "Ring doorbell at rear entrance",
-                RequiresAgeVerification = false
+                RequiresAgeVerification = false,
+                DoorNumber = "Suite 200",
+                ParcelCount = 3
             },
             new DeliveryStop
             {
@@ -475,7 +477,9 @@ public class DataSeeder
                 Status = "Pending",
                 DoorAccessCode = "#1234",
                 BuildingAccessInstructions = "Use loading dock entrance, press buzzer",
-                RequiresAgeVerification = true
+                RequiresAgeVerification = true,
+                DoorNumber = "Dock 3",
+                ParcelCount = 8
             },
             new DeliveryStop
             {
@@ -492,7 +496,9 @@ public class DataSeeder
                 SafePlace = "Behind Garage",
                 DoorAccessCode = "*5B#",
                 BuildingAccessInstructions = "Use intercom #5B",
-                RequiresAgeVerification = false
+                RequiresAgeVerification = false,
+                DoorNumber = "5B",
+                ParcelCount = 2
             },
             // Route 2 stops
             new DeliveryStop
@@ -509,7 +515,9 @@ public class DataSeeder
                 Status = "Pending",
                 PostBoxCode = "BOX789",
                 BuildingAccessInstructions = "Business hours only. Back entrance to stockroom",
-                RequiresAgeVerification = false
+                RequiresAgeVerification = false,
+                DoorNumber = "B1",
+                ParcelCount = 5
             },
             new DeliveryStop
             {
@@ -524,7 +532,9 @@ public class DataSeeder
                 Status = "Pending",
                 SafePlace = "Behind Garage",
                 DoorAccessCode = "*5B#",
-                RequiresAgeVerification = false
+                RequiresAgeVerification = false,
+                DoorNumber = "5B",
+                ParcelCount = 4
             }
         };
         _context.DeliveryStops.AddRange(stops);
