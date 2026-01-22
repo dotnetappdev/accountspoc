@@ -107,32 +107,39 @@
              Size="lg">
     <Body>
         <EditForm Model="currentProduct" OnValidSubmit="SaveProduct">
+            <FluentValidationValidator />
             <div class="row">
                 <div class="col-md-6 mb-3">
-                    <label class="form-label">Product Code</label>
+                    <label class="form-label">Product Code <span class="text-danger">*</span></label>
                     <InputText class="form-control" @bind-Value="currentProduct.ProductCode" placeholder="PROD-001" />
+                    <ValidationMessage For="@(() => currentProduct.ProductCode)" />
                 </div>
                 <div class="col-md-6 mb-3">
-                    <label class="form-label">Product Name</label>
+                    <label class="form-label">Product Name <span class="text-danger">*</span></label>
                     <InputText class="form-control" @bind-Value="currentProduct.ProductName" placeholder="Product name" />
+                    <ValidationMessage For="@(() => currentProduct.ProductName)" />
                 </div>
             </div>
             <div class="mb-3">
                 <label class="form-label">Description</label>
                 <InputTextArea class="form-control" @bind-Value="currentProduct.Description" rows="3" placeholder="Detailed product description..." />
+                <ValidationMessage For="@(() => currentProduct.Description)" />
             </div>
             <div class="row">
                 <div class="col-md-4 mb-3">
                     <label class="form-label">Unit Price</label>
                     <CurrencyInput @bind-Value="currentProduct.UnitPrice" Currency="USD" />
+                    <ValidationMessage For="@(() => currentProduct.UnitPrice)" />
                 </div>
                 <div class="col-md-4 mb-3">
                     <label class="form-label">Stock Level</label>
                     <InputNumber class="form-control" @bind-Value="currentProduct.StockLevel" />
+                    <ValidationMessage For="@(() => currentProduct.StockLevel)" />
                 </div>
                 <div class="col-md-4 mb-3">
                     <label class="form-label">Reorder Level</label>
                     <InputNumber class="form-control" @bind-Value="currentProduct.ReorderLevel" />
+                    <ValidationMessage For="@(() => currentProduct.ReorderLevel)" />
                 </div>
             </div>
             <div class="mb-3 form-check">
