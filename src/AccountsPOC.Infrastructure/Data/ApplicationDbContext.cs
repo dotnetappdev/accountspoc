@@ -45,6 +45,8 @@ public class ApplicationDbContext : DbContext
     public DbSet<DeliveryRoute> DeliveryRoutes => Set<DeliveryRoute>();
     public DbSet<DeliveryStop> DeliveryStops => Set<DeliveryStop>();
     public DbSet<Driver> Drivers => Set<Driver>();
+    public DbSet<Parcel> Parcels => Set<Parcel>();
+    public DbSet<Container> Containers => Set<Container>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -738,6 +740,61 @@ public class ApplicationDbContext : DbContext
             entity.HasIndex(e => e.TenantId);
             entity.HasIndex(e => new { e.TenantId, e.DriverCode }).IsUnique();
             entity.HasIndex(e => e.Email);
+        });
+        
+        // Parcel configuration
+        modelBuilder.Entity<Parcel>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.ParcelBarcode).IsRequired().HasMaxLength(100);
+            entity.Property(e => e.Status).IsRequired().HasMaxLength(50);
+            entity.Property(e => e.Notes).HasMaxLength(1000);
+            entity.HasIndex(e => e.TenantId);
+            entity.HasIndex(e => e.ParcelBarcode).IsUnique();
+            entity.HasIndex(e => e.DeliveryStopId);
+            entity.HasIndex(e => e.ContainerId);
+            
+            entity.HasOne(e => e.SalesOrder)
+                .WithMany()
+                .HasForeignKey(e => e.SalesOrderId)
+                .OnDelete(DeleteBehavior.SetNull);
+                
+            entity.HasOne(e => e.DeliveryStop)
+                .WithMany()
+                .HasForeignKey(e => e.DeliveryStopId)
+                .OnDelete(DeleteBehavior.SetNull);
+                
+            entity.HasOne(e => e.Container)
+                .WithMany(e => e.Parcels)
+                .HasForeignKey(e => e.ContainerId)
+                .OnDelete(DeleteBehavior.SetNull);
+                
+            entity.HasOne(e => e.ScannedByDriver)
+                .WithMany()
+                .HasForeignKey(e => e.ScannedByDriverId)
+                .OnDelete(DeleteBehavior.SetNull);
+        });
+        
+        // Container configuration
+        modelBuilder.Entity<Container>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.ContainerCode).IsRequired().HasMaxLength(50);
+            entity.Property(e => e.ContainerType).IsRequired().HasMaxLength(50);
+            entity.Property(e => e.Status).IsRequired().HasMaxLength(50);
+            entity.HasIndex(e => e.TenantId);
+            entity.HasIndex(e => new { e.TenantId, e.ContainerCode }).IsUnique();
+            entity.HasIndex(e => e.DeliveryRouteId);
+            
+            entity.HasOne(e => e.DeliveryRoute)
+                .WithMany()
+                .HasForeignKey(e => e.DeliveryRouteId)
+                .OnDelete(DeleteBehavior.SetNull);
+                
+            entity.HasOne(e => e.Driver)
+                .WithMany()
+                .HasForeignKey(e => e.DriverId)
+                .OnDelete(DeleteBehavior.SetNull);
         });
     }
 }

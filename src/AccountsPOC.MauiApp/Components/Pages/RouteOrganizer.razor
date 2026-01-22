@@ -1,0 +1,342 @@
+@page "/route-organizer/{RouteId:int}"
+@using AccountsPOC.Domain.Entities
+@inject NavigationManager Navigation
+
+<PageTitle>Organize Route</PageTitle>
+
+<div class="route-organizer-page">
+    <div class="header">
+        <button class="back-button" @onclick="GoBack">← Back</button>
+        <h2>📋 Route @routeNumber</h2>
+        <button class="save-button" @onclick="SaveOrder">💾 Save Order</button>
+    </div>
+
+    @if (deliveryStops.Any())
+    {
+        <div class="instructions">
+            <p>Drag and drop to reorder deliveries. Tap arrows to move up/down.</p>
+        </div>
+
+        <div class="stops-list">
+            @foreach (var (stop, index) in deliveryStops.Select((s, i) => (s, i)))
+            {
+                <div class="stop-card @(selectedStop == stop ? "selected" : "")">
+                    <div class="stop-header" @onclick="() => SelectStop(stop)">
+                        <div class="sequence-badge">@(index + 1)</div>
+                        <div class="stop-info">
+                            <strong>@stop.ContactName</strong>
+                            <p>@stop.DeliveryAddress</p>
+                        </div>
+                        <div class="move-controls">
+                            @if (index > 0)
+                            {
+                                <button class="move-btn" @onclick="() => MoveUp(index)" @onclick:stopPropagation="true">▲</button>
+                            }
+                            @if (index < deliveryStops.Count - 1)
+                            {
+                                <button class="move-btn" @onclick="() => MoveDown(index)" @onclick:stopPropagation="true">▼</button>
+                            }
+                        </div>
+                    </div>
+                    <div class="stop-status">
+                        <span class="status-badge @stop.Status.ToLower()">@stop.Status</span>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <p class="text-muted">No delivery stops found.</p>
+    }
+
+    @if (showSaveMessage)
+    {
+        <div class="save-message">✓ Route order saved successfully!</div>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public int RouteId { get; set; }
+
+    private string routeNumber = "";
+    private List<DeliveryStop> deliveryStops = new();
+    private DeliveryStop? selectedStop;
+    private bool showSaveMessage = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadRoute();
+    }
+
+    private async Task LoadRoute()
+    {
+        // TODO: Load from API
+        await Task.Delay(100);
+        
+        routeNumber = "ROUTE-001";
+        deliveryStops = new List<DeliveryStop>
+        {
+            new DeliveryStop
+            {
+                Id = 1,
+                DeliveryRouteId = RouteId,
+                SequenceNumber = 1,
+                DeliveryAddress = "123 Main St, City",
+                ContactName = "Customer A",
+                ContactPhone = "+1234567890",
+                Status = "Pending"
+            },
+            new DeliveryStop
+            {
+                Id = 2,
+                DeliveryRouteId = RouteId,
+                SequenceNumber = 2,
+                DeliveryAddress = "456 Oak Ave, Town",
+                ContactName = "Customer B",
+                ContactPhone = "+0987654321",
+                Status = "Pending"
+            },
+            new DeliveryStop
+            {
+                Id = 3,
+                DeliveryRouteId = RouteId,
+                SequenceNumber = 3,
+                DeliveryAddress = "789 Pine Rd, Village",
+                ContactName = "Customer C",
+                ContactPhone = "+1122334455",
+                Status = "Pending"
+            }
+        };
+    }
+
+    private void SelectStop(DeliveryStop stop)
+    {
+        selectedStop = stop;
+    }
+
+    private void MoveUp(int index)
+    {
+        if (index > 0)
+        {
+            var temp = deliveryStops[index];
+            deliveryStops[index] = deliveryStops[index - 1];
+            deliveryStops[index - 1] = temp;
+            
+            // Update sequence numbers
+            UpdateSequenceNumbers();
+        }
+    }
+
+    private void MoveDown(int index)
+    {
+        if (index < deliveryStops.Count - 1)
+        {
+            var temp = deliveryStops[index];
+            deliveryStops[index] = deliveryStops[index + 1];
+            deliveryStops[index + 1] = temp;
+            
+            // Update sequence numbers
+            UpdateSequenceNumbers();
+        }
+    }
+
+    private void UpdateSequenceNumbers()
+    {
+        for (int i = 0; i < deliveryStops.Count; i++)
+        {
+            deliveryStops[i].SequenceNumber = i + 1;
+        }
+    }
+
+    private async Task SaveOrder()
+    {
+        // TODO: Call API to save new order
+        var stopIds = deliveryStops.Select(s => s.Id).ToList();
+        
+        await Task.Delay(500);
+        
+        showSaveMessage = true;
+        StateHasChanged();
+        
+        await Task.Delay(3000);
+        showSaveMessage = false;
+        StateHasChanged();
+    }
+
+    private void GoBack()
+    {
+        Navigation.NavigateTo("/delivery-routes");
+    }
+}
+
+<style>
+    .route-organizer-page {
+        padding: 16px;
+        padding-bottom: 80px;
+    }
+
+    .header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 16px;
+        gap: 12px;
+    }
+
+    .back-button, .save-button {
+        padding: 10px 16px;
+        border: none;
+        border-radius: 8px;
+        font-size: 0.875rem;
+        cursor: pointer;
+        font-weight: 500;
+    }
+
+    .back-button {
+        background: #6c757d;
+        color: white;
+    }
+
+    .save-button {
+        background: #28a745;
+        color: white;
+    }
+
+    .instructions {
+        background: #e7f3ff;
+        padding: 12px;
+        border-radius: 8px;
+        margin-bottom: 16px;
+        font-size: 0.875rem;
+    }
+
+    .stops-list {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .stop-card {
+        background: white;
+        border: 2px solid #e0e0e0;
+        border-radius: 12px;
+        padding: 16px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .stop-card.selected {
+        border-color: #667eea;
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+    }
+
+    .stop-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .sequence-badge {
+        background: #667eea;
+        color: white;
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        flex-shrink: 0;
+    }
+
+    .stop-info {
+        flex: 1;
+    }
+
+    .stop-info strong {
+        display: block;
+        margin-bottom: 4px;
+    }
+
+    .stop-info p {
+        margin: 0;
+        font-size: 0.875rem;
+        color: #666;
+    }
+
+    .move-controls {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .move-btn {
+        background: #f0f0f0;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        padding: 4px 8px;
+        cursor: pointer;
+        font-size: 0.75rem;
+        transition: background 0.2s;
+    }
+
+    .move-btn:hover {
+        background: #e0e0e0;
+    }
+
+    .stop-status {
+        margin-top: 12px;
+        padding-top: 12px;
+        border-top: 1px solid #f0f0f0;
+    }
+
+    .status-badge {
+        display: inline-block;
+        padding: 4px 12px;
+        border-radius: 12px;
+        font-size: 0.75rem;
+        font-weight: 500;
+    }
+
+    .status-badge.pending {
+        background: #ffc107;
+        color: #000;
+    }
+
+    .status-badge.delivered {
+        background: #28a745;
+        color: white;
+    }
+
+    .save-message {
+        position: fixed;
+        bottom: 80px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: #28a745;
+        color: white;
+        padding: 12px 24px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        animation: slideUp 0.3s ease;
+    }
+
+    .text-muted {
+        text-align: center;
+        color: #666;
+        padding: 40px;
+    }
+
+    @keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateX(-50%) translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+    }
+</style>

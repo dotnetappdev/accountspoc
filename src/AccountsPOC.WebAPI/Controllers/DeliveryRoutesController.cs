@@ -244,6 +244,41 @@ public class DeliveryRoutesController : ControllerBase
         return NoContent();
     }
 
+    [HttpPost("{id}/reorder-stops")]
+    public async Task<IActionResult> ReorderStops(int id, [FromBody] ReorderStopsRequest request)
+    {
+        var route = await _context.DeliveryRoutes
+            .Include(r => r.Stops)
+            .FirstOrDefaultAsync(r => r.Id == id);
+
+        if (route == null)
+        {
+            return NotFound();
+        }
+
+        // Validate that all stop IDs are valid
+        var stopIds = route.Stops.Select(s => s.Id).ToList();
+        if (!request.StopIds.All(id => stopIds.Contains(id)))
+        {
+            return BadRequest("Invalid stop IDs provided");
+        }
+
+        // Update sequence numbers based on new order
+        for (int i = 0; i < request.StopIds.Count; i++)
+        {
+            var stop = route.Stops.FirstOrDefault(s => s.Id == request.StopIds[i]);
+            if (stop != null)
+            {
+                stop.SequenceNumber = i + 1;
+            }
+        }
+
+        route.LastModifiedDate = DateTime.UtcNow;
+        await _context.SaveChangesAsync();
+
+        return Ok(new { Message = "Stops reordered successfully" });
+    }
+
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteDeliveryRoute(int id)
     {
