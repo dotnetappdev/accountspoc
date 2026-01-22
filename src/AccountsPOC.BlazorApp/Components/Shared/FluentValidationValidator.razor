@@ -1,0 +1,97 @@
+@using Microsoft.AspNetCore.Components
+@using Microsoft.AspNetCore.Components.Forms
+@using FluentValidation
+@inject IServiceProvider ServiceProvider
+
+@code {
+    [CascadingParameter] private EditContext? CurrentEditContext { get; set; }
+
+    private ValidationMessageStore? validationMessageStore;
+
+    protected override void OnInitialized()
+    {
+        if (CurrentEditContext == null)
+        {
+            throw new InvalidOperationException(
+                $"{nameof(FluentValidationValidator)} requires a cascading " +
+                $"parameter of type {nameof(EditContext)}. " +
+                $"For example, you can use {nameof(FluentValidationValidator)} " +
+                $"inside an {nameof(EditForm)}.");
+        }
+
+        validationMessageStore = new ValidationMessageStore(CurrentEditContext);
+
+        CurrentEditContext.OnValidationRequested += OnValidationRequested;
+        CurrentEditContext.OnFieldChanged += OnFieldChanged;
+    }
+
+    private void OnValidationRequested(object? sender, ValidationRequestedEventArgs e)
+    {
+        ValidateModel();
+    }
+
+    private void OnFieldChanged(object? sender, FieldChangedEventArgs e)
+    {
+        ValidateField(e.FieldIdentifier);
+    }
+
+    private void ValidateModel()
+    {
+        if (CurrentEditContext == null || validationMessageStore == null) return;
+
+        validationMessageStore.Clear();
+
+        var modelType = CurrentEditContext.Model.GetType();
+        var validatorType = typeof(IValidator<>).MakeGenericType(modelType);
+        var validator = ServiceProvider.GetService(validatorType) as IValidator;
+
+        if (validator != null)
+        {
+            var context = new ValidationContext<object>(CurrentEditContext.Model);
+            var validationResult = validator.Validate(context);
+
+            foreach (var error in validationResult.Errors)
+            {
+                var fieldIdentifier = new FieldIdentifier(CurrentEditContext.Model, error.PropertyName);
+                validationMessageStore.Add(fieldIdentifier, error.ErrorMessage);
+            }
+        }
+
+        CurrentEditContext.NotifyValidationStateChanged();
+    }
+
+    private void ValidateField(FieldIdentifier fieldIdentifier)
+    {
+        if (CurrentEditContext == null || validationMessageStore == null) return;
+
+        var modelType = CurrentEditContext.Model.GetType();
+        var validatorType = typeof(IValidator<>).MakeGenericType(modelType);
+        var validator = ServiceProvider.GetService(validatorType) as IValidator;
+
+        if (validator != null)
+        {
+            var context = new ValidationContext<object>(CurrentEditContext.Model);
+            var validationResult = validator.Validate(context);
+
+            // Clear existing messages for this field
+            validationMessageStore.Clear(fieldIdentifier);
+
+            // Add messages for this field
+            foreach (var error in validationResult.Errors.Where(e => e.PropertyName == fieldIdentifier.FieldName))
+            {
+                validationMessageStore.Add(fieldIdentifier, error.ErrorMessage);
+            }
+
+            CurrentEditContext.NotifyValidationStateChanged();
+        }
+    }
+
+    public void Dispose()
+    {
+        if (CurrentEditContext != null)
+        {
+            CurrentEditContext.OnValidationRequested -= OnValidationRequested;
+            CurrentEditContext.OnFieldChanged -= OnFieldChanged;
+        }
+    }
+}
