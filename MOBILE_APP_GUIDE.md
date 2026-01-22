@@ -97,6 +97,8 @@ The AccountsPOC Mobile Fulfillment App is a comprehensive solution for warehouse
 
 ## 📸 Screenshots
 
+> **Note**: Actual screenshots of the mobile application are available in the [`docs/screenshots/mobile/`](docs/screenshots/mobile/) directory. The ASCII art diagrams below provide a visual reference of the UI layout.
+
 ### Home Screen
 ```
 ┌─────────────────────────────────┐

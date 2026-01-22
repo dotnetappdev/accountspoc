@@ -2,6 +2,14 @@
 
 A modern, full-featured accounting management system similar to Sage 200, built with ASP.NET Core Web API and Blazor.
 
+## 📚 Documentation
+
+- **[Blazor Web App Guide](BLAZOR_APP_GUIDE.md)** - Complete guide for the web application
+- **[Mobile App Guide](MOBILE_APP_GUIDE.md)** - Complete guide for the MAUI mobile fulfillment app
+- **[MAUI Implementation](MAUI_README.md)** - Technical details of the MAUI implementation
+- **[Screenshots Guide](docs/SCREENSHOTS_GUIDE.md)** - How to capture and contribute screenshots
+- **[Implementation Summary](IMPLEMENTATION_SUMMARY.md)** - Technical implementation details
+
 ## Features
 
 ### Core Accounting Features
@@ -120,7 +128,10 @@ dotnet build AccountsPOC.sln
 
 ## UI Screenshots
 
-The application features a modern, responsive UI with the following screens:
+The application features a modern, responsive UI with comprehensive interfaces for both web and mobile platforms.
+
+### Blazor Web Application
+Screenshots of the web interface are available in the [`docs/screenshots/blazor/`](docs/screenshots/blazor/) directory, featuring:
 
 - **Home Dashboard** - Overview of the system with quick access to all features
 - **Bank Accounts** - Manage multiple bank accounts with balance tracking
@@ -128,6 +139,22 @@ The application features a modern, responsive UI with the following screens:
 - **Sales Orders** - Create and manage customer orders
 - **Sales Invoices** - Generate and track invoices
 - **Bill of Materials** - Create and manage BOMs with component linking
+- **Management Dashboard** - Analytics and reporting
+- **Payment Processing** - Invoice payment management
+- **Price Lists** - Customer-specific pricing
+
+### MAUI Mobile Application
+Screenshots of the mobile fulfillment app are available in the [`docs/screenshots/mobile/`](docs/screenshots/mobile/) directory, featuring:
+
+- **Driver Dashboard** - Quick access to warehouse and delivery operations
+- **Stock Check** - Barcode scanning and inventory lookup
+- **Pick Lists** - Order fulfillment and picking operations
+- **Delivery Routes** - GPS-enabled route management
+- **Parcel Scanning** - Package tracking and organization
+- **Stock Counts** - Inventory counting with variance tracking
+- **Offline Sync** - Real-time synchronization status
+
+For detailed information about capturing and contributing screenshots, see the [Screenshots Guide](docs/SCREENSHOTS_GUIDE.md).
 
 ## Development
 

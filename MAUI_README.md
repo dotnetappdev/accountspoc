@@ -122,6 +122,20 @@ dotnet build src/AccountsPOC.MauiApp/AccountsPOC.MauiApp.csproj -f net10.0-ios
 
 ## Mobile App Usage
 
+### Screenshots
+
+Screenshots of the mobile application features are available in the [`docs/screenshots/mobile/`](docs/screenshots/mobile/) directory. These screenshots demonstrate:
+
+- Driver Dashboard and home screen
+- Stock Check with barcode scanning
+- Pick Lists management
+- Delivery Routes with GPS integration
+- Parcel Scanning operations
+- Stock Counts with variance tracking
+- Sync status and offline capabilities
+
+For detailed information about the mobile app features and usage, see the [Mobile App Guide](MOBILE_APP_GUIDE.md).
+
 ### Configuration
 Update the API base URL in `MauiProgram.cs`:
 ```csharp
