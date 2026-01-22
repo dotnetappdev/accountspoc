@@ -25,6 +25,8 @@
 /home/runner/work/accountspoc/accountspoc/src/AccountsPOC.BlazorApp/obj/Debug/net10.0/scopedcss/bundle/AccountsPOC.BlazorApp.styles.css
 /home/runner/work/accountspoc/accountspoc/src/AccountsPOC.BlazorApp/obj/Debug/net10.0/scopedcss/projectbundle/AccountsPOC.BlazorApp.bundle.scp.css
 /home/runner/work/accountspoc/accountspoc/src/AccountsPOC.BlazorApp/obj/Debug/net10.0/compressed/q8r7t3fu1f-{0}-w7mf952350-w7mf952350.gz
+/home/runner/work/accountspoc/accountspoc/src/AccountsPOC.BlazorApp/obj/Debug/net10.0/compressed/nzusl8fw9t-{0}-7b2oly0idp-7b2oly0idp.gz
+/home/runner/work/accountspoc/accountspoc/src/AccountsPOC.BlazorApp/obj/Debug/net10.0/compressed/fz5hwt95wx-{0}-f2t5tqajnh-f2t5tqajnh.gz
 /home/runner/work/accountspoc/accountspoc/src/AccountsPOC.BlazorApp/obj/Debug/net10.0/compressed/8fixd56tho-{0}-bqjiyaj88i-bqjiyaj88i.gz
 /home/runner/work/accountspoc/accountspoc/src/AccountsPOC.BlazorApp/obj/Debug/net10.0/compressed/9isu9st3wg-{0}-c2jlpeoesf-c2jlpeoesf.gz
 /home/runner/work/accountspoc/accountspoc/src/AccountsPOC.BlazorApp/obj/Debug/net10.0/compressed/2uvwutmytk-{0}-erw9l3u2r3-erw9l3u2r3.gz
@@ -84,5 +86,3 @@
 /home/runner/work/accountspoc/accountspoc/src/AccountsPOC.BlazorApp/obj/Debug/net10.0/AccountsPOC.BlazorApp.pdb
 /home/runner/work/accountspoc/accountspoc/src/AccountsPOC.BlazorApp/obj/Debug/net10.0/AccountsPOC.BlazorApp.genruntimeconfig.cache
 /home/runner/work/accountspoc/accountspoc/src/AccountsPOC.BlazorApp/obj/Debug/net10.0/ref/AccountsPOC.BlazorApp.dll
-/home/runner/work/accountspoc/accountspoc/src/AccountsPOC.BlazorApp/obj/Debug/net10.0/compressed/nzusl8fw9t-{0}-7b2oly0idp-7b2oly0idp.gz
-/home/runner/work/accountspoc/accountspoc/src/AccountsPOC.BlazorApp/obj/Debug/net10.0/compressed/fz5hwt95wx-{0}-f2t5tqajnh-f2t5tqajnh.gz

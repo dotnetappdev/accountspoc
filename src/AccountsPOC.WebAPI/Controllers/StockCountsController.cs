@@ -115,6 +115,13 @@ public class StockCountsController : ControllerBase
             return NotFound();
         }
 
+        // Validate counted quantities are not negative
+        var invalidItems = stockCount.Items.Where(i => i.CountedQuantity < 0).ToList();
+        if (invalidItems.Any())
+        {
+            return BadRequest($"Invalid counted quantities for items: {string.Join(", ", invalidItems.Select(i => i.StockItemId))}");
+        }
+
         // Update stock item quantities based on counted quantities
         foreach (var item in stockCount.Items)
         {

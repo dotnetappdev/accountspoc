@@ -1,5 +1,6 @@
 using AccountsPOC.Domain.Entities;
 using AccountsPOC.Infrastructure.Data;
+using AccountsPOC.WebAPI.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -181,6 +182,3 @@ public class DeliveryRoutesController : ControllerBase
         return NoContent();
     }
 }
-
-public record UpdateContactRequest(string? ContactName, string? ContactPhone, string? ContactEmail);
-public record CaptureEvidenceRequest(string? SignatureImagePath, string? PhotoEvidencePaths);
