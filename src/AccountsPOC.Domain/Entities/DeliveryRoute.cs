@@ -1,5 +1,21 @@
 namespace AccountsPOC.Domain.Entities;
 
+// Enums for type safety
+public static class DeliveryStatusType
+{
+    public const string Delivered = "Delivered";
+    public const string SafePlace = "SafePlace";
+    public const string LeftWithNeighbor = "LeftWithNeighbor";
+}
+
+public static class DeliveryStopStatus
+{
+    public const string Pending = "Pending";
+    public const string Arrived = "Arrived";
+    public const string Delivered = "Delivered";
+    public const string Failed = "Failed";
+}
+
 public class DeliveryRoute
 {
     public int Id { get; set; }
@@ -43,6 +59,13 @@ public class DeliveryStop
     public string? SignatureImagePath { get; set; }
     public string? PhotoEvidencePaths { get; set; } // JSON array of image paths
     public bool EvidenceCaptured { get; set; }
+    
+    // Delivery details for GPS and route optimization
+    public string? DoorNumber { get; set; } // Door/apartment number for the delivery
+    public int ParcelCount { get; set; } = 0; // Number of parcels to deliver at this stop
+    public string? DeliveryStatus { get; set; } // "Delivered", "SafePlace", "LeftWithNeighbor"
+    public string? NeighborDoorNumber { get; set; } // If left with neighbor, their door number
+    public double? OptimizedDistance { get; set; } // Distance in km from previous stop (for optimization)
     
     // Safe place and access details (Amazon-style)
     public string? SafePlace { get; set; } // e.g., "Porch", "Rear Porch", "Garage", "Behind Gate"

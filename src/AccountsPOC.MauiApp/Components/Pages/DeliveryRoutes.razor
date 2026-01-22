@@ -1,6 +1,7 @@
 @page "/delivery-routes"
 @using AccountsPOC.SharedComponents
 @using AccountsPOC.Domain.Entities
+@inject NavigationManager Navigation
 
 <PageTitle>Delivery Routes</PageTitle>
 
@@ -128,7 +129,8 @@
 
     private void SelectRoute(DeliveryRoute route)
     {
-        // TODO: Navigate to route details with map
+        // Navigate to route map view
+        Navigation.NavigateTo($"/route-map/{route.Id}");
     }
 }
 
