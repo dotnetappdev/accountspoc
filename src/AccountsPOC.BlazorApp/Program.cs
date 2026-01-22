@@ -1,10 +1,15 @@
 using AccountsPOC.BlazorApp.Components;
+using FluentValidation;
+using AccountsPOC.BlazorApp.Validators;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
+
+// Register FluentValidation validators
+builder.Services.AddValidatorsFromAssemblyContaining<CustomerValidator>();
 
 // Add HttpClient for API calls
 builder.Services.AddHttpClient("AccountsAPI", client =>

@@ -24,16 +24,23 @@ h1:focus {
     outline: none;
 }
 
+/* Validation styles - Blue border for valid fields */
 .valid.modified:not([type=checkbox]) {
-    outline: 1px solid #26b050;
+    border: 2px solid #007bff !important;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
 }
 
+/* Validation styles - Red border for invalid fields */
 .invalid {
-    outline: 1px solid #e50000;
+    border: 2px solid #dc3545 !important;
+    box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
 }
 
 .validation-message {
-    color: #e50000;
+    color: #dc3545;
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+    display: block;
 }
 
 .blazor-error-boundary {
