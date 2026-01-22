@@ -38,6 +38,12 @@ public class ApplicationDbContext : DbContext
     public DbSet<PurchaseOrder> PurchaseOrders => Set<PurchaseOrder>();
     public DbSet<PurchaseOrderItem> PurchaseOrderItems => Set<PurchaseOrderItem>();
     public DbSet<BrandingAsset> BrandingAssets => Set<BrandingAsset>();
+    public DbSet<PickList> PickLists => Set<PickList>();
+    public DbSet<PickListItem> PickListItems => Set<PickListItem>();
+    public DbSet<StockCount> StockCounts => Set<StockCount>();
+    public DbSet<StockCountItem> StockCountItems => Set<StockCountItem>();
+    public DbSet<DeliveryRoute> DeliveryRoutes => Set<DeliveryRoute>();
+    public DbSet<DeliveryStop> DeliveryStops => Set<DeliveryStop>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -560,6 +566,124 @@ public class ApplicationDbContext : DbContext
             entity.Property(e => e.LastModifiedBy).HasMaxLength(100);
             entity.HasIndex(e => e.TenantId);
             entity.HasIndex(e => new { e.TenantId, e.AssetType, e.IsActive });
+        });
+        
+        // PickList configuration
+        modelBuilder.Entity<PickList>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.PickListNumber).IsRequired().HasMaxLength(50);
+            entity.Property(e => e.Status).IsRequired().HasMaxLength(50);
+            entity.Property(e => e.AssignedToUserName).HasMaxLength(200);
+            entity.Property(e => e.Notes).HasMaxLength(2000);
+            entity.HasIndex(e => e.TenantId);
+            entity.HasIndex(e => new { e.TenantId, e.PickListNumber }).IsUnique();
+            
+            entity.HasOne(e => e.SalesOrder)
+                .WithMany()
+                .HasForeignKey(e => e.SalesOrderId)
+                .OnDelete(DeleteBehavior.Restrict);
+                
+            entity.HasMany(e => e.Items)
+                .WithOne(e => e.PickList)
+                .HasForeignKey(e => e.PickListId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+        
+        // PickListItem configuration
+        modelBuilder.Entity<PickListItem>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.BinLocation).HasMaxLength(50);
+            entity.Property(e => e.Notes).HasMaxLength(500);
+            entity.HasIndex(e => e.PickListId);
+            entity.HasIndex(e => e.StockItemId);
+            
+            entity.HasOne(e => e.StockItem)
+                .WithMany()
+                .HasForeignKey(e => e.StockItemId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+        
+        // StockCount configuration
+        modelBuilder.Entity<StockCount>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.CountNumber).IsRequired().HasMaxLength(50);
+            entity.Property(e => e.Status).IsRequired().HasMaxLength(50);
+            entity.Property(e => e.CountedByUserName).HasMaxLength(200);
+            entity.Property(e => e.Notes).HasMaxLength(2000);
+            entity.HasIndex(e => e.TenantId);
+            entity.HasIndex(e => new { e.TenantId, e.CountNumber }).IsUnique();
+            
+            entity.HasOne(e => e.Warehouse)
+                .WithMany()
+                .HasForeignKey(e => e.WarehouseId)
+                .OnDelete(DeleteBehavior.Restrict);
+                
+            entity.HasMany(e => e.Items)
+                .WithOne(e => e.StockCount)
+                .HasForeignKey(e => e.StockCountId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+        
+        // StockCountItem configuration
+        modelBuilder.Entity<StockCountItem>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Notes).HasMaxLength(500);
+            entity.HasIndex(e => e.StockCountId);
+            entity.HasIndex(e => e.StockItemId);
+            
+            entity.HasOne(e => e.StockItem)
+                .WithMany()
+                .HasForeignKey(e => e.StockItemId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+        
+        // DeliveryRoute configuration
+        modelBuilder.Entity<DeliveryRoute>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.RouteNumber).IsRequired().HasMaxLength(50);
+            entity.Property(e => e.Status).IsRequired().HasMaxLength(50);
+            entity.Property(e => e.DriverUserName).HasMaxLength(200);
+            entity.Property(e => e.VehicleRegistration).HasMaxLength(50);
+            entity.Property(e => e.Notes).HasMaxLength(2000);
+            entity.HasIndex(e => e.TenantId);
+            entity.HasIndex(e => new { e.TenantId, e.RouteNumber }).IsUnique();
+            
+            entity.HasMany(e => e.Stops)
+                .WithOne(e => e.DeliveryRoute)
+                .HasForeignKey(e => e.DeliveryRouteId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+        
+        // DeliveryStop configuration
+        modelBuilder.Entity<DeliveryStop>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.DeliveryAddress).IsRequired().HasMaxLength(500);
+            entity.Property(e => e.ContactName).HasMaxLength(200);
+            entity.Property(e => e.ContactPhone).HasMaxLength(50);
+            entity.Property(e => e.ContactEmail).HasMaxLength(200);
+            entity.Property(e => e.Status).IsRequired().HasMaxLength(50);
+            entity.Property(e => e.DeliveryNotes).HasMaxLength(2000);
+            entity.Property(e => e.SignatureImagePath).HasMaxLength(500);
+            entity.Property(e => e.PhotoEvidencePaths).HasMaxLength(2000);
+            entity.HasIndex(e => e.DeliveryRouteId);
+            entity.HasIndex(e => e.CustomerId);
+            entity.HasIndex(e => e.SalesOrderId);
+            
+            entity.HasOne(e => e.Customer)
+                .WithMany()
+                .HasForeignKey(e => e.CustomerId)
+                .OnDelete(DeleteBehavior.Restrict);
+                
+            entity.HasOne(e => e.SalesOrder)
+                .WithMany()
+                .HasForeignKey(e => e.SalesOrderId)
+                .OnDelete(DeleteBehavior.Restrict);
         });
     }
 }

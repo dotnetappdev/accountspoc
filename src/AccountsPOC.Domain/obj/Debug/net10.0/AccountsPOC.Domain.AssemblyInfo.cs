@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("AccountsPOC.Domain")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+0dc17ca01cbc071c22eb7c7795488fb5604bb566")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+a3283952afd235f49b68730b9a59c45d61575b23")]
 [assembly: System.Reflection.AssemblyProductAttribute("AccountsPOC.Domain")]
 [assembly: System.Reflection.AssemblyTitleAttribute("AccountsPOC.Domain")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

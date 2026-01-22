@@ -1,0 +1,65 @@
+@using AccountsPOC.Domain.Entities
+
+<div class="pick-list-card">
+    <div class="pick-list-header">
+        <h3>Pick List: @PickList?.PickListNumber</h3>
+        <span class="status-badge @GetStatusClass()">@PickList?.Status</span>
+    </div>
+    
+    @if (PickList != null)
+    {
+        <div class="pick-list-info">
+            <div class="info-row">
+                <label>Date:</label>
+                <span>@PickList.PickListDate.ToShortDateString()</span>
+            </div>
+            @if (!string.IsNullOrEmpty(PickList.AssignedToUserName))
+            {
+                <div class="info-row">
+                    <label>Assigned To:</label>
+                    <span>@PickList.AssignedToUserName</span>
+                </div>
+            }
+        </div>
+
+        <div class="pick-list-items">
+            <h4>Items (@PickList.Items.Count)</h4>
+            @foreach (var item in PickList.Items)
+            {
+                <div class="pick-item @(item.QuantityPicked >= item.QuantityRequired ? "completed" : "")">
+                    <div class="item-header">
+                        <strong>@item.StockItem?.StockCode</strong>
+                        <span class="bin-location">📍 @item.BinLocation</span>
+                    </div>
+                    <div class="item-description">
+                        @item.StockItem?.Description
+                    </div>
+                    <div class="item-quantity">
+                        <span>Picked: @item.QuantityPicked / @item.QuantityRequired</span>
+                        @if (item.QuantityPicked >= item.QuantityRequired)
+                        {
+                            <span class="check-mark">✓</span>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public PickList? PickList { get; set; }
+
+    private string GetStatusClass()
+    {
+        return PickList?.Status?.ToLower() switch
+        {
+            "pending" => "status-pending",
+            "inprogress" => "status-inprogress",
+            "completed" => "status-completed",
+            "cancelled" => "status-cancelled",
+            _ => ""
+        };
+    }
+}

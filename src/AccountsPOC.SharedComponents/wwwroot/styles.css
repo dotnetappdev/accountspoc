@@ -1,0 +1,222 @@
+/* Shared component styles */
+
+.stock-check-card,
+.pick-list-card,
+.delivery-route-card,
+.stock-count-card {
+    background: white;
+    border-radius: 8px;
+    padding: 16px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    margin-bottom: 16px;
+}
+
+.stock-info,
+.pick-list-info,
+.route-info,
+.count-info {
+    margin-bottom: 16px;
+}
+
+.info-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid #eee;
+}
+
+.info-row label {
+    font-weight: 600;
+    color: #666;
+}
+
+.quantity {
+    font-weight: bold;
+    font-size: 1.2em;
+}
+
+.quantity.low-stock {
+    color: #ff9800;
+}
+
+.quantity.out-of-stock {
+    color: #f44336;
+}
+
+.quantity.normal-stock {
+    color: #4caf50;
+}
+
+.pick-list-header,
+.route-header,
+.count-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid #eee;
+}
+
+.status-badge {
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 0.875rem;
+    font-weight: 600;
+}
+
+.status-pending {
+    background-color: #fff3cd;
+    color: #856404;
+}
+
+.status-planned {
+    background-color: #cce5ff;
+    color: #004085;
+}
+
+.status-inprogress {
+    background-color: #d1ecf1;
+    color: #0c5460;
+}
+
+.status-completed,
+.status-delivered,
+.status-reconciled {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.status-cancelled,
+.status-failed {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+.status-arrived {
+    background-color: #e2e3e5;
+    color: #383d41;
+}
+
+.pick-list-items,
+.delivery-stops,
+.count-items {
+    margin-top: 16px;
+}
+
+.pick-item,
+.delivery-stop,
+.count-item {
+    background: #f8f9fa;
+    border-radius: 6px;
+    padding: 12px;
+    margin-bottom: 8px;
+    border-left: 4px solid #dee2e6;
+}
+
+.pick-item.completed,
+.delivery-stop.completed {
+    border-left-color: #28a745;
+    background: #f0fff0;
+}
+
+.count-item.has-variance {
+    border-left-color: #ff9800;
+}
+
+.item-header,
+.stop-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.sequence-number {
+    background: #6c757d;
+    color: white;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-weight: bold;
+    font-size: 0.875rem;
+}
+
+.bin-location {
+    font-size: 0.875rem;
+    color: #666;
+}
+
+.item-description {
+    color: #666;
+    margin-bottom: 8px;
+}
+
+.item-quantity,
+.item-counts {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.875rem;
+    padding-top: 8px;
+    border-top: 1px solid #dee2e6;
+}
+
+.check-mark {
+    color: #28a745;
+    font-size: 1.2em;
+    font-weight: bold;
+}
+
+.customer-info {
+    margin-bottom: 8px;
+}
+
+.address {
+    color: #666;
+    font-size: 0.875rem;
+}
+
+.evidence-captured {
+    color: #28a745;
+    font-weight: 600;
+    margin-top: 8px;
+}
+
+.variance {
+    font-weight: bold;
+}
+
+.variance.positive {
+    color: #28a745;
+}
+
+.variance.negative {
+    color: #dc3545;
+}
+
+.count-summary {
+    padding: 8px;
+    background: #e9ecef;
+    border-radius: 4px;
+    margin-bottom: 12px;
+    font-weight: 600;
+}
+
+.alert {
+    padding: 12px;
+    border-radius: 4px;
+    margin-top: 12px;
+}
+
+.alert-warning {
+    background-color: #fff3cd;
+    border: 1px solid #ffc107;
+    color: #856404;
+}
+
+@media (max-width: 768px) {
+    .item-quantity,
+    .item-counts {
+        flex-direction: column;
+        gap: 4px;
+    }
+}

@@ -1,0 +1,132 @@
+@page "/pick-lists"
+@using AccountsPOC.SharedComponents
+@using AccountsPOC.Domain.Entities
+
+<PageTitle>Pick Lists</PageTitle>
+
+<div class="pick-lists-page">
+    <h1>📋 Pick Lists</h1>
+
+    @if (isLoading)
+    {
+        <div class="loading">Loading pick lists...</div>
+    }
+    else if (pickLists.Any())
+    {
+        <div class="filter-section">
+            <select class="form-control" @onchange="FilterByStatus">
+                <option value="">All Statuses</option>
+                <option value="Pending">Pending</option>
+                <option value="InProgress">In Progress</option>
+                <option value="Completed">Completed</option>
+            </select>
+        </div>
+
+        @foreach (var pickList in pickLists)
+        {
+            <div @onclick="() => SelectPickList(pickList)">
+                <PickListCard PickList="@pickList" />
+            </div>
+        }
+    }
+    else
+    {
+        <p class="text-muted">No pick lists available.</p>
+    }
+</div>
+
+@code {
+    private List<PickList> pickLists = new();
+    private bool isLoading = true;
+    private string selectedStatus = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadPickLists();
+    }
+
+    private async Task LoadPickLists()
+    {
+        isLoading = true;
+        
+        try
+        {
+            // TODO: Call API to load pick lists
+            await Task.Delay(500); // Simulate API call
+            
+            // Mock data
+            pickLists = new List<PickList>
+            {
+                new PickList
+                {
+                    Id = 1,
+                    TenantId = 1,
+                    PickListNumber = "PL-001",
+                    PickListDate = DateTime.Today,
+                    Status = "Pending",
+                    AssignedToUserName = "John Doe",
+                    CreatedDate = DateTime.Now,
+                    Items = new List<PickListItem>
+                    {
+                        new PickListItem
+                        {
+                            Id = 1,
+                            PickListId = 1,
+                            StockItemId = 1,
+                            QuantityRequired = 10,
+                            QuantityPicked = 0,
+                            BinLocation = "A1-B2",
+                            StockItem = new StockItem
+                            {
+                                Id = 1,
+                                TenantId = 1,
+                                StockCode = "ITEM-001",
+                                Description = "Sample Item 1",
+                                ProductId = 1,
+                                QuantityOnHand = 100,
+                                QuantityAllocated = 10,
+                                ReorderLevel = 20,
+                                ReorderQuantity = 50,
+                                CostPrice = 10m,
+                                SellingPrice = 15m,
+                                IsActive = true,
+                                CreatedDate = DateTime.Now
+                            }
+                        }
+                    }
+                }
+            };
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task FilterByStatus(ChangeEventArgs e)
+    {
+        selectedStatus = e.Value?.ToString() ?? "";
+        await LoadPickLists();
+    }
+
+    private void SelectPickList(PickList pickList)
+    {
+        // TODO: Navigate to pick list details page
+    }
+}
+
+<style>
+    .pick-lists-page {
+        padding: 16px;
+    }
+
+    .filter-section {
+        margin-bottom: 16px;
+    }
+
+    .text-muted {
+        color: #666;
+        text-align: center;
+        padding: 40px;
+    }
+</style>

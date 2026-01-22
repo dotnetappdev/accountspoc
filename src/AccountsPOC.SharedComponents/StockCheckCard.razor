@@ -1,0 +1,62 @@
+@using AccountsPOC.Domain.Entities
+
+<div class="stock-check-card">
+    <h3>Stock Item Check</h3>
+    
+    @if (StockItem != null)
+    {
+        <div class="stock-info">
+            <div class="info-row">
+                <label>Stock Code:</label>
+                <span>@StockItem.StockCode</span>
+            </div>
+            <div class="info-row">
+                <label>Description:</label>
+                <span>@StockItem.Description</span>
+            </div>
+            <div class="info-row">
+                <label>Bin Location:</label>
+                <span>@StockItem.BinLocation</span>
+            </div>
+            <div class="info-row">
+                <label>Quantity on Hand:</label>
+                <span class="quantity @GetQuantityClass()">@StockItem.QuantityOnHand</span>
+            </div>
+            <div class="info-row">
+                <label>Quantity Available:</label>
+                <span class="quantity @GetAvailableQuantityClass()">@StockItem.QuantityAvailable</span>
+            </div>
+            <div class="info-row">
+                <label>Reorder Level:</label>
+                <span>@StockItem.ReorderLevel</span>
+            </div>
+            @if (StockItem.QuantityOnHand <= StockItem.ReorderLevel)
+            {
+                <div class="alert alert-warning">
+                    ⚠️ Stock level is at or below reorder point!
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <p class="text-muted">Scan or enter a stock code to check</p>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public StockItem? StockItem { get; set; }
+
+    private string GetQuantityClass()
+    {
+        if (StockItem == null) return "";
+        return StockItem.QuantityOnHand <= StockItem.ReorderLevel ? "low-stock" : "normal-stock";
+    }
+
+    private string GetAvailableQuantityClass()
+    {
+        if (StockItem == null) return "";
+        return StockItem.QuantityAvailable <= 0 ? "out-of-stock" : "normal-stock";
+    }
+}

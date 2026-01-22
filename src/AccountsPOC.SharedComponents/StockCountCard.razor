@@ -1,0 +1,78 @@
+@using AccountsPOC.Domain.Entities
+
+<div class="stock-count-card">
+    <div class="count-header">
+        <h3>Stock Count: @StockCount?.CountNumber</h3>
+        <span class="status-badge @GetStatusClass()">@StockCount?.Status</span>
+    </div>
+    
+    @if (StockCount != null)
+    {
+        <div class="count-info">
+            <div class="info-row">
+                <label>Date:</label>
+                <span>@StockCount.CountDate.ToShortDateString()</span>
+            </div>
+            @if (!string.IsNullOrEmpty(StockCount.CountedByUserName))
+            {
+                <div class="info-row">
+                    <label>Counted By:</label>
+                    <span>@StockCount.CountedByUserName</span>
+                </div>
+            }
+            @if (StockCount.Warehouse != null)
+            {
+                <div class="info-row">
+                    <label>Warehouse:</label>
+                    <span>@StockCount.Warehouse.WarehouseName</span>
+                </div>
+            }
+        </div>
+
+        <div class="count-items">
+            <h4>Items (@StockCount.Items.Count)</h4>
+            <div class="count-summary">
+                <span>Total Variance: @GetTotalVariance()</span>
+            </div>
+            @foreach (var item in StockCount.Items)
+            {
+                <div class="count-item @(item.VarianceQuantity != 0 ? "has-variance" : "")">
+                    <div class="item-header">
+                        <strong>@item.StockItem?.StockCode</strong>
+                    </div>
+                    <div class="item-description">
+                        @item.StockItem?.Description
+                    </div>
+                    <div class="item-counts">
+                        <div>Expected: @item.ExpectedQuantity</div>
+                        <div>Counted: @item.CountedQuantity</div>
+                        <div class="variance @(item.VarianceQuantity > 0 ? "positive" : item.VarianceQuantity < 0 ? "negative" : "")">
+                            Variance: @(item.VarianceQuantity > 0 ? "+" : "")@item.VarianceQuantity
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public StockCount? StockCount { get; set; }
+
+    private string GetStatusClass()
+    {
+        return StockCount?.Status?.ToLower() switch
+        {
+            "inprogress" => "status-inprogress",
+            "completed" => "status-completed",
+            "reconciled" => "status-reconciled",
+            _ => ""
+        };
+    }
+
+    private int GetTotalVariance()
+    {
+        return StockCount?.Items.Sum(i => i.VarianceQuantity) ?? 0;
+    }
+}
