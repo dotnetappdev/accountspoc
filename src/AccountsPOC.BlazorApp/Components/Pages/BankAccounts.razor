@@ -60,6 +60,20 @@
                                 <span class="label">Account #:</span>
                                 <span class="value">@account.AccountNumber</span>
                             </div>
+                            @if (!string.IsNullOrEmpty(account.IBAN))
+                            {
+                                <div class="detail-item">
+                                    <span class="label">IBAN:</span>
+                                    <span class="value">@account.IBAN</span>
+                                </div>
+                            }
+                            @if (!string.IsNullOrEmpty(account.SortCode))
+                            {
+                                <div class="detail-item">
+                                    <span class="label">Sort Code:</span>
+                                    <span class="value">@account.SortCode</span>
+                                </div>
+                            }
                             @if (!string.IsNullOrEmpty(account.BranchCode))
                             {
                                 <div class="detail-item">
@@ -138,6 +152,47 @@
                     </InputSelect>
                     <ValidationMessage For="@(() => currentAccount.Currency)" />
                 </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">IBAN</label>
+                    <InputText class="form-control" @bind-Value="currentAccount.IBAN" placeholder="GB29NWBK60161331926819" />
+                    <ValidationMessage For="@(() => currentAccount.IBAN)" />
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Sort Code</label>
+                    <InputText class="form-control" @bind-Value="currentAccount.SortCode" placeholder="12-34-56" />
+                    <ValidationMessage For="@(() => currentAccount.SortCode)" />
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Account Code</label>
+                    <InputText class="form-control" @bind-Value="currentAccount.AccountCode" placeholder="ACC001" />
+                    <ValidationMessage For="@(() => currentAccount.AccountCode)" />
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Issue Code</label>
+                    <InputText class="form-control" @bind-Value="currentAccount.IssueCode" placeholder="001" />
+                    <ValidationMessage For="@(() => currentAccount.IssueCode)" />
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Expiry Code</label>
+                    <InputText class="form-control" @bind-Value="currentAccount.ExpiryCode" placeholder="1225" />
+                    <ValidationMessage For="@(() => currentAccount.ExpiryCode)" />
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Start Code</label>
+                    <InputText class="form-control" @bind-Value="currentAccount.StartCode" placeholder="0120" />
+                    <ValidationMessage For="@(() => currentAccount.StartCode)" />
+                </div>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Extra Information</label>
+                <InputTextArea class="form-control" @bind-Value="currentAccount.Extra" rows="3" placeholder="Additional notes or information..." />
+                <ValidationMessage For="@(() => currentAccount.Extra)" />
             </div>
             <div class="mb-3 form-check">
                 <InputCheckbox class="form-check-input" id="isActive" @bind-Value="currentAccount.IsActive" />
