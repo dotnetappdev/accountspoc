@@ -13,7 +13,7 @@
         {
             <div class="page-size-selector">
                 <label>Show</label>
-                <select class="form-select form-select-sm" @onchange="OnPageSizeChanged">
+                <select class="form-select form-select-sm" @onchange="HandlePageSizeChange">
                     @foreach (var size in PageSizes)
                     {
                         <option value="@size" selected="@(size == PageSize)">@size</option>
@@ -38,9 +38,9 @@
                 
                 @if (ShowPageNumbers)
                 {
-                    @foreach (var page in GetPageNumbers())
+                    @foreach (var pageNum in GetPageNumbers())
                     {
-                        @if (page == -1)
+                        @if (pageNum == -1)
                         {
                             <li class="page-item disabled">
                                 <span class="page-link">...</span>
@@ -48,8 +48,8 @@
                         }
                         else
                         {
-                            <li class="page-item @(page == CurrentPage ? "active" : "")">
-                                <button class="page-link" @onclick="() => GoToPage(page)">@page</button>
+                            <li class="page-item @(pageNum == CurrentPage ? "active" : "")">
+                                <button class="page-link" @onclick="() => GoToPage(pageNum)">@pageNum</button>
                             </li>
                         }
                     }
@@ -171,7 +171,7 @@
     [Parameter] public bool ShowPageSizeDropdown { get; set; } = true;
     [Parameter] public int MaxPageNumbers { get; set; } = 5;
     [Parameter] public EventCallback<int> OnPageChanged { get; set; }
-    [Parameter] public EventCallback<int> OnPageSizeChanged { get; set; }
+    [Parameter] public EventCallback<int> PageSizeChanged { get; set; }
 
     private int TotalPages => (int)Math.Ceiling((double)TotalCount / PageSize);
     private int StartItem => TotalCount == 0 ? 0 : (CurrentPage - 1) * PageSize + 1;
@@ -185,11 +185,11 @@
         await OnPageChanged.InvokeAsync(page);
     }
 
-    private async Task OnPageSizeChanged(ChangeEventArgs e)
+    private async Task HandlePageSizeChange(ChangeEventArgs e)
     {
         if (int.TryParse(e.Value?.ToString(), out int newSize))
         {
-            await OnPageSizeChanged.InvokeAsync(newSize);
+            await PageSizeChanged.InvokeAsync(newSize);
         }
     }
 
