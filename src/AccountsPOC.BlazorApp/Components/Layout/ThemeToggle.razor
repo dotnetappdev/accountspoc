@@ -20,23 +20,15 @@
         {
             try
             {
-                // Get theme from localStorage or check system preference
-                var theme = await JS.InvokeAsync<string>("localStorage.getItem", "theme");
-                
-                if (string.IsNullOrEmpty(theme))
-                {
-                    // Check system preference
-                    var prefersDark = await JS.InvokeAsync<bool>("eval", 
-                        "window.matchMedia('(prefers-color-scheme: dark)').matches");
-                    theme = prefersDark ? "dark" : "light";
-                }
-                
+                // Get theme from themeManager
+                var theme = await JS.InvokeAsync<string>("themeManager.getTheme");
                 isDarkMode = theme == "dark";
                 StateHasChanged();
             }
-            catch
+            catch (Exception ex)
             {
                 // Default to light mode if there's any error
+                Console.WriteLine($"Error getting theme: {ex.Message}");
                 isDarkMode = false;
             }
         }
@@ -45,16 +37,17 @@
     private async Task ToggleTheme()
     {
         isDarkMode = !isDarkMode;
-        var theme = isDarkMode ? "dark" : "light";
         
         try
         {
-            await JS.InvokeVoidAsync("localStorage.setItem", "theme", theme);
-            await JS.InvokeVoidAsync("eval", $"document.documentElement.setAttribute('data-theme', '{theme}')");
+            var newTheme = isDarkMode ? "dark" : "light";
+            await JS.InvokeVoidAsync("themeManager.setTheme", newTheme);
         }
-        catch
+        catch (Exception ex)
         {
-            // Silently handle errors
+            // Log error and revert state
+            Console.WriteLine($"Error setting theme: {ex.Message}");
+            isDarkMode = !isDarkMode;
         }
     }
 

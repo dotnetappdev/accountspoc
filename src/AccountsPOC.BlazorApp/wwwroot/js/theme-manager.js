@@ -32,4 +32,22 @@
             document.documentElement.setAttribute('data-theme', theme);
         }
     });
+
+    // Expose theme functions to global scope for Blazor
+    window.themeManager = {
+        getTheme: function() {
+            return localStorage.getItem('theme') || 
+                   (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+        },
+        setTheme: function(theme) {
+            localStorage.setItem('theme', theme);
+            document.documentElement.setAttribute('data-theme', theme);
+        },
+        toggleTheme: function() {
+            const currentTheme = this.getTheme();
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            this.setTheme(newTheme);
+            return newTheme;
+        }
+    };
 })();
