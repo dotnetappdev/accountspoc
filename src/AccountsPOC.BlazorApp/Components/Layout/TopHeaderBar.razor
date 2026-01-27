@@ -1,0 +1,63 @@
+@inject NavigationManager NavigationManager
+
+<header class="top-header">
+    <div class="header-left">
+        <button class="mobile-menu-btn" id="mobileMenuToggle" @onclick="ToggleMobileMenu">
+            <i class="bi bi-list"></i>
+        </button>
+        <div class="page-title">
+            <h2>@GetPageTitle()</h2>
+        </div>
+    </div>
+
+    <div class="header-right">
+        <div class="header-search">
+            <i class="bi bi-search"></i>
+            <input type="search" placeholder="Search..." class="search-input" />
+        </div>
+        
+        <button class="header-icon-btn" title="Notifications">
+            <i class="bi bi-bell"></i>
+            <span class="notification-badge">3</span>
+        </button>
+        
+        <button class="header-icon-btn" title="Help">
+            <i class="bi bi-question-circle"></i>
+        </button>
+        
+        <div class="user-menu">
+            <button class="user-button">
+                <div class="user-avatar">
+                    <i class="bi bi-person-circle"></i>
+                </div>
+                <span class="user-name">Admin User</span>
+                <i class="bi bi-chevron-down"></i>
+            </button>
+        </div>
+    </div>
+</header>
+
+@code {
+    [Parameter]
+    public EventCallback OnMobileMenuToggle { get; set; }
+
+    private async Task ToggleMobileMenu()
+    {
+        await OnMobileMenuToggle.InvokeAsync();
+    }
+
+    private string GetPageTitle()
+    {
+        var path = NavigationManager.ToBaseRelativePath(NavigationManager.Uri);
+        
+        if (string.IsNullOrEmpty(path) || path == "/")
+            return "Dashboard";
+        
+        // Convert path to title (e.g., "sales-orders" -> "Sales Orders")
+        var title = path.Split('/')[0]
+            .Replace("-", " ")
+            .Replace("_", " ");
+        
+        return System.Globalization.CultureInfo.CurrentCulture.TextInfo.ToTitleCase(title);
+    }
+}

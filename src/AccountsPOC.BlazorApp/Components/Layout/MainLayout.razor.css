@@ -4,8 +4,20 @@
     flex-direction: column;
 }
 
+.app-container {
+    display: flex;
+    min-height: 100vh;
+}
+
 main {
     flex: 1;
+}
+
+.theme-toggle-container {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    z-index: 999;
 }
 
 .sidebar {

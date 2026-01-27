@@ -1,9 +1,10 @@
 ﻿@inherits LayoutComponentBase
 
 <div class="app-container">
-    <ModernNavMenu />
+    <ModernNavMenu @ref="navMenu" />
 
     <main class="main">
+        <TopHeaderBar OnMobileMenuToggle="ToggleMobileMenu" />
         <div class="theme-toggle-container">
             <ThemeToggle />
         </div>
@@ -18,3 +19,13 @@
     <a href="." class="reload">Reload</a>
     <span class="dismiss">🗙</span>
 </div>
+
+@code {
+    private ModernNavMenu? navMenu;
+
+    private void ToggleMobileMenu()
+    {
+        // Logic to toggle mobile menu can be implemented here
+        // For now, this is a placeholder for future mobile menu functionality
+    }
+}
