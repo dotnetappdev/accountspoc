@@ -18,7 +18,10 @@
         
         <button class="header-icon-btn" title="Notifications">
             <i class="bi bi-bell"></i>
-            <span class="notification-badge">3</span>
+            @if (NotificationCount > 0)
+            {
+                <span class="notification-badge">@NotificationCount</span>
+            }
         </button>
         
         <button class="header-icon-btn" title="Help">
@@ -30,7 +33,7 @@
                 <div class="user-avatar">
                     <i class="bi bi-person-circle"></i>
                 </div>
-                <span class="user-name">Admin User</span>
+                <span class="user-name">@UserName</span>
                 <i class="bi bi-chevron-down"></i>
             </button>
         </div>
@@ -40,6 +43,12 @@
 @code {
     [Parameter]
     public EventCallback OnMobileMenuToggle { get; set; }
+
+    [Parameter]
+    public string UserName { get; set; } = "Admin User";
+
+    [Parameter]
+    public int NotificationCount { get; set; } = 3;
 
     private async Task ToggleMobileMenu()
     {
@@ -54,7 +63,11 @@
             return "Dashboard";
         
         // Convert path to title (e.g., "sales-orders" -> "Sales Orders")
-        var title = path.Split('/')[0]
+        var pathParts = path.Split('/');
+        if (pathParts.Length == 0)
+            return "Dashboard";
+            
+        var title = pathParts[0]
             .Replace("-", " ")
             .Replace("_", " ");
         
