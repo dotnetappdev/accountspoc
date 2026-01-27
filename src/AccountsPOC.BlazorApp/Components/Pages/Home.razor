@@ -1,182 +1,320 @@
 ﻿@page "/"
+@using System.Globalization
 
-<PageTitle>Dashboard - Accounts POC</PageTitle>
+<PageTitle>Dashboard - AccountsPro ERP</PageTitle>
 
 <div class="container-fluid dashboard-page">
-    <!-- Dashboard Header -->
-    <div class="dashboard-header">
-        <div>
-            <h1 class="display-4">
-                <i class="bi bi-speedometer2"></i>
-                Dashboard
-            </h1>
-            <p class="lead">Welcome back! Here's what's happening with your business today.</p>
+    <!-- Breadcrumb Navigation -->
+    <nav aria-label="breadcrumb" class="dashboard-breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><i class="bi bi-house-door"></i> Home</li>
+            <li class="breadcrumb-item active" aria-current="page">Dashboard</li>
+        </ol>
+        <div class="dashboard-meta">
+            <span class="dashboard-date">
+                <i class="bi bi-calendar3"></i>
+                @DateTime.Now.ToString("dddd, MMMM dd, yyyy", CultureInfo.CurrentCulture)
+            </span>
+            <span class="dashboard-time">
+                <i class="bi bi-clock"></i>
+                @DateTime.Now.ToString("HH:mm", CultureInfo.CurrentCulture)
+            </span>
         </div>
-        <div class="dashboard-actions">
-            <button class="btn btn-outline-primary">
-                <i class="bi bi-arrow-clockwise"></i> Refresh
+    </nav>
+
+    <!-- Dashboard Header -->
+    <div class="dashboard-header-enterprise">
+        <div class="dashboard-header-content">
+            <div class="dashboard-title-section">
+                <h1 class="dashboard-title">
+                    <i class="bi bi-speedometer2"></i>
+                    <span>Business Overview</span>
+                </h1>
+                <p class="dashboard-subtitle">Real-time insights and key performance indicators</p>
+            </div>
+        </div>
+        <div class="dashboard-actions-enterprise">
+            <button class="btn btn-sm btn-outline-secondary action-btn">
+                <i class="bi bi-download"></i>
+                <span>Export Report</span>
+            </button>
+            <button class="btn btn-sm btn-outline-secondary action-btn">
+                <i class="bi bi-calendar-range"></i>
+                <span>Date Range</span>
+            </button>
+            <button class="btn btn-sm btn-primary action-btn">
+                <i class="bi bi-arrow-clockwise"></i>
+                <span>Refresh</span>
             </button>
         </div>
     </div>
 
-    <!-- Key Metrics Row -->
-    <div class="row metrics-row g-3 mb-4">
-        <div class="col-md-3 col-sm-6">
-            <div class="metric-card metric-primary">
-                <div class="metric-icon">
-                    <i class="bi bi-box-seam"></i>
-                </div>
-                <div class="metric-content">
-                    <div class="metric-value">1,247</div>
-                    <div class="metric-label">Total Stock Items</div>
-                    <div class="metric-change positive">
-                        <i class="bi bi-arrow-up"></i> 12% from last month
+    <!-- Key Metrics Row - Enterprise Grade -->
+    <div class="metrics-section">
+        <div class="section-header-enterprise">
+            <h2 class="section-title">
+                <i class="bi bi-graph-up"></i>
+                Key Performance Indicators
+            </h2>
+            <div class="section-actions">
+                <button class="btn btn-link btn-sm text-muted">View Details <i class="bi bi-arrow-right"></i></button>
+            </div>
+        </div>
+        
+        <div class="row metrics-row-enterprise g-4 mb-4">
+            <div class="col-xl-3 col-lg-6 col-md-6">
+                <div class="metric-card-enterprise metric-primary">
+                    <div class="metric-card-header">
+                        <div class="metric-icon-container">
+                            <div class="metric-icon-enterprise">
+                                <i class="bi bi-box-seam"></i>
+                            </div>
+                        </div>
+                        <div class="metric-badge badge bg-primary-subtle text-primary">
+                            <i class="bi bi-arrow-up"></i> 12.5%
+                        </div>
+                    </div>
+                    <div class="metric-card-body">
+                        <div class="metric-value-enterprise">1,247</div>
+                        <div class="metric-label-enterprise">Total Stock Items</div>
+                        <div class="metric-comparison">
+                            <span class="comparison-text">vs. last month</span>
+                            <span class="comparison-value text-success">+145 items</span>
+                        </div>
+                    </div>
+                    <div class="metric-card-footer">
+                        <div class="metric-sparkline">
+                            <i class="bi bi-graph-up trend-icon"></i>
+                            <span class="trend-text">Trending upward</span>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
-        <div class="col-md-3 col-sm-6">
-            <div class="metric-card metric-success">
-                <div class="metric-icon">
-                    <i class="bi bi-cart-check"></i>
-                </div>
-                <div class="metric-content">
-                    <div class="metric-value">348</div>
-                    <div class="metric-label">Sales Orders</div>
-                    <div class="metric-change positive">
-                        <i class="bi bi-arrow-up"></i> 8% from last month
+
+            <div class="col-xl-3 col-lg-6 col-md-6">
+                <div class="metric-card-enterprise metric-success">
+                    <div class="metric-card-header">
+                        <div class="metric-icon-container">
+                            <div class="metric-icon-enterprise">
+                                <i class="bi bi-cart-check"></i>
+                            </div>
+                        </div>
+                        <div class="metric-badge badge bg-success-subtle text-success">
+                            <i class="bi bi-arrow-up"></i> 8.3%
+                        </div>
+                    </div>
+                    <div class="metric-card-body">
+                        <div class="metric-value-enterprise">348</div>
+                        <div class="metric-label-enterprise">Sales Orders</div>
+                        <div class="metric-comparison">
+                            <span class="comparison-text">vs. last month</span>
+                            <span class="comparison-value text-success">+27 orders</span>
+                        </div>
+                    </div>
+                    <div class="metric-card-footer">
+                        <div class="metric-sparkline">
+                            <i class="bi bi-graph-up trend-icon"></i>
+                            <span class="trend-text">Strong performance</span>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
-        <div class="col-md-3 col-sm-6">
-            <div class="metric-card metric-warning">
-                <div class="metric-icon">
-                    <i class="bi bi-receipt"></i>
-                </div>
-                <div class="metric-content">
-                    <div class="metric-value">$284,590</div>
-                    <div class="metric-label">Total Revenue</div>
-                    <div class="metric-change positive">
-                        <i class="bi bi-arrow-up"></i> 15% from last month
+
+            <div class="col-xl-3 col-lg-6 col-md-6">
+                <div class="metric-card-enterprise metric-warning">
+                    <div class="metric-card-header">
+                        <div class="metric-icon-container">
+                            <div class="metric-icon-enterprise">
+                                <i class="bi bi-currency-dollar"></i>
+                            </div>
+                        </div>
+                        <div class="metric-badge badge bg-warning-subtle text-warning">
+                            <i class="bi bi-arrow-up"></i> 15.2%
+                        </div>
+                    </div>
+                    <div class="metric-card-body">
+                        <div class="metric-value-enterprise">$284,590</div>
+                        <div class="metric-label-enterprise">Total Revenue</div>
+                        <div class="metric-comparison">
+                            <span class="comparison-text">vs. last month</span>
+                            <span class="comparison-value text-success">+$37,620</span>
+                        </div>
+                    </div>
+                    <div class="metric-card-footer">
+                        <div class="metric-sparkline">
+                            <i class="bi bi-graph-up trend-icon"></i>
+                            <span class="trend-text">Exceeding target</span>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
-        <div class="col-md-3 col-sm-6">
-            <div class="metric-card metric-info">
-                <div class="metric-icon">
-                    <i class="bi bi-graph-up-arrow"></i>
-                </div>
-                <div class="metric-content">
-                    <div class="metric-value">$68,240</div>
-                    <div class="metric-label">Profit (YTD)</div>
-                    <div class="metric-change positive">
-                        <i class="bi bi-arrow-up"></i> 22% from last year
+
+            <div class="col-xl-3 col-lg-6 col-md-6">
+                <div class="metric-card-enterprise metric-info">
+                    <div class="metric-card-header">
+                        <div class="metric-icon-container">
+                            <div class="metric-icon-enterprise">
+                                <i class="bi bi-graph-up-arrow"></i>
+                            </div>
+                        </div>
+                        <div class="metric-badge badge bg-info-subtle text-info">
+                            <i class="bi bi-arrow-up"></i> 22.1%
+                        </div>
+                    </div>
+                    <div class="metric-card-body">
+                        <div class="metric-value-enterprise">$68,240</div>
+                        <div class="metric-label-enterprise">Net Profit (YTD)</div>
+                        <div class="metric-comparison">
+                            <span class="comparison-text">vs. last year</span>
+                            <span class="comparison-value text-success">+$12,340</span>
+                        </div>
+                    </div>
+                    <div class="metric-card-footer">
+                        <div class="metric-sparkline">
+                            <i class="bi bi-graph-up trend-icon"></i>
+                            <span class="trend-text">Exceptional growth</span>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Secondary Metrics -->
-    <div class="row g-3 mb-4">
-        <div class="col-md-3 col-sm-6">
-            <div class="stat-card">
-                <div class="stat-icon bg-primary-subtle">
-                    <i class="bi bi-people"></i>
-                </div>
-                <div class="stat-details">
-                    <div class="stat-value">423</div>
-                    <div class="stat-label">Total Customers</div>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3 col-sm-6">
-            <div class="stat-card">
-                <div class="stat-icon bg-success-subtle">
-                    <i class="bi bi-clock-history"></i>
-                </div>
-                <div class="stat-details">
-                    <div class="stat-value">28</div>
-                    <div class="stat-label">Pending Orders</div>
+    <!-- Secondary Metrics - Enterprise Grade -->
+    <div class="secondary-metrics-section">
+        <div class="row g-4 mb-4">
+            <div class="col-xl-3 col-lg-6 col-md-6">
+                <div class="stat-card-enterprise">
+                    <div class="stat-card-icon-wrapper bg-primary-gradient">
+                        <i class="bi bi-people-fill"></i>
+                    </div>
+                    <div class="stat-card-content">
+                        <div class="stat-value-enterprise">423</div>
+                        <div class="stat-label-enterprise">Active Customers</div>
+                        <div class="stat-meta">
+                            <span class="badge bg-primary-subtle text-primary">
+                                <i class="bi bi-person-plus"></i> 12 new this week
+                            </span>
+                        </div>
+                    </div>
                 </div>
             </div>
-        </div>
-        <div class="col-md-3 col-sm-6">
-            <div class="stat-card">
-                <div class="stat-icon bg-warning-subtle">
-                    <i class="bi bi-exclamation-triangle"></i>
-                </div>
-                <div class="stat-details">
-                    <div class="stat-value">12</div>
-                    <div class="stat-label">Low Stock Alerts</div>
+
+            <div class="col-xl-3 col-lg-6 col-md-6">
+                <div class="stat-card-enterprise">
+                    <div class="stat-card-icon-wrapper bg-success-gradient">
+                        <i class="bi bi-hourglass-split"></i>
+                    </div>
+                    <div class="stat-card-content">
+                        <div class="stat-value-enterprise">28</div>
+                        <div class="stat-label-enterprise">Pending Orders</div>
+                        <div class="stat-meta">
+                            <span class="badge bg-success-subtle text-success">
+                                <i class="bi bi-check-circle"></i> Processing
+                            </span>
+                        </div>
+                    </div>
                 </div>
             </div>
-        </div>
-        <div class="col-md-3 col-sm-6">
-            <div class="stat-card">
-                <div class="stat-icon bg-info-subtle">
-                    <i class="bi bi-bank2"></i>
+
+            <div class="col-xl-3 col-lg-6 col-md-6">
+                <div class="stat-card-enterprise">
+                    <div class="stat-card-icon-wrapper bg-warning-gradient">
+                        <i class="bi bi-exclamation-triangle-fill"></i>
+                    </div>
+                    <div class="stat-card-content">
+                        <div class="stat-value-enterprise">12</div>
+                        <div class="stat-label-enterprise">Low Stock Alerts</div>
+                        <div class="stat-meta">
+                            <span class="badge bg-warning-subtle text-warning">
+                                <i class="bi bi-bell"></i> Requires attention
+                            </span>
+                        </div>
+                    </div>
                 </div>
-                <div class="stat-details">
-                    <div class="stat-value">$142,850</div>
-                    <div class="stat-label">Total Bank Balance</div>
+            </div>
+
+            <div class="col-xl-3 col-lg-6 col-md-6">
+                <div class="stat-card-enterprise">
+                    <div class="stat-card-icon-wrapper bg-info-gradient">
+                        <i class="bi bi-bank2"></i>
+                    </div>
+                    <div class="stat-card-content">
+                        <div class="stat-value-enterprise">$142,850</div>
+                        <div class="stat-label-enterprise">Bank Balance</div>
+                        <div class="stat-meta">
+                            <span class="badge bg-info-subtle text-info">
+                                <i class="bi bi-arrow-up-right"></i> Healthy
+                            </span>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Quick Actions & Recent Activity -->
-    <div class="row g-3">
+    <!-- Quick Actions & Recent Activity - Enterprise Grade -->
+    <div class="row g-4">
         <div class="col-lg-4">
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="card-title mb-0">
-                        <i class="bi bi-lightning-charge"></i> Quick Actions
-                    </h5>
+            <div class="card card-enterprise">
+                <div class="card-header-enterprise">
+                    <div class="card-header-content">
+                        <h5 class="card-title-enterprise">
+                            <i class="bi bi-lightning-charge-fill"></i>
+                            Quick Actions
+                        </h5>
+                        <p class="card-subtitle-enterprise">Common tasks</p>
+                    </div>
                 </div>
-                <div class="card-body p-0">
-                    <div class="quick-actions-list">
-                        <a href="/sales-orders" class="quick-action-item">
-                            <div class="action-icon bg-primary">
-                                <i class="bi bi-plus-circle"></i>
+                <div class="card-body-enterprise p-0">
+                    <div class="quick-actions-list-enterprise">
+                        <a href="/sales-orders" class="quick-action-item-enterprise">
+                            <div class="action-icon-wrapper bg-primary-gradient">
+                                <i class="bi bi-plus-circle-fill"></i>
                             </div>
-                            <div class="action-content">
-                                <div class="action-title">New Sales Order</div>
-                                <div class="action-desc">Create a new order</div>
+                            <div class="action-content-enterprise">
+                                <div class="action-title-enterprise">New Sales Order</div>
+                                <div class="action-desc-enterprise">Create and manage orders</div>
                             </div>
-                            <i class="bi bi-chevron-right"></i>
+                            <div class="action-arrow">
+                                <i class="bi bi-chevron-right"></i>
+                            </div>
                         </a>
-                        <a href="/sales-invoices" class="quick-action-item">
-                            <div class="action-icon bg-success">
-                                <i class="bi bi-file-earmark-text"></i>
+                        <a href="/sales-invoices" class="quick-action-item-enterprise">
+                            <div class="action-icon-wrapper bg-success-gradient">
+                                <i class="bi bi-file-earmark-text-fill"></i>
                             </div>
-                            <div class="action-content">
-                                <div class="action-title">New Invoice</div>
-                                <div class="action-desc">Generate invoice</div>
+                            <div class="action-content-enterprise">
+                                <div class="action-title-enterprise">Generate Invoice</div>
+                                <div class="action-desc-enterprise">Create customer invoices</div>
                             </div>
-                            <i class="bi bi-chevron-right"></i>
+                            <div class="action-arrow">
+                                <i class="bi bi-chevron-right"></i>
+                            </div>
                         </a>
-                        <a href="/products" class="quick-action-item">
-                            <div class="action-icon bg-warning">
-                                <i class="bi bi-box"></i>
+                        <a href="/products" class="quick-action-item-enterprise">
+                            <div class="action-icon-wrapper bg-warning-gradient">
+                                <i class="bi bi-box-seam-fill"></i>
                             </div>
-                            <div class="action-content">
-                                <div class="action-title">Add Product</div>
-                                <div class="action-desc">Add to inventory</div>
+                            <div class="action-content-enterprise">
+                                <div class="action-title-enterprise">Add Product</div>
+                                <div class="action-desc-enterprise">Manage inventory items</div>
                             </div>
-                            <i class="bi bi-chevron-right"></i>
+                            <div class="action-arrow">
+                                <i class="bi bi-chevron-right"></i>
+                            </div>
                         </a>
-                        <a href="/customers" class="quick-action-item">
-                            <div class="action-icon bg-info">
-                                <i class="bi bi-person-plus"></i>
+                        <a href="/customers" class="quick-action-item-enterprise">
+                            <div class="action-icon-wrapper bg-info-gradient">
+                                <i class="bi bi-person-plus-fill"></i>
                             </div>
-                            <div class="action-content">
-                                <div class="action-title">New Customer</div>
-                                <div class="action-desc">Add customer</div>
+                            <div class="action-content-enterprise">
+                                <div class="action-title-enterprise">New Customer</div>
+                                <div class="action-desc-enterprise">Add to customer base</div>
                             </div>
-                            <i class="bi bi-chevron-right"></i>
+                            <div class="action-arrow">
+                                <i class="bi bi-chevron-right"></i>
+                            </div>
                         </a>
                     </div>
                 </div>
@@ -184,59 +322,111 @@
         </div>
 
         <div class="col-lg-8">
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="card-title mb-0">
-                        <i class="bi bi-clock-history"></i> Recent Activity
-                    </h5>
+            <div class="card card-enterprise">
+                <div class="card-header-enterprise">
+                    <div class="card-header-content">
+                        <h5 class="card-title-enterprise">
+                            <i class="bi bi-activity"></i>
+                            Recent Activity
+                        </h5>
+                        <p class="card-subtitle-enterprise">Latest transactions and updates</p>
+                    </div>
+                    <div class="card-header-actions">
+                        <button class="btn btn-link btn-sm text-muted">
+                            View All <i class="bi bi-arrow-right"></i>
+                        </button>
+                    </div>
                 </div>
-                <div class="card-body p-0">
-                    <div class="activity-timeline">
-                        <div class="timeline-item">
-                            <div class="timeline-marker bg-success"></div>
-                            <div class="timeline-content">
-                                <div class="timeline-header">
-                                    <strong>Sales Order #SO-2024-0348</strong>
+                <div class="card-body-enterprise p-0">
+                    <div class="activity-timeline-enterprise">
+                        <div class="timeline-item-enterprise">
+                            <div class="timeline-marker-enterprise bg-success-gradient">
+                                <i class="bi bi-cart-check-fill"></i>
+                            </div>
+                            <div class="timeline-content-enterprise">
+                                <div class="timeline-header-enterprise">
+                                    <div class="timeline-title">
+                                        <strong>Sales Order #SO-2024-0348</strong>
+                                        <span class="badge bg-success-subtle text-success ms-2">Completed</span>
+                                    </div>
                                     <span class="timeline-time">2 hours ago</span>
                                 </div>
-                                <div class="timeline-body">
-                                    New order received from Acme Corporation - $12,450
+                                <div class="timeline-body-enterprise">
+                                    New order received from <strong>Acme Corporation</strong>
+                                </div>
+                                <div class="timeline-meta">
+                                    <span class="timeline-amount">$12,450.00</span>
+                                    <span class="timeline-divider">•</span>
+                                    <span class="timeline-user">by John Smith</span>
                                 </div>
                             </div>
                         </div>
-                        <div class="timeline-item">
-                            <div class="timeline-marker bg-primary"></div>
-                            <div class="timeline-content">
-                                <div class="timeline-header">
-                                    <strong>Invoice #INV-2024-0891</strong>
+
+                        <div class="timeline-item-enterprise">
+                            <div class="timeline-marker-enterprise bg-primary-gradient">
+                                <i class="bi bi-receipt-cutoff"></i>
+                            </div>
+                            <div class="timeline-content-enterprise">
+                                <div class="timeline-header-enterprise">
+                                    <div class="timeline-title">
+                                        <strong>Invoice #INV-2024-0891</strong>
+                                        <span class="badge bg-primary-subtle text-primary ms-2">Sent</span>
+                                    </div>
                                     <span class="timeline-time">4 hours ago</span>
                                 </div>
-                                <div class="timeline-body">
-                                    Invoice generated and sent to TechStart Inc.
+                                <div class="timeline-body-enterprise">
+                                    Invoice generated and sent to <strong>TechStart Inc.</strong>
+                                </div>
+                                <div class="timeline-meta">
+                                    <span class="timeline-amount">$8,750.00</span>
+                                    <span class="timeline-divider">•</span>
+                                    <span class="timeline-user">by Sarah Johnson</span>
                                 </div>
                             </div>
                         </div>
-                        <div class="timeline-item">
-                            <div class="timeline-marker bg-warning"></div>
-                            <div class="timeline-content">
-                                <div class="timeline-header">
-                                    <strong>Stock Alert</strong>
+
+                        <div class="timeline-item-enterprise">
+                            <div class="timeline-marker-enterprise bg-warning-gradient">
+                                <i class="bi bi-exclamation-triangle-fill"></i>
+                            </div>
+                            <div class="timeline-content-enterprise">
+                                <div class="timeline-header-enterprise">
+                                    <div class="timeline-title">
+                                        <strong>Stock Alert</strong>
+                                        <span class="badge bg-warning-subtle text-warning ms-2">Warning</span>
+                                    </div>
                                     <span class="timeline-time">5 hours ago</span>
                                 </div>
-                                <div class="timeline-body">
-                                    Low stock alert for Product SKU-1234 (12 units remaining)
+                                <div class="timeline-body-enterprise">
+                                    Low stock alert for <strong>Product SKU-1234</strong>
+                                </div>
+                                <div class="timeline-meta">
+                                    <span class="timeline-amount">12 units remaining</span>
+                                    <span class="timeline-divider">•</span>
+                                    <span class="timeline-user">System Alert</span>
                                 </div>
                             </div>
                         </div>
-                        <div class="timeline-item">
-                            <div class="timeline-marker bg-info"></div>
-                            <div class="timeline-content">
-                                <div class="timeline-header">
-                                    <strong>New Customer</strong>
+
+                        <div class="timeline-item-enterprise">
+                            <div class="timeline-marker-enterprise bg-info-gradient">
+                                <i class="bi bi-person-plus-fill"></i>
+                            </div>
+                            <div class="timeline-content-enterprise">
+                                <div class="timeline-header-enterprise">
+                                    <div class="timeline-title">
+                                        <strong>New Customer</strong>
+                                        <span class="badge bg-info-subtle text-info ms-2">New</span>
+                                    </div>
                                     <span class="timeline-time">Yesterday</span>
                                 </div>
-                                <div class="timeline-body">
-                                    GlobalTech Solutions added to customer database
+                                <div class="timeline-body-enterprise">
+                                    <strong>GlobalTech Solutions</strong> added to customer database
+                                </div>
+                                <div class="timeline-meta">
+                                    <span class="timeline-amount">Premium tier</span>
+                                    <span class="timeline-divider">•</span>
+                                    <span class="timeline-user">by Mike Davis</span>
                                 </div>
                             </div>
                         </div>

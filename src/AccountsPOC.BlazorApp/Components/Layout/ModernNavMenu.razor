@@ -1,157 +1,244 @@
 @inject NavigationManager NavigationManager
 
-<div class="modern-sidebar">
-    <div class="sidebar-header">
-        <div class="logo">
-            <i class="bi bi-calculator"></i>
-            <span class="logo-text">Accounts</span>
+<div class="modern-sidebar-enterprise">
+    <!-- Professional Brand Header -->
+    <div class="sidebar-brand-enterprise">
+        <div class="brand-logo-container">
+            <div class="brand-logo-icon">
+                <i class="bi bi-building"></i>
+            </div>
+            <div class="brand-content">
+                <div class="brand-name">AccountsPro</div>
+                <div class="brand-tagline">Enterprise ERP</div>
+            </div>
         </div>
+        <button class="sidebar-collapse-btn" title="Collapse sidebar">
+            <i class="bi bi-chevron-left"></i>
+        </button>
     </div>
 
-    <nav class="sidebar-nav">
+    <nav class="sidebar-nav-enterprise">
         <!-- Dashboard -->
-        <NavLink class="nav-item" href="" Match="NavLinkMatch.All">
-            <i class="bi bi-speedometer2"></i>
-            <span>Dashboard</span>
+        <NavLink class="nav-item-enterprise" href="" Match="NavLinkMatch.All">
+            <div class="nav-item-icon">
+                <i class="bi bi-speedometer2"></i>
+            </div>
+            <span class="nav-item-text">Dashboard</span>
         </NavLink>
 
         <!-- Sales & Orders -->
-        <div class="nav-section">
-            <button class="section-header" @onclick="@(() => ToggleSection("sales"))">
-                <div class="section-title">
-                    <i class="bi bi-cart-check"></i>
-                    <span>Sales & Orders</span>
+        <div class="nav-section-enterprise">
+            <button class="section-header-enterprise" @onclick="@(() => ToggleSection("sales"))">
+                <div class="section-title-enterprise">
+                    <div class="section-icon">
+                        <i class="bi bi-cart-check"></i>
+                    </div>
+                    <span class="section-text">Sales & Orders</span>
                 </div>
-                <i class="bi @(expandedSections.Contains("sales") ? "bi-chevron-down" : "bi-chevron-right")"></i>
+                <i class="bi section-chevron @(expandedSections.Contains("sales") ? "bi-chevron-down" : "bi-chevron-right")"></i>
             </button>
-            <div class="section-items @(expandedSections.Contains("sales") ? "expanded" : "")">
-                <NavLink class="nav-item sub-item" href="customers">
-                    <i class="bi bi-people"></i>
-                    <span>Customers</span>
+            <div class="section-items-enterprise @(expandedSections.Contains("sales") ? "expanded" : "")">
+                <NavLink class="nav-item-enterprise sub-item-enterprise" href="customers">
+                    <div class="nav-item-icon">
+                        <i class="bi bi-people"></i>
+                    </div>
+                    <span class="nav-item-text">Customers</span>
+                    <span class="nav-badge badge-primary">423</span>
                 </NavLink>
-                <NavLink class="nav-item sub-item" href="sales-orders">
-                    <i class="bi bi-cart3"></i>
-                    <span>Sales Orders</span>
+                <NavLink class="nav-item-enterprise sub-item-enterprise" href="sales-orders">
+                    <div class="nav-item-icon">
+                        <i class="bi bi-cart3"></i>
+                    </div>
+                    <span class="nav-item-text">Sales Orders</span>
+                    <span class="nav-badge badge-success">28</span>
                 </NavLink>
-                <NavLink class="nav-item sub-item" href="sales-invoices">
-                    <i class="bi bi-receipt"></i>
-                    <span>Sales Invoices</span>
+                <NavLink class="nav-item-enterprise sub-item-enterprise" href="sales-invoices">
+                    <div class="nav-item-icon">
+                        <i class="bi bi-receipt"></i>
+                    </div>
+                    <span class="nav-item-text">Sales Invoices</span>
                 </NavLink>
-                <NavLink class="nav-item sub-item" href="price-lists">
-                    <i class="bi bi-tags"></i>
-                    <span>Price Lists</span>
+                <NavLink class="nav-item-enterprise sub-item-enterprise" href="price-lists">
+                    <div class="nav-item-icon">
+                        <i class="bi bi-tags"></i>
+                    </div>
+                    <span class="nav-item-text">Price Lists</span>
                 </NavLink>
             </div>
         </div>
 
         <!-- Inventory Management -->
-        <div class="nav-section">
-            <button class="section-header" @onclick="@(() => ToggleSection("inventory"))">
-                <div class="section-title">
-                    <i class="bi bi-boxes"></i>
-                    <span>Inventory</span>
+        <div class="nav-section-enterprise">
+            <button class="section-header-enterprise" @onclick="@(() => ToggleSection("inventory"))">
+                <div class="section-title-enterprise">
+                    <div class="section-icon">
+                        <i class="bi bi-boxes"></i>
+                    </div>
+                    <span class="section-text">Inventory</span>
                 </div>
-                <i class="bi @(expandedSections.Contains("inventory") ? "bi-chevron-down" : "bi-chevron-right")"></i>
+                <i class="bi section-chevron @(expandedSections.Contains("inventory") ? "bi-chevron-down" : "bi-chevron-right")"></i>
             </button>
-            <div class="section-items @(expandedSections.Contains("inventory") ? "expanded" : "")">
-                <NavLink class="nav-item sub-item" href="products">
-                    <i class="bi bi-box-seam"></i>
-                    <span>Products</span>
+            <div class="section-items-enterprise @(expandedSections.Contains("inventory") ? "expanded" : "")">
+                <NavLink class="nav-item-enterprise sub-item-enterprise" href="products">
+                    <div class="nav-item-icon">
+                        <i class="bi bi-box-seam"></i>
+                    </div>
+                    <span class="nav-item-text">Products</span>
                 </NavLink>
-                <NavLink class="nav-item sub-item" href="stock-items">
-                    <i class="bi bi-stack"></i>
-                    <span>Stock Items</span>
+                <NavLink class="nav-item-enterprise sub-item-enterprise" href="stock-items">
+                    <div class="nav-item-icon">
+                        <i class="bi bi-stack"></i>
+                    </div>
+                    <span class="nav-item-text">Stock Items</span>
+                    <span class="nav-badge badge-warning">12</span>
                 </NavLink>
-                <NavLink class="nav-item sub-item" href="warehouses">
-                    <i class="bi bi-building"></i>
-                    <span>Warehouses</span>
+                <NavLink class="nav-item-enterprise sub-item-enterprise" href="warehouses">
+                    <div class="nav-item-icon">
+                        <i class="bi bi-building"></i>
+                    </div>
+                    <span class="nav-item-text">Warehouses</span>
                 </NavLink>
-                <NavLink class="nav-item sub-item" href="bill-of-materials">
-                    <i class="bi bi-list-check"></i>
-                    <span>Bill of Materials</span>
+                <NavLink class="nav-item-enterprise sub-item-enterprise" href="bill-of-materials">
+                    <div class="nav-item-icon">
+                        <i class="bi bi-list-check"></i>
+                    </div>
+                    <span class="nav-item-text">Bill of Materials</span>
                 </NavLink>
             </div>
         </div>
 
         <!-- Financial Management -->
-        <div class="nav-section">
-            <button class="section-header" @onclick="@(() => ToggleSection("financial"))">
-                <div class="section-title">
-                    <i class="bi bi-cash-stack"></i>
-                    <span>Finance</span>
+        <div class="nav-section-enterprise">
+            <button class="section-header-enterprise" @onclick="@(() => ToggleSection("financial"))">
+                <div class="section-title-enterprise">
+                    <div class="section-icon">
+                        <i class="bi bi-cash-stack"></i>
+                    </div>
+                    <span class="section-text">Finance</span>
                 </div>
-                <i class="bi @(expandedSections.Contains("financial") ? "bi-chevron-down" : "bi-chevron-right")"></i>
+                <i class="bi section-chevron @(expandedSections.Contains("financial") ? "bi-chevron-down" : "bi-chevron-right")"></i>
             </button>
-            <div class="section-items @(expandedSections.Contains("financial") ? "expanded" : "")">
-                <NavLink class="nav-item sub-item" href="bank-accounts">
-                    <i class="bi bi-bank2"></i>
-                    <span>Bank Accounts</span>
+            <div class="section-items-enterprise @(expandedSections.Contains("financial") ? "expanded" : "")">
+                <NavLink class="nav-item-enterprise sub-item-enterprise" href="bank-accounts">
+                    <div class="nav-item-icon">
+                        <i class="bi bi-bank2"></i>
+                    </div>
+                    <span class="nav-item-text">Bank Accounts</span>
                 </NavLink>
-                <NavLink class="nav-item sub-item" href="exchangerates">
-                    <i class="bi bi-currency-exchange"></i>
-                    <span>Exchange Rates</span>
+                <NavLink class="nav-item-enterprise sub-item-enterprise" href="exchangerates">
+                    <div class="nav-item-icon">
+                        <i class="bi bi-currency-exchange"></i>
+                    </div>
+                    <span class="nav-item-text">Exchange Rates</span>
                 </NavLink>
-                <NavLink class="nav-item sub-item" href="tax-export">
-                    <i class="bi bi-file-earmark-spreadsheet"></i>
-                    <span>Tax Export</span>
+                <NavLink class="nav-item-enterprise sub-item-enterprise" href="tax-export">
+                    <div class="nav-item-icon">
+                        <i class="bi bi-file-earmark-spreadsheet"></i>
+                    </div>
+                    <span class="nav-item-text">Tax Export</span>
                 </NavLink>
             </div>
         </div>
 
         <!-- Configuration & Settings -->
-        <div class="nav-section">
-            <button class="section-header" @onclick="@(() => ToggleSection("settings"))">
-                <div class="section-title">
-                    <i class="bi bi-gear"></i>
-                    <span>Configuration</span>
+        <div class="nav-section-enterprise">
+            <button class="section-header-enterprise" @onclick="@(() => ToggleSection("settings"))">
+                <div class="section-title-enterprise">
+                    <div class="section-icon">
+                        <i class="bi bi-gear"></i>
+                    </div>
+                    <span class="section-text">Configuration</span>
                 </div>
-                <i class="bi @(expandedSections.Contains("settings") ? "bi-chevron-down" : "bi-chevron-right")"></i>
+                <i class="bi section-chevron @(expandedSections.Contains("settings") ? "bi-chevron-down" : "bi-chevron-right")"></i>
             </button>
-            <div class="section-items @(expandedSections.Contains("settings") ? "expanded" : "")">
-                <NavLink class="nav-item sub-item" href="settings">
-                    <i class="bi bi-sliders"></i>
-                    <span>System Settings</span>
+            <div class="section-items-enterprise @(expandedSections.Contains("settings") ? "expanded" : "")">
+                <NavLink class="nav-item-enterprise sub-item-enterprise" href="settings">
+                    <div class="nav-item-icon">
+                        <i class="bi bi-sliders"></i>
+                    </div>
+                    <span class="nav-item-text">System Settings</span>
                 </NavLink>
-                <NavLink class="nav-item sub-item" href="branding">
-                    <i class="bi bi-palette"></i>
-                    <span>Branding</span>
+                <NavLink class="nav-item-enterprise sub-item-enterprise" href="branding">
+                    <div class="nav-item-icon">
+                        <i class="bi bi-palette"></i>
+                    </div>
+                    <span class="nav-item-text">Branding</span>
                 </NavLink>
-                <NavLink class="nav-item sub-item" href="configurationsettings">
-                    <i class="bi bi-sliders2"></i>
-                    <span>Configuration</span>
+                <NavLink class="nav-item-enterprise sub-item-enterprise" href="configurationsettings">
+                    <div class="nav-item-icon">
+                        <i class="bi bi-sliders2"></i>
+                    </div>
+                    <span class="nav-item-text">Configuration</span>
                 </NavLink>
-                <NavLink class="nav-item sub-item" href="custom-fields">
-                    <i class="bi bi-input-cursor-text"></i>
-                    <span>Custom Fields</span>
+                <NavLink class="nav-item-enterprise sub-item-enterprise" href="custom-fields">
+                    <div class="nav-item-icon">
+                        <i class="bi bi-input-cursor-text"></i>
+                    </div>
+                    <span class="nav-item-text">Custom Fields</span>
                 </NavLink>
-                <NavLink class="nav-item sub-item" href="email-templates">
-                    <i class="bi bi-envelope-open"></i>
-                    <span>Email Templates</span>
+                <NavLink class="nav-item-enterprise sub-item-enterprise" href="email-templates">
+                    <div class="nav-item-icon">
+                        <i class="bi bi-envelope-open"></i>
+                    </div>
+                    <span class="nav-item-text">Email Templates</span>
                 </NavLink>
             </div>
         </div>
 
         <!-- Payments & Integration -->
-        <div class="nav-section">
-            <button class="section-header" @onclick="@(() => ToggleSection("integration"))">
-                <div class="section-title">
-                    <i class="bi bi-plugin"></i>
-                    <span>Integrations</span>
+        <div class="nav-section-enterprise">
+            <button class="section-header-enterprise" @onclick="@(() => ToggleSection("integration"))">
+                <div class="section-title-enterprise">
+                    <div class="section-icon">
+                        <i class="bi bi-plugin"></i>
+                    </div>
+                    <span class="section-text">Integrations</span>
                 </div>
-                <i class="bi @(expandedSections.Contains("integration") ? "bi-chevron-down" : "bi-chevron-right")"></i>
+                <i class="bi section-chevron @(expandedSections.Contains("integration") ? "bi-chevron-down" : "bi-chevron-right")"></i>
             </button>
-            <div class="section-items @(expandedSections.Contains("integration") ? "expanded" : "")">
-                <NavLink class="nav-item sub-item" href="paymentproviderconfigs">
-                    <i class="bi bi-credit-card-2-back"></i>
-                    <span>Payment Providers</span>
+            <div class="section-items-enterprise @(expandedSections.Contains("integration") ? "expanded" : "")">
+                <NavLink class="nav-item-enterprise sub-item-enterprise" href="paymentproviderconfigs">
+                    <div class="nav-item-icon">
+                        <i class="bi bi-credit-card-2-back"></i>
+                    </div>
+                    <span class="nav-item-text">Payment Providers</span>
                 </NavLink>
-                <NavLink class="nav-item sub-item" href="apikeymanagement">
-                    <i class="bi bi-key"></i>
-                    <span>API Keys</span>
+                <NavLink class="nav-item-enterprise sub-item-enterprise" href="apikeymanagement">
+                    <div class="nav-item-icon">
+                        <i class="bi bi-key"></i>
+                    </div>
+                    <span class="nav-item-text">API Keys</span>
                 </NavLink>
             </div>
         </div>
     </nav>
+
+    <!-- User Profile Section at Bottom -->
+    <div class="sidebar-footer-enterprise">
+        <div class="user-profile-card">
+            <div class="user-avatar-enterprise">
+                <i class="bi bi-person-circle"></i>
+            </div>
+            <div class="user-info-enterprise">
+                <div class="user-name-enterprise">John Smith</div>
+                <div class="user-role-enterprise">Administrator</div>
+            </div>
+            <button class="user-menu-btn" title="User menu">
+                <i class="bi bi-three-dots-vertical"></i>
+            </button>
+        </div>
+        <div class="sidebar-footer-actions">
+            <button class="footer-action-btn" title="Settings">
+                <i class="bi bi-gear"></i>
+            </button>
+            <button class="footer-action-btn" title="Help & Support">
+                <i class="bi bi-question-circle"></i>
+            </button>
+            <button class="footer-action-btn" title="Sign out">
+                <i class="bi bi-box-arrow-right"></i>
+            </button>
+        </div>
+    </div>
 </div>
 
 @code {

@@ -1,14 +1,14 @@
 ﻿@inherits LayoutComponentBase
 
-<div class="app-container">
+<div class="app-container-enterprise">
     <ModernNavMenu @ref="navMenu" />
 
-    <main class="main">
+    <main class="main-enterprise">
         <TopHeaderBar OnMobileMenuToggle="ToggleMobileMenu" />
         <div class="theme-toggle-container">
             <ThemeToggle />
         </div>
-        <div class="content px-4 py-3">
+        <div class="content-enterprise px-4 py-3">
             @Body
         </div>
     </main>
