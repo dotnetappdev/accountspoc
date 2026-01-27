@@ -1,7 +1,7 @@
 ﻿@page "/"
 @using System.Globalization
 
-<PageTitle>Dashboard - AccountsPro ERP</PageTitle>
+<PageTitle>Dashboard - AccountsPro Enterprise ERP</PageTitle>
 
 <div class="container-fluid dashboard-page">
     <!-- Breadcrumb Navigation -->
@@ -13,11 +13,11 @@
         <div class="dashboard-meta">
             <span class="dashboard-date">
                 <i class="bi bi-calendar3"></i>
-                @DateTime.Now.ToString("dddd, MMMM dd, yyyy", CultureInfo.CurrentCulture)
+                @currentTime.ToString("dddd, MMMM dd, yyyy", CultureInfo.CurrentCulture)
             </span>
             <span class="dashboard-time">
                 <i class="bi bi-clock"></i>
-                @DateTime.Now.ToString("HH:mm", CultureInfo.CurrentCulture)
+                @currentTime.ToString("HH:mm", CultureInfo.CurrentCulture)
             </span>
         </div>
     </nav>
@@ -436,3 +436,7 @@
         </div>
     </div>
 </div>
+
+@code {
+    private DateTime currentTime = DateTime.Now;
+}
