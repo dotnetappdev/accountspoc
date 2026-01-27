@@ -929,7 +929,6 @@ textarea.form-control {
     width: 260px;
     height: 100vh !important;
     min-height: 100vh !important;
-    max-height: 100vh;
     background: var(--sidebar-bg);
     border-right: 1px solid var(--sidebar-border);
     display: flex;
