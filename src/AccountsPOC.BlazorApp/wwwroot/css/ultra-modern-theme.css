@@ -2129,3 +2129,541 @@ textarea.form-control {
         width: 100%;
     }
 }
+
+/* ==========================================
+   ENHANCED DARK MODE THEME SUPPORT
+   AdminLTE-style Professional Dark Theme
+   ========================================== */
+
+/* Light Theme (Default) - Enhanced Variables */
+:root,
+[data-theme="light"] {
+    /* Light Mode Colors */
+    --bg-main: #f0f2f5;
+    --bg-secondary: #ffffff;
+    --bg-tertiary: #f8f9fa;
+    
+    /* Text Colors */
+    --text-primary: #111827;
+    --text-secondary: #6b7280;
+    --text-tertiary: #9ca3af;
+    
+    /* Card Colors */
+    --card-bg: #ffffff;
+    --card-border: #e5e7eb;
+    --card-header-bg: #ffffff;
+    --card-header-text: #111827;
+    
+    /* Sidebar - AdminLTE Style */
+    --sidebar-bg: #0f1419;
+    --sidebar-text: rgba(255, 255, 255, 0.8);
+    --sidebar-text-active: #ffffff;
+    --sidebar-hover: rgba(255, 255, 255, 0.06);
+    --sidebar-active: #2563eb;
+    --sidebar-border: rgba(255, 255, 255, 0.08);
+    
+    /* Top Bar */
+    --topbar-bg: #ffffff;
+    --topbar-text: #111827;
+    --topbar-border: #e5e7eb;
+    
+    /* Form Elements */
+    --input-bg: #ffffff;
+    --input-border: #d1d5db;
+    --input-text: #111827;
+    --input-placeholder: #9ca3af;
+    --input-focus-border: #3b82f6;
+    
+    /* Table */
+    --table-bg: #ffffff;
+    --table-header-bg: #f9fafb;
+    --table-border: #e5e7eb;
+    --table-row-hover: #f9fafb;
+    --table-text: #111827;
+    
+    /* Buttons remain colorful in both themes */
+    --btn-primary-bg: #2563eb;
+    --btn-primary-text: #ffffff;
+    --btn-secondary-bg: #6b7280;
+    --btn-secondary-text: #ffffff;
+    
+    /* Metric Cards */
+    --metric-primary-bg: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    --metric-success-bg: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+    --metric-warning-bg: linear-gradient(135deg, #f2994a 0%, #f2c94c 100%);
+    --metric-info-bg: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    
+    /* Shadows */
+    --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+    --shadow-md: 0 4px 12px 0 rgba(0, 0, 0, 0.1);
+    --shadow-lg: 0 8px 24px 0 rgba(0, 0, 0, 0.12);
+}
+
+/* Dark Theme - AdminLTE Professional Style */
+[data-theme="dark"] {
+    /* Dark Mode Colors */
+    --bg-main: #0f172a;
+    --bg-secondary: #1e293b;
+    --bg-tertiary: #1a2332;
+    
+    /* Text Colors */
+    --text-primary: #f1f5f9;
+    --text-secondary: #cbd5e1;
+    --text-tertiary: #94a3b8;
+    
+    /* Card Colors */
+    --card-bg: #1e293b;
+    --card-border: #334155;
+    --card-header-bg: #1e293b;
+    --card-header-text: #f1f5f9;
+    
+    /* Sidebar - Slightly lighter in dark mode */
+    --sidebar-bg: #0a0e1a;
+    --sidebar-text: rgba(241, 245, 249, 0.7);
+    --sidebar-text-active: #ffffff;
+    --sidebar-hover: rgba(255, 255, 255, 0.08);
+    --sidebar-active: #3b82f6;
+    --sidebar-border: rgba(255, 255, 255, 0.1);
+    
+    /* Top Bar */
+    --topbar-bg: #1e293b;
+    --topbar-text: #f1f5f9;
+    --topbar-border: #334155;
+    
+    /* Form Elements */
+    --input-bg: #0f172a;
+    --input-border: #334155;
+    --input-text: #f1f5f9;
+    --input-placeholder: #64748b;
+    --input-focus-border: #3b82f6;
+    
+    /* Table */
+    --table-bg: #1e293b;
+    --table-header-bg: #0f172a;
+    --table-border: #334155;
+    --table-row-hover: #334155;
+    --table-text: #f1f5f9;
+    
+    /* Metric Cards - Same vibrant gradients */
+    --metric-primary-bg: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    --metric-success-bg: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+    --metric-warning-bg: linear-gradient(135deg, #f2994a 0%, #f2c94c 100%);
+    --metric-info-bg: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    
+    /* Shadows - Softer in dark mode */
+    --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.3);
+    --shadow-md: 0 4px 12px 0 rgba(0, 0, 0, 0.4);
+    --shadow-lg: 0 8px 24px 0 rgba(0, 0, 0, 0.5);
+}
+
+/* Apply Theme Variables */
+body {
+    background: var(--bg-main);
+    color: var(--text-primary);
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Card Theming */
+.card {
+    background: var(--card-bg);
+    border-color: var(--card-border);
+    color: var(--text-primary);
+}
+
+.card-header {
+    background: var(--card-header-bg);
+    color: var(--card-header-text);
+    border-bottom-color: var(--card-border);
+}
+
+.card-body {
+    background: var(--card-bg);
+    color: var(--text-primary);
+}
+
+.card-footer {
+    background: var(--card-bg);
+    border-top-color: var(--card-border);
+}
+
+/* Top Header Bar Theming */
+.top-header {
+    background: var(--topbar-bg);
+    border-bottom-color: var(--topbar-border);
+    color: var(--topbar-text);
+}
+
+.top-header .header-title {
+    color: var(--topbar-text);
+}
+
+/* Modern Sidebar Theming */
+.modern-sidebar {
+    background: var(--sidebar-bg);
+    border-right-color: var(--sidebar-border);
+}
+
+.modern-sidebar .nav-item .nav-link {
+    color: var(--sidebar-text) !important;
+}
+
+.modern-sidebar .nav-item .nav-link:hover {
+    background: var(--sidebar-hover);
+    color: var(--sidebar-text-active) !important;
+}
+
+.modern-sidebar .nav-item .nav-link.active {
+    background: var(--sidebar-active);
+    color: var(--sidebar-text-active) !important;
+}
+
+.modern-sidebar .section-header {
+    color: var(--sidebar-text);
+}
+
+.modern-sidebar .section-header:hover {
+    background: var(--sidebar-hover);
+}
+
+/* Form Elements Theming */
+.form-control,
+.form-select,
+textarea.form-control {
+    background: var(--input-bg);
+    border-color: var(--input-border);
+    color: var(--input-text);
+}
+
+.form-control::placeholder {
+    color: var(--input-placeholder);
+}
+
+.form-control:focus,
+.form-select:focus {
+    background: var(--input-bg);
+    border-color: var(--input-focus-border);
+    color: var(--input-text);
+}
+
+.form-label {
+    color: var(--text-primary);
+}
+
+/* Table Theming */
+.table {
+    background: var(--table-bg);
+    color: var(--table-text);
+}
+
+.table thead th {
+    background: var(--table-header-bg);
+    color: var(--text-primary);
+    border-bottom-color: var(--table-border);
+}
+
+.table tbody tr {
+    border-bottom-color: var(--table-border);
+}
+
+.table tbody tr:hover {
+    background: var(--table-row-hover);
+}
+
+.table td {
+    color: var(--table-text);
+}
+
+/* Modal Theming */
+.modal-content {
+    background: var(--card-bg);
+    border-color: var(--card-border);
+    color: var(--text-primary);
+}
+
+.modal-header {
+    background: var(--card-header-bg);
+    border-bottom-color: var(--card-border);
+    color: var(--text-primary);
+}
+
+.modal-footer {
+    background: var(--card-bg);
+    border-top-color: var(--card-border);
+}
+
+/* Dashboard Specific Theming */
+.dashboard-header h1 {
+    color: var(--text-primary);
+}
+
+.dashboard-header p.lead {
+    color: var(--text-secondary);
+}
+
+.page-header h1,
+.page-heading {
+    color: var(--text-primary);
+}
+
+.page-header p,
+.page-subheading {
+    color: var(--text-secondary);
+}
+
+/* Stat Card Theming */
+.stat-card {
+    background: var(--card-bg);
+    border-color: var(--card-border);
+    color: var(--text-primary);
+}
+
+.stat-value {
+    color: var(--text-primary);
+}
+
+.stat-label {
+    color: var(--text-secondary);
+}
+
+/* Quick Actions Theming */
+.quick-actions-list .quick-action-item {
+    border-bottom-color: var(--card-border);
+    color: var(--text-primary);
+}
+
+.quick-actions-list .quick-action-item:hover {
+    background: var(--table-row-hover);
+}
+
+.action-title {
+    color: var(--text-primary);
+}
+
+.action-desc {
+    color: var(--text-secondary);
+}
+
+/* Timeline Theming */
+.activity-timeline .timeline-item {
+    border-left-color: var(--card-border);
+}
+
+.timeline-header strong {
+    color: var(--text-primary);
+}
+
+.timeline-time {
+    color: var(--text-tertiary);
+}
+
+.timeline-body {
+    color: var(--text-secondary);
+}
+
+/* Breadcrumb Theming */
+.breadcrumb {
+    background: var(--card-bg);
+    color: var(--text-secondary);
+}
+
+.breadcrumb-item.active {
+    color: var(--text-primary);
+}
+
+/* Alert Theming - Keep colors but adjust background */
+[data-theme="dark"] .alert-primary {
+    background-color: rgba(59, 130, 246, 0.15);
+    border-color: rgba(59, 130, 246, 0.3);
+    color: #93c5fd;
+}
+
+[data-theme="dark"] .alert-success {
+    background-color: rgba(16, 185, 129, 0.15);
+    border-color: rgba(16, 185, 129, 0.3);
+    color: #6ee7b7;
+}
+
+[data-theme="dark"] .alert-warning {
+    background-color: rgba(245, 158, 11, 0.15);
+    border-color: rgba(245, 158, 11, 0.3);
+    color: #fcd34d;
+}
+
+[data-theme="dark"] .alert-danger {
+    background-color: rgba(239, 68, 68, 0.15);
+    border-color: rgba(239, 68, 68, 0.3);
+    color: #fca5a5;
+}
+
+[data-theme="dark"] .alert-info {
+    background-color: rgba(59, 130, 246, 0.15);
+    border-color: rgba(59, 130, 246, 0.3);
+    color: #93c5fd;
+}
+
+/* Badge Theming in Dark Mode */
+[data-theme="dark"] .badge {
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Dropdown Theming */
+.dropdown-menu {
+    background: var(--card-bg);
+    border-color: var(--card-border);
+}
+
+.dropdown-item {
+    color: var(--text-primary);
+}
+
+.dropdown-item:hover {
+    background: var(--table-row-hover);
+    color: var(--text-primary);
+}
+
+.dropdown-divider {
+    border-top-color: var(--card-border);
+}
+
+/* Pagination Theming */
+.pagination .page-link {
+    background: var(--card-bg);
+    border-color: var(--card-border);
+    color: var(--text-primary);
+}
+
+.pagination .page-link:hover {
+    background: var(--table-row-hover);
+    border-color: var(--card-border);
+}
+
+.pagination .page-item.active .page-link {
+    background: var(--btn-primary-bg);
+    border-color: var(--btn-primary-bg);
+}
+
+.pagination .page-item.disabled .page-link {
+    background: var(--card-bg);
+    border-color: var(--card-border);
+    color: var(--text-tertiary);
+}
+
+/* List Group Theming */
+.list-group-item {
+    background: var(--card-bg);
+    border-color: var(--card-border);
+    color: var(--text-primary);
+}
+
+.list-group-item:hover {
+    background: var(--table-row-hover);
+}
+
+/* Progress Bar - Keep colors vibrant */
+.progress {
+    background-color: var(--bg-tertiary);
+}
+
+/* Ensure metric cards remain vibrant in both modes */
+.metric-card {
+    box-shadow: var(--shadow-md);
+}
+
+.metric-card.metric-primary {
+    background: var(--metric-primary-bg);
+}
+
+.metric-card.metric-success {
+    background: var(--metric-success-bg);
+}
+
+.metric-card.metric-warning {
+    background: var(--metric-warning-bg);
+}
+
+.metric-card.metric-info {
+    background: var(--metric-info-bg);
+}
+
+/* Theme Toggle Button Styling */
+.theme-toggle {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1050;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    border: none;
+    background: var(--card-bg);
+    color: var(--text-primary);
+    box-shadow: var(--shadow-lg);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    transition: all 0.3s ease;
+}
+
+.theme-toggle:hover {
+    transform: scale(1.1) rotate(15deg);
+    box-shadow: var(--shadow-xl);
+}
+
+.theme-toggle i {
+    transition: transform 0.3s ease;
+}
+
+/* Smooth transitions for theme changes */
+* {
+    transition: background-color 0.3s ease, 
+                border-color 0.3s ease, 
+                color 0.3s ease,
+                box-shadow 0.3s ease;
+}
+
+/* Prevent transition on page load */
+.preload * {
+    transition: none !important;
+}
+
+/* Scrollbar theming */
+[data-theme="dark"] ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+[data-theme="dark"] ::-webkit-scrollbar-track {
+    background: var(--bg-secondary);
+}
+
+[data-theme="dark"] ::-webkit-scrollbar-thumb {
+    background: #475569;
+    border-radius: 5px;
+}
+
+[data-theme="dark"] ::-webkit-scrollbar-thumb:hover {
+    background: #64748b;
+}
+
+/* Selection color theming */
+[data-theme="dark"] ::selection {
+    background: rgba(59, 130, 246, 0.3);
+    color: #f1f5f9;
+}
+
+[data-theme="light"] ::selection {
+    background: rgba(59, 130, 246, 0.2);
+    color: #111827;
+}
+
+/* Print Styles - Force light theme */
+@media print {
+    html[data-theme="dark"] {
+        --bg-main: #ffffff;
+        --text-primary: #000000;
+        --card-bg: #ffffff;
+        --table-bg: #ffffff;
+    }
+}

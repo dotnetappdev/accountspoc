@@ -1,6 +1,6 @@
 @inject IJSRuntime JS
 
-<button class="theme-toggle" @onclick="ToggleTheme" title="Toggle Theme">
+<button class="theme-toggle" @onclick="ToggleTheme" title="@GetTooltip()">
     @if (isDarkMode)
     {
         <i class="bi bi-sun-fill"></i>
@@ -12,15 +12,33 @@
 </button>
 
 @code {
-    private bool isDarkMode = true;
+    private bool isDarkMode = false;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
-            var theme = await JS.InvokeAsync<string>("localStorage.getItem", "theme");
-            isDarkMode = theme != "light";
-            StateHasChanged();
+            try
+            {
+                // Get theme from localStorage or check system preference
+                var theme = await JS.InvokeAsync<string>("localStorage.getItem", "theme");
+                
+                if (string.IsNullOrEmpty(theme))
+                {
+                    // Check system preference
+                    var prefersDark = await JS.InvokeAsync<bool>("eval", 
+                        "window.matchMedia('(prefers-color-scheme: dark)').matches");
+                    theme = prefersDark ? "dark" : "light";
+                }
+                
+                isDarkMode = theme == "dark";
+                StateHasChanged();
+            }
+            catch
+            {
+                // Default to light mode if there's any error
+                isDarkMode = false;
+            }
         }
     }
 
@@ -29,7 +47,19 @@
         isDarkMode = !isDarkMode;
         var theme = isDarkMode ? "dark" : "light";
         
-        await JS.InvokeVoidAsync("localStorage.setItem", "theme", theme);
-        await JS.InvokeVoidAsync("eval", $"document.documentElement.setAttribute('data-theme', '{theme}')");
+        try
+        {
+            await JS.InvokeVoidAsync("localStorage.setItem", "theme", theme);
+            await JS.InvokeVoidAsync("eval", $"document.documentElement.setAttribute('data-theme', '{theme}')");
+        }
+        catch
+        {
+            // Silently handle errors
+        }
+    }
+
+    private string GetTooltip()
+    {
+        return isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode";
     }
 }
