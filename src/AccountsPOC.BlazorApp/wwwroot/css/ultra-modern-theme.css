@@ -919,6 +919,7 @@ textarea.form-control {
 .modern-sidebar {
     width: 260px;
     height: 100vh;
+    min-height: 100vh;
     background: var(--sidebar-bg);
     border-right: 1px solid var(--sidebar-border);
     display: flex;
@@ -926,9 +927,11 @@ textarea.form-control {
     position: fixed;
     left: 0;
     top: 0;
+    bottom: 0;
     z-index: 1000;
     overflow-y: auto;
     overflow-x: hidden;
+    box-shadow: 2px 0 8px rgba(0, 0, 0, 0.15);
 }
 
 /* Custom Scrollbar for Sidebar */
