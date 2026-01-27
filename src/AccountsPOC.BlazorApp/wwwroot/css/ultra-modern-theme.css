@@ -68,6 +68,7 @@
 
 html {
     height: 100%;
+    min-height: 100%;
 }
 
 html, body {
@@ -80,6 +81,7 @@ html, body {
     -moz-osx-font-smoothing: grayscale;
     overflow-x: hidden;
     min-height: 100vh;
+    height: 100%;
 }
 
 body {
@@ -925,8 +927,9 @@ textarea.form-control {
 
 .modern-sidebar {
     width: 260px;
-    height: 100vh;
-    min-height: 100vh;
+    height: 100vh !important;
+    min-height: 100vh !important;
+    max-height: 100vh;
     background: var(--sidebar-bg);
     border-right: 1px solid var(--sidebar-border);
     display: flex;
@@ -935,6 +938,7 @@ textarea.form-control {
     left: 0;
     top: 0;
     bottom: 0;
+    right: auto;
     z-index: 1000;
     overflow-y: auto;
     overflow-x: hidden;
