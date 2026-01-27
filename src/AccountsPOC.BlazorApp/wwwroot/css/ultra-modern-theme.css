@@ -2783,6 +2783,7 @@ textarea.form-control {
 /* Enterprise Navigation */
 .sidebar-nav-enterprise {
     flex: 1;
+    min-height: 0;
     overflow-y: auto;
     overflow-x: hidden;
     padding: 1rem 0.75rem;
@@ -2956,6 +2957,7 @@ textarea.form-control {
 
 /* Sidebar Footer - User Profile */
 .sidebar-footer-enterprise {
+    flex-shrink: 0;
     padding: 1rem;
     border-top: 1px solid var(--sidebar-border);
     background: rgba(0, 0, 0, 0.1);
@@ -3729,7 +3731,7 @@ textarea.form-control {
         gap: 1rem;
     }
     
-    .metrics-row-enterprise .col-xl-3 {
+    .metrics-row-enterprise .col-lg-3 {
         min-width: 100%;
     }
 }
