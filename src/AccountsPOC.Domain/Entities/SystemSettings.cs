@@ -40,6 +40,20 @@ public class SystemSettings
     public int PdfFontSize { get; set; } = 10;
     public string PdfPrimaryColor { get; set; } = "#2563eb"; // Hex color for accents
     
+    // Pagination Settings
+    public int DefaultPageSize { get; set; } = 25; // Default number of items per page
+    public int MaxPageSize { get; set; } = 100; // Maximum items per page
+    public string PaginationSizes { get; set; } = "10,25,50,100"; // Available page sizes for dropdown
+    public bool ShowPaginationInfo { get; set; } = true; // Show "Showing X to Y of Z entries"
+    public bool ShowPageNumbers { get; set; } = true; // Show numbered page buttons
+    public int MaxPageNumbers { get; set; } = 5; // Maximum page number buttons to display
+    
+    // File Upload Settings
+    public bool AllowMultipleFileUploads { get; set; } = true;
+    public int MaxFileUploadCount { get; set; } = 10; // Maximum files in a single upload
+    public long MaxFileUploadSizeMB { get; set; } = 10; // Maximum file size in MB
+    public string AllowedFileExtensions { get; set; } = ".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png,.gif"; // Comma-separated
+    
     public DateTime CreatedDate { get; set; }
     public DateTime? LastModifiedDate { get; set; }
     
