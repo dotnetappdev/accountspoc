@@ -1,0 +1,219 @@
+/* AdminLTE 4 Custom Styles for AccountsPOC */
+
+/* Brand logo styling */
+.brand-link {
+    padding: 0.8rem 0.5rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.brand-link .brand-image {
+    font-size: 2rem;
+    margin-left: 0.8rem;
+    margin-right: 0.5rem;
+    max-height: 33px;
+}
+
+/* Sidebar adjustments */
+.sidebar-dark-primary .nav-sidebar > .nav-item > .nav-link.active,
+.sidebar-dark-primary .nav-sidebar > .nav-item.menu-open > .nav-link {
+    background-color: #007bff;
+    color: #fff;
+}
+
+/* Navigation icons */
+.nav-icon {
+    margin-right: 0.5rem;
+}
+
+/* User panel styling */
+.user-panel {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.user-panel .image {
+    display: flex;
+    align-items: center;
+}
+
+/* Content wrapper adjustments */
+.content-wrapper {
+    background-color: #f4f6f9;
+}
+
+/* Card styling for dashboard */
+.card {
+    box-shadow: 0 0 1px rgba(0,0,0,.125), 0 1px 3px rgba(0,0,0,.2);
+    margin-bottom: 1rem;
+}
+
+/* Button styling */
+.btn {
+    border-radius: 0.25rem;
+}
+
+/* Table styling */
+.table {
+    background-color: #fff;
+}
+
+/* Form controls */
+.form-control:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
+}
+
+/* Navbar badge */
+.navbar-badge {
+    font-size: .7rem;
+    font-weight: 700;
+    padding: 2px 4px;
+    position: absolute;
+    right: 5px;
+    top: 9px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 767.98px) {
+    .brand-text {
+        display: none;
+    }
+    
+    .content-wrapper {
+        margin-left: 0 !important;
+    }
+}
+
+/* Dashboard metrics styling */
+.metric-card,
+.info-box {
+    border-radius: 0.25rem;
+    box-shadow: 0 0 1px rgba(0,0,0,.125), 0 1px 3px rgba(0,0,0,.2);
+    background-color: #fff;
+    padding: 1rem;
+    margin-bottom: 1rem;
+}
+
+.metric-icon {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+}
+
+.metric-value {
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin-bottom: 0.25rem;
+}
+
+.metric-label {
+    font-size: 0.875rem;
+    color: #6c757d;
+}
+
+/* AdminLTE info boxes */
+.info-box {
+    display: flex;
+    align-items: center;
+}
+
+.info-box-icon {
+    border-radius: 0.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    width: 80px;
+    text-align: center;
+}
+
+.info-box-content {
+    flex: 1;
+    padding-left: 1rem;
+}
+
+.info-box-text {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.info-box-number {
+    display: block;
+    font-weight: 700;
+    font-size: 1.5rem;
+}
+
+/* Control sidebar */
+.control-sidebar {
+    background-color: #343a40;
+    color: #fff;
+}
+
+/* Blazor error UI */
+#blazor-error-ui {
+    background: #ffdddd;
+    color: #900;
+    padding: 1rem;
+    position: fixed;
+    width: 100%;
+    z-index: 1050;
+    bottom: 0;
+    box-shadow: 0 -1px 5px rgba(0, 0, 0, 0.3);
+}
+
+#blazor-error-ui .dismiss {
+    cursor: pointer;
+    position: absolute;
+    right: 1rem;
+    top: 0.5rem;
+    font-size: 1.5rem;
+}
+
+#blazor-error-ui .reload {
+    margin-left: 1rem;
+    color: #900;
+    text-decoration: underline;
+}
+
+/* Additional dashboard styles */
+.dashboard-container {
+    width: 100%;
+}
+
+.dashboard-header {
+    margin-bottom: 1.5rem;
+}
+
+.dashboard-header h1 {
+    font-size: 1.75rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+/* Metrics grid */
+.metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+/* Status badges */
+.badge {
+    padding: 0.35em 0.65em;
+    font-size: 0.75rem;
+    font-weight: 700;
+}
+
+/* Loading spinner */
+.spinner-border-sm {
+    width: 1rem;
+    height: 1rem;
+    border-width: 0.15em;
+}
+
+/* Table responsive */
+.table-responsive {
+    border-radius: 0.25rem;
+    box-shadow: 0 0 1px rgba(0,0,0,.125), 0 1px 3px rgba(0,0,0,.2);
+}
