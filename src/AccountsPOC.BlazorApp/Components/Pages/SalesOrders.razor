@@ -1,7 +1,9 @@
 @page "/sales-orders"
 @using System.Net.Http.Json
 @using AccountsPOC.BlazorApp.Models
+@using Microsoft.JSInterop
 @inject HttpClient Http
+@inject IJSRuntime JSRuntime
 @rendermode InteractiveServer
 
 <PageTitle>Sales Orders</PageTitle>
@@ -136,6 +138,11 @@
                                          Color="Color.Warning" 
                                          Size="Size.Small" 
                                          OnClick="@(() => EditSalesOrder(context.Item))" />
+                            <MudIconButton Icon="@Icons.Material.Filled.PictureAsPdf" 
+                                         Color="Color.Secondary" 
+                                         Size="Size.Small" 
+                                         Title="Download PDF"
+                                         OnClick="@(() => DownloadPdf(context.Item.Id))" />
                             <MudIconButton Icon="@Icons.Material.Filled.Delete" 
                                          Color="Color.Error" 
                                          Size="Size.Small" 
@@ -278,5 +285,25 @@
             "Cancelled" => "bg-danger",
             _ => "bg-secondary"
         };
+    }
+
+    private async Task DownloadPdf(int orderId)
+    {
+        try
+        {
+            var response = await Http.GetAsync($"api/SalesOrders/{orderId}/pdf");
+            if (response.IsSuccessStatusCode)
+            {
+                var fileBytes = await response.Content.ReadAsByteArrayAsync();
+                var fileName = $"SalesOrder_{orderId}_{DateTime.Now:yyyyMMddHHmmss}.pdf";
+                
+                // Download file using JavaScript interop
+                await JSRuntime.InvokeVoidAsync("downloadFile", fileName, "application/pdf", fileBytes);
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error downloading PDF: {ex.Message}");
+        }
     }
 }
