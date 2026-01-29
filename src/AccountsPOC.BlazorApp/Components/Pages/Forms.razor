@@ -1,0 +1,188 @@
+@page "/forms"
+@using System.Net.Http.Json
+@using System.Text.Json
+@using Microsoft.JSInterop
+@inject HttpClient Http
+@inject NavigationManager Navigation
+@inject IJSRuntime JSRuntime
+@rendermode InteractiveServer
+
+<PageTitle>Forms Management</PageTitle>
+
+<div class="container-fluid">
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">
+                <i class="bi bi-ui-checks-grid"></i> Forms Management
+            </h1>
+            <p class="text-muted">Manage your custom forms</p>
+        </div>
+        <button class="btn btn-primary" @onclick="CreateNewForm">
+            <i class="bi bi-plus-circle"></i> Create New Form
+        </button>
+    </div>
+
+    @if (loading)
+    {
+        <div class="text-center py-5">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+    }
+    else if (forms == null || !forms.Any())
+    {
+        <div class="alert alert-info">
+            <i class="bi bi-info-circle"></i> No forms found. Create your first form to get started.
+        </div>
+    }
+    else
+    {
+        <div class="row">
+            @foreach (var form in forms)
+            {
+                <div class="col-md-6 col-lg-4 mb-4">
+                    <div class="card h-100 form-card">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start mb-3">
+                                <h5 class="card-title mb-0">@form.Title</h5>
+                                @if (form.IsActive)
+                                {
+                                    <span class="badge bg-success">Active</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary">Inactive</span>
+                                }
+                            </div>
+                            
+                            @if (!string.IsNullOrEmpty(form.Description))
+                            {
+                                <p class="card-text text-muted">@form.Description</p>
+                            }
+                            
+                            <div class="form-info">
+                                <small class="text-muted">
+                                    <i class="bi bi-calendar"></i> Created: @form.CreatedDate.ToString("MMM dd, yyyy")
+                                </small>
+                                <br />
+                                <small class="text-muted">
+                                    <i class="bi bi-list-check"></i> Submissions: @(form.Submissions?.Count ?? 0)
+                                </small>
+                                <br />
+                                @if (form.AllowMultipleSubmissions)
+                                {
+                                    <small class="text-muted">
+                                        <i class="bi bi-arrow-repeat"></i> Multiple submissions allowed
+                                    </small>
+                                    <br />
+                                }
+                                @if (form.RequireAuthentication)
+                                {
+                                    <small class="text-muted">
+                                        <i class="bi bi-lock"></i> Authentication required
+                                    </small>
+                                }
+                            </div>
+                        </div>
+                        <div class="card-footer bg-transparent">
+                            <div class="btn-group w-100" role="group">
+                                <button class="btn btn-sm btn-outline-primary" @onclick="() => EditForm(form.Id)">
+                                    <i class="bi bi-pencil"></i> Edit
+                                </button>
+                                <button class="btn btn-sm btn-outline-info" @onclick="() => ViewSubmissions(form.Id)">
+                                    <i class="bi bi-eye"></i> Submissions
+                                </button>
+                                <button class="btn btn-sm btn-outline-danger" @onclick="() => DeleteForm(form.Id)">
+                                    <i class="bi bi-trash"></i> Delete
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    private List<CustomFormDto>? forms;
+    private bool loading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadForms();
+    }
+
+    private async Task LoadForms()
+    {
+        loading = true;
+        try
+        {
+            forms = await Http.GetFromJsonAsync<List<CustomFormDto>>("api/CustomForms");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading forms: {ex.Message}");
+            forms = new List<CustomFormDto>();
+        }
+        loading = false;
+    }
+
+    private void CreateNewForm()
+    {
+        Navigation.NavigateTo("/form-builder");
+    }
+
+    private void EditForm(int formId)
+    {
+        Navigation.NavigateTo($"/form-builder/{formId}");
+    }
+
+    private void ViewSubmissions(int formId)
+    {
+        Navigation.NavigateTo($"/form-submissions/{formId}");
+    }
+
+    private async Task DeleteForm(int formId)
+    {
+        if (!await JSRuntime.InvokeAsync<bool>("confirm", "Are you sure you want to delete this form? This action cannot be undone."))
+        {
+            return;
+        }
+
+        try
+        {
+            var response = await Http.DeleteAsync($"api/CustomForms/{formId}");
+            if (response.IsSuccessStatusCode)
+            {
+                await LoadForms();
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error deleting form: {ex.Message}");
+        }
+    }
+
+    private class CustomFormDto
+    {
+        public int Id { get; set; }
+        public string Title { get; set; } = "";
+        public string? Description { get; set; }
+        public string FormFieldsJson { get; set; } = "[]";
+        public bool IsActive { get; set; }
+        public bool AllowMultipleSubmissions { get; set; }
+        public bool RequireAuthentication { get; set; }
+        public DateTime CreatedDate { get; set; }
+        public DateTime? LastModifiedDate { get; set; }
+        public List<FormSubmissionDto>? Submissions { get; set; }
+    }
+
+    private class FormSubmissionDto
+    {
+        public int Id { get; set; }
+        public int CustomFormId { get; set; }
+        public DateTime SubmittedDate { get; set; }
+    }
+}

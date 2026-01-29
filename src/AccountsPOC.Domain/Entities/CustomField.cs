@@ -4,7 +4,7 @@ public class CustomField
 {
     public int Id { get; set; }
     public int TenantId { get; set; }
-    public required string EntityType { get; set; } // "BillOfMaterial", "SalesOrder", "SalesOrderItem"
+    public required string EntityType { get; set; } // "BillOfMaterial", "SalesOrder", "SalesOrderItem", "SalesInvoiceItem", "StockItem", "Product"
     public required string FieldName { get; set; }
     public required string FieldLabel { get; set; }
     public required string FieldType { get; set; } // "Text", "Number", "Boolean", "Radio", "Checkbox", "Select", "TextArea"

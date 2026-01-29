@@ -47,6 +47,9 @@ public class ApplicationDbContext : DbContext
     public DbSet<Driver> Drivers => Set<Driver>();
     public DbSet<Parcel> Parcels => Set<Parcel>();
     public DbSet<Container> Containers => Set<Container>();
+    public DbSet<SalesInvoiceItem> SalesInvoiceItems => Set<SalesInvoiceItem>();
+    public DbSet<PartialDispatch> PartialDispatches => Set<PartialDispatch>();
+    public DbSet<PartialDispatchItem> PartialDispatchItems => Set<PartialDispatchItem>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
