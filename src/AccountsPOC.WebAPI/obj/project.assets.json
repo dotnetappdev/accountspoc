@@ -1455,6 +1455,20 @@
         "runtime": {
           "bin/placeholder/AccountsPOC.Infrastructure.dll": {}
         }
+      },
+      "AccountsPOC.PdfGenerator/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v10.0",
+        "dependencies": {
+          "AccountsPOC.Domain": "1.0.0",
+          "QuestPDF": "2024.12.3"
+        },
+        "compile": {
+          "bin/placeholder/AccountsPOC.PdfGenerator.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/AccountsPOC.PdfGenerator.dll": {}
+        }
       }
     }
   },
@@ -3873,12 +3887,18 @@
       "type": "project",
       "path": "../AccountsPOC.Infrastructure/AccountsPOC.Infrastructure.csproj",
       "msbuildProject": "../AccountsPOC.Infrastructure/AccountsPOC.Infrastructure.csproj"
+    },
+    "AccountsPOC.PdfGenerator/1.0.0": {
+      "type": "project",
+      "path": "../AccountsPOC.PdfGenerator/AccountsPOC.PdfGenerator.csproj",
+      "msbuildProject": "../AccountsPOC.PdfGenerator/AccountsPOC.PdfGenerator.csproj"
     }
   },
   "projectFileDependencyGroups": {
     "net10.0": [
       "AccountsPOC.Application >= 1.0.0",
       "AccountsPOC.Infrastructure >= 1.0.0",
+      "AccountsPOC.PdfGenerator >= 1.0.0",
       "MailKit >= 4.14.1",
       "Microsoft.AspNetCore.OpenApi >= 10.0.1",
       "Microsoft.EntityFrameworkCore.Design >= 10.0.2",
@@ -3916,6 +3936,9 @@
             },
             "/home/runner/work/accountspoc/accountspoc/src/AccountsPOC.Infrastructure/AccountsPOC.Infrastructure.csproj": {
               "projectPath": "/home/runner/work/accountspoc/accountspoc/src/AccountsPOC.Infrastructure/AccountsPOC.Infrastructure.csproj"
+            },
+            "/home/runner/work/accountspoc/accountspoc/src/AccountsPOC.PdfGenerator/AccountsPOC.PdfGenerator.csproj": {
+              "projectPath": "/home/runner/work/accountspoc/accountspoc/src/AccountsPOC.PdfGenerator/AccountsPOC.PdfGenerator.csproj"
             }
           }
         }

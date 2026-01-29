@@ -1,4 +1,5 @@
 using AccountsPOC.Infrastructure.Data;
+using AccountsPOC.PdfGenerator.Services;
 using AccountsPOC.WebAPI.Services;
 using Microsoft.EntityFrameworkCore;
 
@@ -18,6 +19,9 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 
 // Add data seeder
 builder.Services.AddScoped<DataSeeder>();
+
+// Add PDF generator service
+builder.Services.AddScoped<IPdfGeneratorService, PdfGeneratorService>();
 
 // Add CORS
 builder.Services.AddCors(options =>

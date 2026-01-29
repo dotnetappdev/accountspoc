@@ -20,6 +20,7 @@
   <ItemGroup>
     <ProjectReference Include="..\AccountsPOC.Application\AccountsPOC.Application.csproj" />
     <ProjectReference Include="..\AccountsPOC.Infrastructure\AccountsPOC.Infrastructure.csproj" />
+    <ProjectReference Include="..\AccountsPOC.PdfGenerator\AccountsPOC.PdfGenerator.csproj" />
   </ItemGroup>
 
 </Project>

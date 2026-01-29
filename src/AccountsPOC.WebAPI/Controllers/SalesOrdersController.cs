@@ -1,5 +1,7 @@
 using AccountsPOC.Domain.Entities;
 using AccountsPOC.Infrastructure.Data;
+using AccountsPOC.PdfGenerator.Models;
+using AccountsPOC.PdfGenerator.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -10,10 +12,12 @@ namespace AccountsPOC.WebAPI.Controllers;
 public class SalesOrdersController : ControllerBase
 {
     private readonly ApplicationDbContext _context;
+    private readonly IPdfGeneratorService _pdfService;
 
-    public SalesOrdersController(ApplicationDbContext context)
+    public SalesOrdersController(ApplicationDbContext context, IPdfGeneratorService pdfService)
     {
         _context = context;
+        _pdfService = pdfService;
     }
 
     [HttpGet]
@@ -117,5 +121,52 @@ public class SalesOrdersController : ControllerBase
     private bool SalesOrderExists(int id)
     {
         return _context.SalesOrders.Any(e => e.Id == id);
+    }
+
+    [HttpGet("{id}/pdf")]
+    public async Task<IActionResult> GetSalesOrderPdf(int id)
+    {
+        var salesOrder = await _context.SalesOrders
+            .Include(o => o.SalesOrderItems)
+            .ThenInclude(i => i.Product)
+            .FirstOrDefaultAsync(o => o.Id == id);
+
+        if (salesOrder == null)
+        {
+            return NotFound();
+        }
+
+        // Get tenant branding
+        var branding = await GetTenantBranding(salesOrder.TenantId);
+
+        // Generate PDF
+        var pdfBytes = _pdfService.GenerateSalesOrderPdf(salesOrder, branding);
+
+        return File(pdfBytes, "application/pdf", $"SalesOrder_{salesOrder.OrderNumber}.pdf");
+    }
+
+    private async Task<TenantBrandingInfo> GetTenantBranding(int tenantId)
+    {
+        var tenant = await _context.Tenants.FindAsync(tenantId);
+        var logo = await _context.BrandingAssets
+            .Where(b => b.TenantId == tenantId && b.AssetType == "Logo" && b.IsActive)
+            .FirstOrDefaultAsync();
+
+        byte[]? logoBytes = null;
+        if (logo?.ImageData != null && logo.ImageData.StartsWith("data:image"))
+        {
+            // Extract base64 from data URL
+            var base64Data = logo.ImageData.Split(',')[1];
+            logoBytes = Convert.FromBase64String(base64Data);
+        }
+
+        return new TenantBrandingInfo
+        {
+            TenantName = tenant?.CompanyName ?? "Company Name",
+            LogoImage = logoBytes,
+            Address = "123 Business Street, City, Country",
+            Phone = tenant?.ContactPhone ?? "+44 1234 567890",
+            Email = tenant?.ContactEmail ?? "info@company.com"
+        };
     }
 }
