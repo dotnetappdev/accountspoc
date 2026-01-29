@@ -770,6 +770,7 @@ public class DataSeeder
         await _context.SaveChangesAsync();
 
         // Create sample users
+        // NOTE: This is a POC implementation. In production, use BCrypt, PBKDF2, or Argon2 for password hashing
         var adminUser = new User
         {
             TenantId = tenantId,

@@ -77,7 +77,26 @@ public class UsersController : ControllerBase
     [HttpPost]
     public async Task<ActionResult<User>> PostUser(CreateUserDto dto)
     {
+        // Validate tenant exists
+        if (!await _context.Tenants.AnyAsync(t => t.Id == dto.TenantId))
+        {
+            return BadRequest("Invalid TenantId. Tenant does not exist.");
+        }
+
+        // Validate username uniqueness
+        if (await _context.Users.AnyAsync(u => u.Username == dto.Username))
+        {
+            return BadRequest("Username already exists.");
+        }
+
+        // Validate email uniqueness
+        if (await _context.Users.AnyAsync(u => u.Email == dto.Email))
+        {
+            return BadRequest("Email already exists.");
+        }
+
         // Simple password hashing (in production, use proper password hashing like BCrypt)
+        // NOTE: This is a POC implementation. In production, use BCrypt, PBKDF2, or Argon2
         var passwordHash = Convert.ToBase64String(
             System.Text.Encoding.UTF8.GetBytes(dto.Password));
 
@@ -100,6 +119,14 @@ public class UsersController : ControllerBase
         // Assign roles if provided
         if (dto.RoleIds != null && dto.RoleIds.Any())
         {
+            // Validate all roles exist
+            var existingRoleIds = await _context.Roles.Where(r => dto.RoleIds.Contains(r.Id)).Select(r => r.Id).ToListAsync();
+            var invalidRoleIds = dto.RoleIds.Except(existingRoleIds).ToList();
+            if (invalidRoleIds.Any())
+            {
+                return BadRequest($"Invalid RoleIds: {string.Join(", ", invalidRoleIds)}");
+            }
+
             foreach (var roleId in dto.RoleIds)
             {
                 var userRole = new UserRole
@@ -134,6 +161,7 @@ public class UsersController : ControllerBase
 
         if (!string.IsNullOrEmpty(dto.Password))
         {
+            // NOTE: This is a POC implementation. In production, use BCrypt, PBKDF2, or Argon2
             user.PasswordHash = Convert.ToBase64String(
                 System.Text.Encoding.UTF8.GetBytes(dto.Password));
         }
@@ -141,6 +169,14 @@ public class UsersController : ControllerBase
         // Update roles if provided
         if (dto.RoleIds != null)
         {
+            // Validate all roles exist
+            var existingRoleIds = await _context.Roles.Where(r => dto.RoleIds.Contains(r.Id)).Select(r => r.Id).ToListAsync();
+            var invalidRoleIds = dto.RoleIds.Except(existingRoleIds).ToList();
+            if (invalidRoleIds.Any())
+            {
+                return BadRequest($"Invalid RoleIds: {string.Join(", ", invalidRoleIds)}");
+            }
+
             // Remove existing roles
             var existingRoles = await _context.UserRoles.Where(ur => ur.UserId == id).ToListAsync();
             _context.UserRoles.RemoveRange(existingRoles);

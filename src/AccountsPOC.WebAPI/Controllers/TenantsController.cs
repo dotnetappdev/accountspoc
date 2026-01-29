@@ -38,6 +38,12 @@ public class TenantsController : ControllerBase
     [HttpPost]
     public async Task<ActionResult<Tenant>> PostTenant(Tenant tenant)
     {
+        // Validate TenantCode uniqueness
+        if (await _context.Tenants.AnyAsync(t => t.TenantCode == tenant.TenantCode))
+        {
+            return BadRequest("TenantCode already exists.");
+        }
+
         tenant.CreatedDate = DateTime.UtcNow;
         _context.Tenants.Add(tenant);
         await _context.SaveChangesAsync();
@@ -93,10 +99,11 @@ public class TenantsController : ControllerBase
 
             return Ok(new { Tenant = tenant, Customer = customer });
         }
-        catch (Exception)
+        catch (Exception ex)
         {
             await transaction.RollbackAsync();
-            throw;
+            Console.WriteLine($"Error creating tenant with customer: {ex.Message}");
+            return StatusCode(500, new { error = "Failed to create tenant with customer", details = ex.Message });
         }
     }
 
