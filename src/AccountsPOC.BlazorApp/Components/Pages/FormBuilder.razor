@@ -1,0 +1,392 @@
+@page "/form-builder"
+@inject HttpClient Http
+@inject NavigationManager Navigation
+@inject IJSRuntime JSRuntime
+
+<PageTitle>Form Builder</PageTitle>
+
+<div class="container-fluid">
+    <div class="row mb-3">
+        <div class="col">
+            <h1 class="display-6">
+                <i class="bi bi-ui-checks-grid"></i> Form Builder
+            </h1>
+            <p class="text-muted">Create custom forms with drag-and-drop field types</p>
+        </div>
+        <div class="col-auto">
+            <button class="btn btn-primary" @onclick="SaveForm" disabled="@isSaving">
+                @if (isSaving)
+                {
+                    <span class="spinner-border spinner-border-sm me-2"></span>
+                }
+                <i class="bi bi-save"></i> Save Form
+            </button>
+            <button class="btn btn-outline-secondary" @onclick="ViewForms">
+                <i class="bi bi-list"></i> View All Forms
+            </button>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Form Configuration Panel -->
+        <div class="col-lg-3">
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-gear"></i> Form Settings
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label">Form Title</label>
+                        <input type="text" class="form-control" @bind="formTitle" placeholder="Enter form title" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Description</label>
+                        <textarea class="form-control" rows="3" @bind="formDescription" placeholder="Enter form description"></textarea>
+                    </div>
+                    <div class="form-check mb-2">
+                        <input type="checkbox" class="form-check-input" id="allowMultiple" @bind="allowMultipleSubmissions" />
+                        <label class="form-check-label" for="allowMultiple">
+                            Allow Multiple Submissions
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        <input type="checkbox" class="form-check-input" id="requireAuth" @bind="requireAuthentication" />
+                        <label class="form-check-label" for="requireAuth">
+                            Require Authentication
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-box"></i> Field Types
+                    </h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="field-toolbox">
+                        @foreach (var fieldType in fieldTypes)
+                        {
+                            <div class="field-type-item" @onclick="() => AddField(fieldType)">
+                                <i class="bi @fieldType.Icon"></i>
+                                <span>@fieldType.Label</span>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Form Canvas -->
+        <div class="col-lg-6">
+            <div class="card form-canvas-card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-layout-text-window"></i> Form Preview
+                    </h5>
+                </div>
+                <div class="card-body form-canvas">
+                    @if (!formFields.Any())
+                    {
+                        <div class="empty-canvas">
+                            <i class="bi bi-cursor"></i>
+                            <p>Click on field types to add them to your form</p>
+                        </div>
+                    }
+                    else
+                    {
+                        @foreach (var (field, index) in formFields.Select((f, i) => (f, i)))
+                        {
+                            <div class="form-field-item @(selectedFieldIndex == index ? "selected" : "")" 
+                                 @onclick="() => SelectField(index)">
+                                <div class="field-header">
+                                    <div class="field-title">
+                                        <i class="bi @GetFieldIcon(field.FieldType)"></i>
+                                        <span>@field.Label</span>
+                                        @if (field.IsRequired)
+                                        {
+                                            <span class="text-danger">*</span>
+                                        }
+                                    </div>
+                                    <div class="field-actions">
+                                        <button class="btn btn-sm btn-link" @onclick="() => MoveFieldUp(index)" @onclick:stopPropagation="true" disabled="@(index == 0)">
+                                            <i class="bi bi-arrow-up"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-link" @onclick="() => MoveFieldDown(index)" @onclick:stopPropagation="true" disabled="@(index == formFields.Count - 1)">
+                                            <i class="bi bi-arrow-down"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-link text-danger" @onclick="() => RemoveField(index)" @onclick:stopPropagation="true">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="field-preview">
+                                    @RenderFieldPreview(field)
+                                </div>
+                            </div>
+                        }
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Field Properties Panel -->
+        <div class="col-lg-3">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-sliders"></i> Field Properties
+                    </h5>
+                </div>
+                <div class="card-body">
+                    @if (selectedFieldIndex >= 0 && selectedFieldIndex < formFields.Count)
+                    {
+                        var field = formFields[selectedFieldIndex];
+                        <div class="mb-3">
+                            <label class="form-label">Field Label</label>
+                            <input type="text" class="form-control" @bind="field.Label" />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Placeholder</label>
+                            <input type="text" class="form-control" @bind="field.Placeholder" />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Field Type</label>
+                            <select class="form-select" @bind="field.FieldType">
+                                @foreach (var fieldType in fieldTypes)
+                                {
+                                    <option value="@fieldType.Type">@fieldType.Label</option>
+                                }
+                            </select>
+                        </div>
+                        @if (field.FieldType is "select" or "radio" or "checkbox")
+                        {
+                            <div class="mb-3">
+                                <label class="form-label">Options (one per line)</label>
+                                <textarea class="form-control" rows="4" @bind="field.Options" placeholder="Option 1&#10;Option 2&#10;Option 3"></textarea>
+                            </div>
+                        }
+                        <div class="form-check mb-2">
+                            <input type="checkbox" class="form-check-input" id="isRequired" @bind="field.IsRequired" />
+                            <label class="form-check-label" for="isRequired">
+                                Required Field
+                            </label>
+                        </div>
+                    }
+                    else
+                    {
+                        <p class="text-muted">Select a field to edit its properties</p>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private string formTitle = "";
+    private string formDescription = "";
+    private bool allowMultipleSubmissions = true;
+    private bool requireAuthentication = false;
+    private bool isSaving = false;
+    private int selectedFieldIndex = -1;
+
+    private List<FormFieldModel> formFields = new();
+
+    private List<FieldTypeOption> fieldTypes = new()
+    {
+        new() { Type = "text", Label = "Text Input", Icon = "bi-input-cursor-text" },
+        new() { Type = "textarea", Label = "Text Area", Icon = "bi-text-paragraph" },
+        new() { Type = "number", Label = "Number", Icon = "bi-123" },
+        new() { Type = "email", Label = "Email", Icon = "bi-envelope" },
+        new() { Type = "tel", Label = "Phone", Icon = "bi-telephone" },
+        new() { Type = "date", Label = "Date", Icon = "bi-calendar" },
+        new() { Type = "time", Label = "Time", Icon = "bi-clock" },
+        new() { Type = "select", Label = "Dropdown", Icon = "bi-menu-button-wide" },
+        new() { Type = "radio", Label = "Radio Buttons", Icon = "bi-record-circle" },
+        new() { Type = "checkbox", Label = "Checkboxes", Icon = "bi-check-square" },
+        new() { Type = "file", Label = "File Upload", Icon = "bi-file-earmark-arrow-up" },
+    };
+
+    private void AddField(FieldTypeOption fieldType)
+    {
+        var newField = new FormFieldModel
+        {
+            FieldType = fieldType.Type,
+            Label = fieldType.Label,
+            Placeholder = $"Enter {fieldType.Label.ToLower()}...",
+            IsRequired = false,
+            Options = fieldType.Type is "select" or "radio" or "checkbox" ? "Option 1\nOption 2\nOption 3" : ""
+        };
+        
+        formFields.Add(newField);
+        selectedFieldIndex = formFields.Count - 1;
+    }
+
+    private void SelectField(int index)
+    {
+        selectedFieldIndex = index;
+    }
+
+    private void RemoveField(int index)
+    {
+        formFields.RemoveAt(index);
+        if (selectedFieldIndex >= formFields.Count)
+        {
+            selectedFieldIndex = formFields.Count - 1;
+        }
+    }
+
+    private void MoveFieldUp(int index)
+    {
+        if (index > 0)
+        {
+            var field = formFields[index];
+            formFields.RemoveAt(index);
+            formFields.Insert(index - 1, field);
+            selectedFieldIndex = index - 1;
+        }
+    }
+
+    private void MoveFieldDown(int index)
+    {
+        if (index < formFields.Count - 1)
+        {
+            var field = formFields[index];
+            formFields.RemoveAt(index);
+            formFields.Insert(index + 1, field);
+            selectedFieldIndex = index + 1;
+        }
+    }
+
+    private string GetFieldIcon(string fieldType)
+    {
+        return fieldTypes.FirstOrDefault(f => f.Type == fieldType)?.Icon ?? "bi-square";
+    }
+
+    private RenderFragment RenderFieldPreview(FormFieldModel field) => builder =>
+    {
+        switch (field.FieldType)
+        {
+            case "textarea":
+                builder.OpenElement(0, "textarea");
+                builder.AddAttribute(1, "class", "form-control");
+                builder.AddAttribute(2, "placeholder", field.Placeholder);
+                builder.AddAttribute(3, "disabled", true);
+                builder.CloseElement();
+                break;
+            
+            case "select":
+                builder.OpenElement(0, "select");
+                builder.AddAttribute(1, "class", "form-select");
+                builder.AddAttribute(2, "disabled", true);
+                builder.OpenElement(3, "option");
+                builder.AddContent(4, "Select an option...");
+                builder.CloseElement();
+                if (!string.IsNullOrEmpty(field.Options))
+                {
+                    foreach (var option in field.Options.Split('\n', StringSplitOptions.RemoveEmptyEntries))
+                    {
+                        builder.OpenElement(5, "option");
+                        builder.AddContent(6, option.Trim());
+                        builder.CloseElement();
+                    }
+                }
+                builder.CloseElement();
+                break;
+            
+            case "radio":
+            case "checkbox":
+                if (!string.IsNullOrEmpty(field.Options))
+                {
+                    foreach (var option in field.Options.Split('\n', StringSplitOptions.RemoveEmptyEntries))
+                    {
+                        builder.OpenElement(0, "div");
+                        builder.AddAttribute(1, "class", "form-check");
+                        builder.OpenElement(2, "input");
+                        builder.AddAttribute(3, "type", field.FieldType);
+                        builder.AddAttribute(4, "class", "form-check-input");
+                        builder.AddAttribute(5, "disabled", true);
+                        builder.CloseElement();
+                        builder.OpenElement(6, "label");
+                        builder.AddAttribute(7, "class", "form-check-label");
+                        builder.AddContent(8, option.Trim());
+                        builder.CloseElement();
+                        builder.CloseElement();
+                    }
+                }
+                break;
+            
+            default:
+                builder.OpenElement(0, "input");
+                builder.AddAttribute(1, "type", field.FieldType);
+                builder.AddAttribute(2, "class", "form-control");
+                builder.AddAttribute(3, "placeholder", field.Placeholder);
+                builder.AddAttribute(4, "disabled", true);
+                builder.CloseElement();
+                break;
+        }
+    };
+
+    private async Task SaveForm()
+    {
+        if (string.IsNullOrWhiteSpace(formTitle))
+        {
+            // Show validation message
+            return;
+        }
+
+        isSaving = true;
+        try
+        {
+            var formData = new
+            {
+                Title = formTitle,
+                Description = formDescription,
+                FormFieldsJson = System.Text.Json.JsonSerializer.Serialize(formFields),
+                AllowMultipleSubmissions = allowMultipleSubmissions,
+                RequireAuthentication = requireAuthentication,
+                IsActive = true
+            };
+
+            var response = await Http.PostAsJsonAsync("http://localhost:5001/api/CustomForms", formData);
+            
+            if (response.IsSuccessStatusCode)
+            {
+                Navigation.NavigateTo("/forms");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error saving form: {ex.Message}");
+        }
+        finally
+        {
+            isSaving = false;
+        }
+    }
+
+    private void ViewForms()
+    {
+        Navigation.NavigateTo("/forms");
+    }
+
+    private class FormFieldModel
+    {
+        public string FieldType { get; set; } = "";
+        public string Label { get; set; } = "";
+        public string Placeholder { get; set; } = "";
+        public bool IsRequired { get; set; }
+        public string Options { get; set; } = "";
+    }
+
+    private class FieldTypeOption
+    {
+        public string Type { get; set; } = "";
+        public string Label { get; set; } = "";
+        public string Icon { get; set; } = "";
+    }
+}
