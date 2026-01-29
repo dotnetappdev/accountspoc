@@ -652,5 +652,173 @@ public class DataSeeder
         };
         _context.Parcels.AddRange(parcels);
         await _context.SaveChangesAsync();
+
+        // Seed Roles and Permissions
+        await SeedRolesAndPermissions(tenant.Id);
+    }
+
+    private async Task SeedRolesAndPermissions(int tenantId)
+    {
+        // Check if permissions already exist
+        if (await _context.Permissions.AnyAsync())
+        {
+            return; // Already seeded
+        }
+
+        // Create permissions
+        var permissions = new List<Permission>
+        {
+            // Tenant permissions
+            new Permission { Name = "Create Tenant", Resource = "Tenant", Action = "Create", Description = "Can create new tenants", CreatedDate = DateTime.UtcNow },
+            new Permission { Name = "Read Tenant", Resource = "Tenant", Action = "Read", Description = "Can view tenant information", CreatedDate = DateTime.UtcNow },
+            new Permission { Name = "Update Tenant", Resource = "Tenant", Action = "Update", Description = "Can update tenant information", CreatedDate = DateTime.UtcNow },
+            new Permission { Name = "Delete Tenant", Resource = "Tenant", Action = "Delete", Description = "Can delete tenants", CreatedDate = DateTime.UtcNow },
+            
+            // Customer permissions
+            new Permission { Name = "Create Customer", Resource = "Customer", Action = "Create", Description = "Can create new customers", CreatedDate = DateTime.UtcNow },
+            new Permission { Name = "Read Customer", Resource = "Customer", Action = "Read", Description = "Can view customer information", CreatedDate = DateTime.UtcNow },
+            new Permission { Name = "Update Customer", Resource = "Customer", Action = "Update", Description = "Can update customer information", CreatedDate = DateTime.UtcNow },
+            new Permission { Name = "Delete Customer", Resource = "Customer", Action = "Delete", Description = "Can delete customers", CreatedDate = DateTime.UtcNow },
+            new Permission { Name = "Manage Customer Contacts", Resource = "Customer", Action = "Manage", Description = "Can manage customer contact and delivery information", CreatedDate = DateTime.UtcNow },
+            
+            // Stock Item permissions
+            new Permission { Name = "Create Stock Item", Resource = "StockItem", Action = "Create", Description = "Can create new stock items", CreatedDate = DateTime.UtcNow },
+            new Permission { Name = "Read Stock Item", Resource = "StockItem", Action = "Read", Description = "Can view stock items", CreatedDate = DateTime.UtcNow },
+            new Permission { Name = "Update Stock Item", Resource = "StockItem", Action = "Update", Description = "Can update stock items", CreatedDate = DateTime.UtcNow },
+            new Permission { Name = "Delete Stock Item", Resource = "StockItem", Action = "Delete", Description = "Can delete stock items", CreatedDate = DateTime.UtcNow },
+            new Permission { Name = "Manage Stock Images", Resource = "StockItem", Action = "Manage", Description = "Can manage stock item images", CreatedDate = DateTime.UtcNow },
+            
+            // User management permissions
+            new Permission { Name = "Manage Users", Resource = "User", Action = "Manage", Description = "Can manage users", CreatedDate = DateTime.UtcNow },
+            new Permission { Name = "Manage Roles", Resource = "Role", Action = "Manage", Description = "Can manage roles", CreatedDate = DateTime.UtcNow },
+            new Permission { Name = "Manage Permissions", Resource = "Permission", Action = "Manage", Description = "Can manage permissions", CreatedDate = DateTime.UtcNow }
+        };
+        _context.Permissions.AddRange(permissions);
+        await _context.SaveChangesAsync();
+
+        // Create roles
+        var supportRole = new Role
+        {
+            Name = "Support",
+            Description = "Support staff with full tenant and customer management access",
+            IsSystemRole = true,
+            CreatedDate = DateTime.UtcNow
+        };
+        _context.Roles.Add(supportRole);
+
+        var agentRole = new Role
+        {
+            Name = "Agent",
+            Description = "Field agents with limited customer data management",
+            IsSystemRole = true,
+            CreatedDate = DateTime.UtcNow
+        };
+        _context.Roles.Add(agentRole);
+
+        var adminRole = new Role
+        {
+            Name = "Administrator",
+            Description = "Full system administrator access",
+            IsSystemRole = true,
+            CreatedDate = DateTime.UtcNow
+        };
+        _context.Roles.Add(adminRole);
+
+        await _context.SaveChangesAsync();
+
+        // Assign permissions to roles
+        // Support role permissions
+        var supportPermissions = permissions.Where(p => 
+            p.Resource == "Tenant" || 
+            p.Resource == "Customer").ToList();
+        
+        foreach (var perm in supportPermissions)
+        {
+            _context.RolePermissions.Add(new RolePermission
+            {
+                RoleId = supportRole.Id,
+                PermissionId = perm.Id,
+                AssignedDate = DateTime.UtcNow
+            });
+        }
+
+        // Agent role permissions (limited customer management)
+        var agentPermissions = permissions.Where(p => 
+            p.Resource == "Customer" && (p.Action == "Read" || p.Action == "Manage")).ToList();
+        
+        foreach (var perm in agentPermissions)
+        {
+            _context.RolePermissions.Add(new RolePermission
+            {
+                RoleId = agentRole.Id,
+                PermissionId = perm.Id,
+                AssignedDate = DateTime.UtcNow
+            });
+        }
+
+        // Admin role gets all permissions
+        foreach (var perm in permissions)
+        {
+            _context.RolePermissions.Add(new RolePermission
+            {
+                RoleId = adminRole.Id,
+                PermissionId = perm.Id,
+                AssignedDate = DateTime.UtcNow
+            });
+        }
+
+        await _context.SaveChangesAsync();
+
+        // Create sample users
+        var adminUser = new User
+        {
+            TenantId = tenantId,
+            Username = "admin",
+            Email = "admin@accountspoc.com",
+            PasswordHash = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes("admin123")),
+            FirstName = "Admin",
+            LastName = "User",
+            IsActive = true,
+            CreatedDate = DateTime.UtcNow
+        };
+        _context.Users.Add(adminUser);
+
+        var supportUser = new User
+        {
+            TenantId = tenantId,
+            Username = "support",
+            Email = "support@accountspoc.com",
+            PasswordHash = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes("support123")),
+            FirstName = "Support",
+            LastName = "User",
+            IsActive = true,
+            CreatedDate = DateTime.UtcNow
+        };
+        _context.Users.Add(supportUser);
+
+        var agentUser = new User
+        {
+            TenantId = tenantId,
+            Username = "agent",
+            Email = "agent@accountspoc.com",
+            PasswordHash = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes("agent123")),
+            FirstName = "Field",
+            LastName = "Agent",
+            IsActive = true,
+            CreatedDate = DateTime.UtcNow
+        };
+        _context.Users.Add(agentUser);
+
+        await _context.SaveChangesAsync();
+
+        // Assign roles to users
+        _context.UserRoles.AddRange(new[]
+        {
+            new UserRole { UserId = adminUser.Id, RoleId = adminRole.Id, AssignedDate = DateTime.UtcNow },
+            new UserRole { UserId = supportUser.Id, RoleId = supportRole.Id, AssignedDate = DateTime.UtcNow },
+            new UserRole { UserId = agentUser.Id, RoleId = agentRole.Id, AssignedDate = DateTime.UtcNow }
+        });
+
+        await _context.SaveChangesAsync();
     }
 }
