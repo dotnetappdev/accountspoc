@@ -87,7 +87,6 @@
                      FixedHeader="true"
                      Height="600px">
             <ToolBarContent>
-                <MudText Typo="Typo.h6">Sales Orders</MudText>
                 <MudSpacer />
                 <MudTextField @bind-Value="_searchString" 
                              Placeholder="Search" 
@@ -123,7 +122,7 @@
                 </PropertyColumn>
                 <PropertyColumn Property="x => x.SalesOrderItems.Count" Title="Items" Filterable="false" Sortable="true">
                     <CellTemplate>
-                        @context.Item.SalesOrderItems.Count items
+                        @(context.Item.SalesOrderItems?.Count ?? 0) items
                     </CellTemplate>
                 </PropertyColumn>
                 <TemplateColumn Title="Actions" Filterable="false" Sortable="false">
