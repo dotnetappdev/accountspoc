@@ -17,4 +17,5 @@ public class SalesInvoice
     
     // Navigation property
     public SalesOrder? SalesOrder { get; set; }
+    public ICollection<SalesInvoiceItem> SalesInvoiceItems { get; set; } = new List<SalesInvoiceItem>();
 }

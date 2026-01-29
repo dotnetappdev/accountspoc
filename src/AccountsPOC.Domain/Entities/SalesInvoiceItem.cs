@@ -1,9 +1,9 @@
 namespace AccountsPOC.Domain.Entities;
 
-public class SalesOrderItem
+public class SalesInvoiceItem
 {
     public int Id { get; set; }
-    public int SalesOrderId { get; set; }
+    public int SalesInvoiceId { get; set; }
     public int? ProductId { get; set; }
     
     // Free-text line item support
@@ -13,14 +13,14 @@ public class SalesOrderItem
     public int Quantity { get; set; }
     public decimal UnitPrice { get; set; }
     public decimal TotalPrice { get; set; }
-    public int? BillOfMaterialId { get; set; }
+    public decimal TaxRate { get; set; }
+    public decimal TaxAmount { get; set; }
     
     // Line item details
     public int LineNumber { get; set; }
     public string? Notes { get; set; }
     
     // Navigation properties
-    public SalesOrder? SalesOrder { get; set; }
+    public SalesInvoice? SalesInvoice { get; set; }
     public Product? Product { get; set; }
-    public BillOfMaterial? BillOfMaterial { get; set; }
 }
