@@ -171,7 +171,30 @@
     justify-content: center;
     font-size: 2rem;
     width: 80px;
+    height: 80px;
     text-align: center;
+    color: #fff;
+}
+
+.info-box-icon.bg-info {
+    background-color: #17a2b8;
+}
+
+.info-box-icon.bg-success {
+    background-color: #28a745;
+}
+
+.info-box-icon.bg-warning {
+    background-color: #ffc107;
+    color: #1f2d3d;
+}
+
+.info-box-icon.bg-danger {
+    background-color: #dc3545;
+}
+
+.info-box-icon.bg-primary {
+    background-color: #007bff;
 }
 
 .info-box-content {
@@ -546,6 +569,7 @@
 .timeline > div > i {
     background-color: #adb5bd;
     border-radius: 50%;
+    color: #fff;
     font-size: 16px;
     height: 30px;
     left: 18px;
@@ -554,6 +578,34 @@
     text-align: center;
     top: 0;
     width: 30px;
+}
+
+.timeline > div > i.bg-success {
+    background-color: #28a745 !important;
+}
+
+.timeline > div > i.bg-primary {
+    background-color: #007bff !important;
+}
+
+.timeline > div > i.bg-warning {
+    background-color: #ffc107 !important;
+}
+
+.timeline > div > i.bg-info {
+    background-color: #17a2b8 !important;
+}
+
+.timeline > div > i.bg-danger {
+    background-color: #dc3545 !important;
+}
+
+.timeline > div > i.bg-secondary {
+    background-color: #6c757d !important;
+}
+
+.timeline > div > i.bg-gray {
+    background-color: #adb5bd !important;
 }
 
 .timeline > .time-label > span {
