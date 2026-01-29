@@ -1,0 +1,274 @@
+@page "/users"
+@using System.Net.Http.Json
+@using AccountsPOC.BlazorApp.Models
+@inject HttpClient Http
+@rendermode InteractiveServer
+
+<PageTitle>User Management</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraExtraLarge" Class="mt-4">
+    <MudText Typo="Typo.h4" Class="mb-4">
+        <MudIcon Icon="@Icons.Material.Filled.People" Class="mr-2" />
+        User Management
+    </MudText>
+
+    <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="ShowAddForm" Class="mb-4">
+        <MudIcon Icon="@Icons.Material.Filled.Add" Class="mr-1" />
+        Add New User
+    </MudButton>
+
+    @if (showForm)
+    {
+        <MudCard Class="mb-4">
+            <MudCardHeader>
+                <CardHeaderContent>
+                    <MudText Typo="Typo.h6">@(editingUser != null ? "Edit User" : "Create New User")</MudText>
+                </CardHeaderContent>
+            </MudCardHeader>
+            <MudCardContent>
+                <MudGrid>
+                    <MudItem xs="12" md="6">
+                        <MudTextField @bind-Value="userForm.Username" Label="Username" Required="true" Disabled="@(editingUser != null)" />
+                    </MudItem>
+                    <MudItem xs="12" md="6">
+                        <MudTextField @bind-Value="userForm.Email" Label="Email" InputType="InputType.Email" Required="true" />
+                    </MudItem>
+                    <MudItem xs="12" md="6">
+                        <MudTextField @bind-Value="userForm.FirstName" Label="First Name" />
+                    </MudItem>
+                    <MudItem xs="12" md="6">
+                        <MudTextField @bind-Value="userForm.LastName" Label="Last Name" />
+                    </MudItem>
+                    <MudItem xs="12" md="6">
+                        <MudTextField @bind-Value="userForm.PhoneNumber" Label="Phone Number" />
+                    </MudItem>
+                    <MudItem xs="12" md="6">
+                        <MudNumericField @bind-Value="userForm.TenantId" Label="Tenant ID" />
+                    </MudItem>
+                    <MudItem xs="12" md="6">
+                        <MudTextField @bind-Value="userForm.Password" Label="Password" InputType="InputType.Password" 
+                                      HelperText="@(editingUser != null ? "Leave blank to keep current password" : "Required for new users")" />
+                    </MudItem>
+                    <MudItem xs="12" md="6">
+                        <MudSwitch @bind-Value="userForm.IsActive" Label="Active" Color="Color.Primary" />
+                    </MudItem>
+                    <MudItem xs="12">
+                        <MudSelect T="int" Label="Roles" MultiSelection="true" @bind-SelectedValues="selectedRoleIds">
+                            @foreach (var role in availableRoles)
+                            {
+                                <MudSelectItem T="int" Value="@role.Id">@role.Name</MudSelectItem>
+                            }
+                        </MudSelect>
+                    </MudItem>
+                </MudGrid>
+            </MudCardContent>
+            <MudCardActions>
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SaveUser">
+                    <MudIcon Icon="@Icons.Material.Filled.Save" Class="mr-1" />
+                    Save
+                </MudButton>
+                <MudButton Variant="Variant.Outlined" OnClick="CancelForm">Cancel</MudButton>
+            </MudCardActions>
+        </MudCard>
+    }
+
+    <MudDataGrid T="User" Items="@users" Filterable="true" QuickFilter="@_quickFilter" 
+                 Loading="@loading" Hover="true" Dense="true">
+        <ToolBarContent>
+            <MudText Typo="Typo.h6">Users</MudText>
+            <MudSpacer />
+            <MudTextField @bind-Value="_searchString" Placeholder="Search..." Adornment="Adornment.Start" 
+                         AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0" />
+        </ToolBarContent>
+        <Columns>
+            <PropertyColumn Property="x => x.Username" Title="Username" />
+            <PropertyColumn Property="x => x.Email" Title="Email" />
+            <PropertyColumn Property="x => x.FirstName" Title="First Name" />
+            <PropertyColumn Property="x => x.LastName" Title="Last Name" />
+            <TemplateColumn Title="Roles" Filterable="false">
+                <CellTemplate>
+                    @if (context.Item.Roles != null && context.Item.Roles.Any())
+                    {
+                        @foreach (var role in context.Item.Roles)
+                        {
+                            <MudChip Size="Size.Small" Color="Color.Info">@role.Name</MudChip>
+                        }
+                    }
+                </CellTemplate>
+            </TemplateColumn>
+            <PropertyColumn Property="x => x.IsActive" Title="Status">
+                <CellTemplate>
+                    @if (context.Item.IsActive)
+                    {
+                        <MudChip Size="Size.Small" Color="Color.Success">Active</MudChip>
+                    }
+                    else
+                    {
+                        <MudChip Size="Size.Small" Color="Color.Default">Inactive</MudChip>
+                    }
+                </CellTemplate>
+            </PropertyColumn>
+            <TemplateColumn Title="Actions" Filterable="false" Sortable="false">
+                <CellTemplate>
+                    <MudStack Row="true" Spacing="1">
+                        <MudIconButton Icon="@Icons.Material.Filled.Edit" 
+                                     Color="Color.Warning" 
+                                     Size="Size.Small" 
+                                     OnClick="@(() => EditUser(context.Item))" />
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete" 
+                                     Color="Color.Error" 
+                                     Size="Size.Small" 
+                                     OnClick="@(() => DeleteUser(context.Item.Id))" />
+                    </MudStack>
+                </CellTemplate>
+            </TemplateColumn>
+        </Columns>
+        <PagerContent>
+            <MudDataGridPager T="User" PageSizeOptions="new int[] { 10, 25, 50 }" />
+        </PagerContent>
+    </MudDataGrid>
+</MudContainer>
+
+@code {
+    private List<User> users = new();
+    private List<Role> availableRoles = new();
+    private UserForm userForm = new();
+    private User? editingUser;
+    private bool showForm = false;
+    private bool loading = true;
+    private string _searchString = "";
+    private IEnumerable<int> selectedRoleIds = new List<int>();
+
+    private Func<User, bool> _quickFilter => x =>
+    {
+        if (string.IsNullOrWhiteSpace(_searchString))
+            return true;
+
+        if (x.Username?.Contains(_searchString, StringComparison.OrdinalIgnoreCase) == true)
+            return true;
+
+        if (x.Email?.Contains(_searchString, StringComparison.OrdinalIgnoreCase) == true)
+            return true;
+
+        if (x.FirstName?.Contains(_searchString, StringComparison.OrdinalIgnoreCase) == true)
+            return true;
+
+        if (x.LastName?.Contains(_searchString, StringComparison.OrdinalIgnoreCase) == true)
+            return true;
+
+        return false;
+    };
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadData();
+    }
+
+    private async Task LoadData()
+    {
+        loading = true;
+        try
+        {
+            users = await Http.GetFromJsonAsync<List<User>>("api/Users") ?? new();
+            availableRoles = await Http.GetFromJsonAsync<List<Role>>("api/Roles") ?? new();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading data: {ex.Message}");
+        }
+        loading = false;
+    }
+
+    private void ShowAddForm()
+    {
+        userForm = new() { IsActive = true, TenantId = 1 };
+        editingUser = null;
+        selectedRoleIds = new List<int>();
+        showForm = true;
+    }
+
+    private void EditUser(User user)
+    {
+        editingUser = user;
+        userForm = new UserForm
+        {
+            Id = user.Id,
+            TenantId = user.TenantId,
+            Username = user.Username,
+            Email = user.Email,
+            FirstName = user.FirstName,
+            LastName = user.LastName,
+            PhoneNumber = user.PhoneNumber,
+            IsActive = user.IsActive
+        };
+        selectedRoleIds = user.Roles?.Select(r => r.Id) ?? new List<int>();
+        showForm = true;
+    }
+
+    private async Task SaveUser()
+    {
+        try
+        {
+            var dto = new
+            {
+                userForm.TenantId,
+                userForm.Username,
+                userForm.Email,
+                userForm.Password,
+                userForm.FirstName,
+                userForm.LastName,
+                userForm.PhoneNumber,
+                userForm.IsActive,
+                RoleIds = selectedRoleIds.ToList()
+            };
+
+            if (editingUser != null)
+            {
+                await Http.PutAsJsonAsync($"api/Users/{userForm.Id}", dto);
+            }
+            else
+            {
+                await Http.PostAsJsonAsync("api/Users", dto);
+            }
+            
+            showForm = false;
+            await LoadData();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error saving user: {ex.Message}");
+        }
+    }
+
+    private async Task DeleteUser(int id)
+    {
+        try
+        {
+            await Http.DeleteAsync($"api/Users/{id}");
+            await LoadData();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error deleting user: {ex.Message}");
+        }
+    }
+
+    private void CancelForm()
+    {
+        showForm = false;
+        editingUser = null;
+    }
+
+    private class UserForm
+    {
+        public int Id { get; set; }
+        public int TenantId { get; set; }
+        public string Username { get; set; } = "";
+        public string Email { get; set; } = "";
+        public string? Password { get; set; }
+        public string? FirstName { get; set; }
+        public string? LastName { get; set; }
+        public string? PhoneNumber { get; set; }
+        public bool IsActive { get; set; }
+    }
+}

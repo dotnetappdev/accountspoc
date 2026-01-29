@@ -1,0 +1,208 @@
+@page "/license-usage/{TenantId:int}"
+@using System.Net.Http.Json
+@using AccountsPOC.BlazorApp.Models
+@inject HttpClient Http
+@inject NavigationManager Navigation
+@rendermode InteractiveServer
+
+<PageTitle>License Usage</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraExtraLarge" Class="mt-4">
+    <MudBreadcrumbs Items="_breadcrumbs" />
+    
+    <MudText Typo="Typo.h4" Class="mb-4">
+        <MudIcon Icon="@Icons.Material.Filled.Assessment" Class="mr-2" />
+        License Usage Dashboard
+    </MudText>
+
+    @if (loading)
+    {
+        <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+    }
+    else if (usageData == null)
+    {
+        <MudAlert Severity="Severity.Error">Failed to load license usage data</MudAlert>
+    }
+    else
+    {
+        <MudGrid>
+            <MudItem xs="12">
+                <MudCard>
+                    <MudCardHeader>
+                        <CardHeaderContent>
+                            <MudText Typo="Typo.h6">License Information</MudText>
+                        </CardHeaderContent>
+                    </MudCardHeader>
+                    <MudCardContent>
+                        <MudGrid>
+                            <MudItem xs="12" md="3">
+                                <MudText Typo="Typo.body2" Color="Color.Default">License Key</MudText>
+                                <MudText Typo="Typo.h6">@usageData.License.LicenseKey</MudText>
+                            </MudItem>
+                            <MudItem xs="12" md="3">
+                                <MudText Typo="Typo.body2" Color="Color.Default">License Type</MudText>
+                                <MudChip T="string" Color="@GetLicenseTypeColor(usageData.License.LicenseType)">@usageData.License.LicenseType</MudChip>
+                            </MudItem>
+                            <MudItem xs="12" md="3">
+                                <MudText Typo="Typo.body2" Color="Color.Default">Expires</MudText>
+                                <MudText Typo="Typo.h6">@(usageData.License.ExpiryDate?.ToString("yyyy-MM-dd") ?? "Never")</MudText>
+                            </MudItem>
+                            <MudItem xs="12" md="3">
+                                <MudText Typo="Typo.body2" Color="Color.Default">Status</MudText>
+                                <MudChip T="string" Color="@(usageData.License.IsActive ? Color.Success : Color.Default)">
+                                    @(usageData.License.IsActive ? "Active" : "Inactive")
+                                </MudChip>
+                            </MudItem>
+                        </MudGrid>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+
+            <MudItem xs="12" md="6" lg="3">
+                <MudCard>
+                    <MudCardContent>
+                        <MudText Typo="Typo.body2">Stock Items</MudText>
+                        <MudText Typo="Typo.h5">@usageData.Usage.StockItems.Current / @(usageData.Usage.StockItems.Max?.ToString() ?? "∞")</MudText>
+                        @if (usageData.Usage.StockItems.Max.HasValue)
+                        {
+                            <MudProgressLinear Value="@usageData.Usage.StockItems.Percentage" Color="@GetUsageColor(usageData.Usage.StockItems.Percentage)" Size="Size.Small" Class="mt-2" />
+                            <MudText Typo="Typo.caption">@usageData.Usage.StockItems.Percentage.ToString("F1")% used</MudText>
+                        }
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+
+            <MudItem xs="12" md="6" lg="3">
+                <MudCard>
+                    <MudCardContent>
+                        <MudText Typo="Typo.body2">Users</MudText>
+                        <MudText Typo="Typo.h5">@usageData.Usage.Users.Current / @(usageData.Usage.Users.Max?.ToString() ?? "∞")</MudText>
+                        @if (usageData.Usage.Users.Max.HasValue)
+                        {
+                            <MudProgressLinear Value="@usageData.Usage.Users.Percentage" Color="@GetUsageColor(usageData.Usage.Users.Percentage)" Size="Size.Small" Class="mt-2" />
+                            <MudText Typo="Typo.caption">@usageData.Usage.Users.Percentage.ToString("F1")% used</MudText>
+                        }
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+
+            <MudItem xs="12" md="6" lg="3">
+                <MudCard>
+                    <MudCardContent>
+                        <MudText Typo="Typo.body2">Customers</MudText>
+                        <MudText Typo="Typo.h5">@usageData.Usage.Customers.Current / @(usageData.Usage.Customers.Max?.ToString() ?? "∞")</MudText>
+                        @if (usageData.Usage.Customers.Max.HasValue)
+                        {
+                            <MudProgressLinear Value="@usageData.Usage.Customers.Percentage" Color="@GetUsageColor(usageData.Usage.Customers.Percentage)" Size="Size.Small" Class="mt-2" />
+                            <MudText Typo="Typo.caption">@usageData.Usage.Customers.Percentage.ToString("F1")% used</MudText>
+                        }
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+
+            <MudItem xs="12" md="6" lg="3">
+                <MudCard>
+                    <MudCardContent>
+                        <MudText Typo="Typo.body2">Installations</MudText>
+                        <MudText Typo="Typo.h5">@usageData.Usage.Installations.Current / @usageData.Usage.Installations.Max</MudText>
+                        <MudProgressLinear Value="@usageData.Usage.Installations.Percentage" Color="@GetUsageColor(usageData.Usage.Installations.Percentage)" Size="Size.Small" Class="mt-2" />
+                        <MudText Typo="Typo.caption">@usageData.Usage.Installations.Percentage.ToString("F1")% used</MudText>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+
+            <MudItem xs="12">
+                <MudCard>
+                    <MudCardHeader>
+                        <CardHeaderContent>
+                            <MudText Typo="Typo.h6">Feature Flags</MudText>
+                        </CardHeaderContent>
+                    </MudCardHeader>
+                    <MudCardContent>
+                        <MudChipSet T="string">
+                            <MudChip T="string" Color="@(usageData.License.EnablePdfExport ? Color.Success : Color.Default)">PDF Export</MudChip>
+                            <MudChip T="string" Color="@(usageData.License.EnableEmailTemplates ? Color.Success : Color.Default)">Email Templates</MudChip>
+                            <MudChip T="string" Color="@(usageData.License.EnableCustomForms ? Color.Success : Color.Default)">Custom Forms</MudChip>
+                            <MudChip T="string" Color="@(usageData.License.EnablePaymentIntegration ? Color.Success : Color.Default)">Payment Integration</MudChip>
+                            <MudChip T="string" Color="@(usageData.License.EnableAdvancedReporting ? Color.Success : Color.Default)">Advanced Reporting</MudChip>
+                            <MudChip T="string" Color="@(usageData.License.EnableApiAccess ? Color.Success : Color.Default)">API Access</MudChip>
+                            <MudChip T="string" Color="@(usageData.License.EnableMultipleCurrencies ? Color.Success : Color.Default)">Multiple Currencies</MudChip>
+                        </MudChipSet>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+        </MudGrid>
+    }
+</MudContainer>
+
+@code {
+    [Parameter]
+    public int TenantId { get; set; }
+
+    private LicenseUsageData? usageData;
+    private bool loading = true;
+    private List<BreadcrumbItem> _breadcrumbs = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        _breadcrumbs = new List<BreadcrumbItem>
+        {
+            new BreadcrumbItem("Home", href: "/"),
+            new BreadcrumbItem("Licenses", href: "/licenses"),
+            new BreadcrumbItem("Usage", href: null, disabled: true)
+        };
+
+        await LoadUsageData();
+    }
+
+    private async Task LoadUsageData()
+    {
+        loading = true;
+        try
+        {
+            usageData = await Http.GetFromJsonAsync<LicenseUsageData>($"api/Licenses/tenant/{TenantId}/usage");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading usage data: {ex.Message}");
+        }
+        loading = false;
+    }
+
+    private Color GetUsageColor(double percentage)
+    {
+        if (percentage < 50) return Color.Success;
+        if (percentage < 80) return Color.Warning;
+        return Color.Error;
+    }
+
+    private Color GetLicenseTypeColor(string type)
+    {
+        if (type == "Starter") return Color.Info;
+        if (type == "Professional") return Color.Primary;
+        if (type == "Enterprise") return Color.Success;
+        if (type == "Custom") return Color.Warning;
+        return Color.Default;
+    }
+
+    private class LicenseUsageData
+    {
+        public License License { get; set; } = null!;
+        public UsageInfo Usage { get; set; } = null!;
+    }
+
+    private class UsageInfo
+    {
+        public ResourceUsage StockItems { get; set; } = null!;
+        public ResourceUsage Users { get; set; } = null!;
+        public ResourceUsage Customers { get; set; } = null!;
+        public ResourceUsage Installations { get; set; } = null!;
+    }
+
+    private class ResourceUsage
+    {
+        public int Current { get; set; }
+        public int? Max { get; set; }
+        public double Percentage { get; set; }
+    }
+}

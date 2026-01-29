@@ -23,6 +23,9 @@ builder.Services.AddScoped<DataSeeder>();
 // Add PDF generator service
 builder.Services.AddScoped<IPdfGeneratorService, PdfGeneratorService>();
 
+// Add License service
+builder.Services.AddScoped<ILicenseService, LicenseService>();
+
 // Add CORS
 builder.Services.AddCors(options =>
 {

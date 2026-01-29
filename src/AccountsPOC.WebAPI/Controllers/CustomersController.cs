@@ -87,8 +87,54 @@ public class CustomersController : ControllerBase
         return NoContent();
     }
 
+    // Agent-specific endpoint - limited customer data update
+    [HttpPatch("{id}/agent-update")]
+    public async Task<IActionResult> AgentUpdateCustomer(int id, AgentCustomerUpdateDto dto)
+    {
+        var customer = await _context.Customers.FindAsync(id);
+        if (customer == null)
+        {
+            return NotFound();
+        }
+
+        // Agents can only update contact and delivery information
+        if (dto.ContactName != null) customer.ContactName = dto.ContactName;
+        if (dto.Phone != null) customer.Phone = dto.Phone;
+        if (dto.Mobile != null) customer.Mobile = dto.Mobile;
+        if (dto.Email != null) customer.Email = dto.Email;
+        
+        // Delivery details
+        if (dto.DeliveryContactName != null) customer.DeliveryContactName = dto.DeliveryContactName;
+        if (dto.DeliveryContactPhone != null) customer.DeliveryContactPhone = dto.DeliveryContactPhone;
+        if (dto.DeliveryContactMobile != null) customer.DeliveryContactMobile = dto.DeliveryContactMobile;
+        if (dto.DeliveryInstructions != null) customer.DeliveryInstructions = dto.DeliveryInstructions;
+        if (dto.PreferredDeliveryTime != null) customer.PreferredDeliveryTime = dto.PreferredDeliveryTime;
+        if (dto.AccessCode != null) customer.AccessCode = dto.AccessCode;
+        if (dto.Notes != null) customer.Notes = dto.Notes;
+
+        customer.LastModifiedDate = DateTime.UtcNow;
+        await _context.SaveChangesAsync();
+
+        return NoContent();
+    }
+
     private bool CustomerExists(int id)
     {
         return _context.Customers.Any(e => e.Id == id);
     }
+}
+
+public class AgentCustomerUpdateDto
+{
+    public string? ContactName { get; set; }
+    public string? Phone { get; set; }
+    public string? Mobile { get; set; }
+    public string? Email { get; set; }
+    public string? DeliveryContactName { get; set; }
+    public string? DeliveryContactPhone { get; set; }
+    public string? DeliveryContactMobile { get; set; }
+    public string? DeliveryInstructions { get; set; }
+    public string? PreferredDeliveryTime { get; set; }
+    public string? AccessCode { get; set; }
+    public string? Notes { get; set; }
 }

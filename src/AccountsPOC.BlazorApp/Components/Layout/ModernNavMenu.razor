@@ -209,6 +209,49 @@
                         </li>
                     </ul>
                 </li>
+
+                <!-- User Management -->
+                <li class="nav-item @(expandedSections.Contains("usermgmt") ? "menu-open" : "")">
+                    <a href="#" class="nav-link" @onclick="@(() => ToggleSection("usermgmt"))" @onclick:preventDefault>
+                        <i class="nav-icon bi bi-people-fill"></i>
+                        <p>
+                            User Management
+                            <i class="right bi @(expandedSections.Contains("usermgmt") ? "bi-chevron-down" : "bi-chevron-right")"></i>
+                        </p>
+                    </a>
+                    <ul class="nav nav-treeview">
+                        <li class="nav-item">
+                            <NavLink class="nav-link" href="tenants">
+                                <i class="bi bi-building nav-icon"></i>
+                                <p>Tenants</p>
+                            </NavLink>
+                        </li>
+                        <li class="nav-item">
+                            <NavLink class="nav-link" href="users">
+                                <i class="bi bi-person nav-icon"></i>
+                                <p>Users</p>
+                            </NavLink>
+                        </li>
+                        <li class="nav-item">
+                            <NavLink class="nav-link" href="roles">
+                                <i class="bi bi-shield-check nav-icon"></i>
+                                <p>Roles</p>
+                            </NavLink>
+                        </li>
+                        <li class="nav-item">
+                            <NavLink class="nav-link" href="permissions">
+                                <i class="bi bi-lock nav-icon"></i>
+                                <p>Permissions</p>
+                            </NavLink>
+                        </li>
+                        <li class="nav-item">
+                            <NavLink class="nav-link" href="licenses">
+                                <i class="bi bi-key-fill nav-icon"></i>
+                                <p>Licenses</p>
+                            </NavLink>
+                        </li>
+                    </ul>
+                </li>
             </ul>
         </nav>
         <!-- /.sidebar-menu -->

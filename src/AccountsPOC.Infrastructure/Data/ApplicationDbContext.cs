@@ -50,6 +50,14 @@ public class ApplicationDbContext : DbContext
     public DbSet<SalesInvoiceItem> SalesInvoiceItems => Set<SalesInvoiceItem>();
     public DbSet<PartialDispatch> PartialDispatches => Set<PartialDispatch>();
     public DbSet<PartialDispatchItem> PartialDispatchItems => Set<PartialDispatchItem>();
+    public DbSet<User> Users => Set<User>();
+    public DbSet<Role> Roles => Set<Role>();
+    public DbSet<Permission> Permissions => Set<Permission>();
+    public DbSet<UserRole> UserRoles => Set<UserRole>();
+    public DbSet<RolePermission> RolePermissions => Set<RolePermission>();
+    public DbSet<StockItemImage> StockItemImages => Set<StockItemImage>();
+    public DbSet<License> Licenses => Set<License>();
+    public DbSet<Installation> Installations => Set<Installation>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -798,6 +806,127 @@ public class ApplicationDbContext : DbContext
                 .WithMany()
                 .HasForeignKey(e => e.DriverId)
                 .OnDelete(DeleteBehavior.SetNull);
+        });
+
+        // User configuration
+        modelBuilder.Entity<User>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Username).IsRequired().HasMaxLength(100);
+            entity.Property(e => e.Email).IsRequired().HasMaxLength(200);
+            entity.Property(e => e.PasswordHash).IsRequired();
+            entity.Property(e => e.FirstName).HasMaxLength(100);
+            entity.Property(e => e.LastName).HasMaxLength(100);
+            entity.HasIndex(e => e.Username).IsUnique();
+            entity.HasIndex(e => e.Email).IsUnique();
+            entity.HasIndex(e => e.TenantId);
+        });
+
+        // Role configuration
+        modelBuilder.Entity<Role>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Name).IsRequired().HasMaxLength(100);
+            entity.Property(e => e.Description).HasMaxLength(500);
+            entity.HasIndex(e => e.Name).IsUnique();
+        });
+
+        // Permission configuration
+        modelBuilder.Entity<Permission>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Name).IsRequired().HasMaxLength(100);
+            entity.Property(e => e.Description).HasMaxLength(500);
+            entity.Property(e => e.Resource).IsRequired().HasMaxLength(100);
+            entity.Property(e => e.Action).IsRequired().HasMaxLength(50);
+            entity.HasIndex(e => new { e.Resource, e.Action }).IsUnique();
+        });
+
+        // UserRole configuration
+        modelBuilder.Entity<UserRole>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.HasIndex(e => new { e.UserId, e.RoleId }).IsUnique();
+            
+            entity.HasOne(e => e.User)
+                .WithMany(e => e.UserRoles)
+                .HasForeignKey(e => e.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+            
+            entity.HasOne(e => e.Role)
+                .WithMany(e => e.UserRoles)
+                .HasForeignKey(e => e.RoleId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // RolePermission configuration
+        modelBuilder.Entity<RolePermission>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.HasIndex(e => new { e.RoleId, e.PermissionId }).IsUnique();
+            
+            entity.HasOne(e => e.Role)
+                .WithMany(e => e.RolePermissions)
+                .HasForeignKey(e => e.RoleId)
+                .OnDelete(DeleteBehavior.Cascade);
+            
+            entity.HasOne(e => e.Permission)
+                .WithMany(e => e.RolePermissions)
+                .HasForeignKey(e => e.PermissionId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // StockItemImage configuration
+        modelBuilder.Entity<StockItemImage>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.ImageUrl).IsRequired().HasMaxLength(500);
+            entity.Property(e => e.Caption).HasMaxLength(200);
+            entity.HasIndex(e => e.StockItemId);
+            
+            entity.HasOne(e => e.StockItem)
+                .WithMany()
+                .HasForeignKey(e => e.StockItemId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // License configuration
+        modelBuilder.Entity<License>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.LicenseKey).IsRequired().HasMaxLength(100);
+            entity.Property(e => e.LicenseType).IsRequired().HasMaxLength(50);
+            entity.HasIndex(e => e.LicenseKey).IsUnique();
+            entity.HasIndex(e => e.TenantId);
+            
+            entity.HasOne(e => e.Tenant)
+                .WithMany()
+                .HasForeignKey(e => e.TenantId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // Installation configuration
+        modelBuilder.Entity<Installation>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.InstallationKey).IsRequired().HasMaxLength(100);
+            entity.Property(e => e.MachineName).IsRequired().HasMaxLength(200);
+            entity.Property(e => e.MachineIdentifier).HasMaxLength(200);
+            entity.Property(e => e.IpAddress).HasMaxLength(45);
+            entity.Property(e => e.Version).HasMaxLength(50);
+            entity.HasIndex(e => e.InstallationKey).IsUnique();
+            entity.HasIndex(e => e.TenantId);
+            entity.HasIndex(e => e.LicenseId);
+            
+            entity.HasOne(e => e.Tenant)
+                .WithMany()
+                .HasForeignKey(e => e.TenantId)
+                .OnDelete(DeleteBehavior.Cascade);
+            
+            entity.HasOne(e => e.License)
+                .WithMany()
+                .HasForeignKey(e => e.LicenseId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
     }
 }

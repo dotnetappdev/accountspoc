@@ -95,6 +95,11 @@
                 <TemplateColumn Title="Actions" Filterable="false" Sortable="false">
                     <CellTemplate>
                         <MudStack Row="true" Spacing="1">
+                            <MudIconButton Icon="@Icons.Material.Filled.Image" 
+                                         Color="Color.Info" 
+                                         Size="Size.Small" 
+                                         Href="@($"/stock-item-images/{context.Item.Id}")"
+                                         Title="Manage Images" />
                             <MudIconButton Icon="@Icons.Material.Filled.Edit" 
                                          Color="Color.Warning" 
                                          Size="Size.Small" 
