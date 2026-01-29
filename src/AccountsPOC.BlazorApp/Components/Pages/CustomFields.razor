@@ -43,6 +43,24 @@
                 <i class="bi bi-list-ul"></i> Sales Order Items
             </button>
         </li>
+        <li class="nav-item">
+            <button class="nav-link @(selectedEntityType == "SalesInvoiceItem" ? "active" : "")" 
+                    @onclick="@(() => SelectEntityType("SalesInvoiceItem"))">
+                <i class="bi bi-receipt"></i> Invoice Items
+            </button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link @(selectedEntityType == "StockItem" ? "active" : "")" 
+                    @onclick="@(() => SelectEntityType("StockItem"))">
+                <i class="bi bi-box"></i> Stock Items
+            </button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link @(selectedEntityType == "Product" ? "active" : "")" 
+                    @onclick="@(() => SelectEntityType("Product"))">
+                <i class="bi bi-tag"></i> Products
+            </button>
+        </li>
     </ul>
 
     @if (loading)
