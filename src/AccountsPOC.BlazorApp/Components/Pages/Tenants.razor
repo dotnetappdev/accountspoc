@@ -1,0 +1,271 @@
+@page "/tenants"
+@using System.Net.Http.Json
+@using AccountsPOC.BlazorApp.Models
+@inject HttpClient Http
+@rendermode InteractiveServer
+
+<PageTitle>Tenant Management</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraExtraLarge" Class="mt-4">
+    <MudText Typo="Typo.h4" Class="mb-4">
+        <MudIcon Icon="@Icons.Material.Filled.Business" Class="mr-2" />
+        Tenant Management
+    </MudText>
+
+    <MudAlert Severity="Severity.Info" Class="mb-4">
+        <strong>Support Only:</strong> This page is for creating and managing tenants. Creating a tenant will automatically create a linked customer record.
+    </MudAlert>
+
+    <MudCard Class="mb-4">
+        <MudCardHeader>
+            <CardHeaderContent>
+                <MudText Typo="Typo.h6">
+                    @(isEditing ? "Edit Tenant" : "Create New Tenant with Customer")
+                </MudText>
+            </CardHeaderContent>
+        </MudCardHeader>
+        <MudCardContent>
+            <MudGrid>
+                <MudItem xs="12" md="6">
+                    <MudTextField @bind-Value="tenantForm.TenantCode" Label="Tenant Code" Required="true" />
+                </MudItem>
+                <MudItem xs="12" md="6">
+                    <MudTextField @bind-Value="tenantForm.CompanyName" Label="Company Name" Required="true" />
+                </MudItem>
+                <MudItem xs="12" md="6">
+                    <MudTextField @bind-Value="tenantForm.ContactEmail" Label="Contact Email" InputType="InputType.Email" />
+                </MudItem>
+                <MudItem xs="12" md="6">
+                    <MudTextField @bind-Value="tenantForm.ContactPhone" Label="Contact Phone" />
+                </MudItem>
+
+                @if (!isEditing)
+                {
+                    <MudItem xs="12">
+                        <MudText Typo="Typo.h6" Class="mt-4 mb-2">Customer Details</MudText>
+                        <MudDivider />
+                    </MudItem>
+                    <MudItem xs="12" md="6">
+                        <MudTextField @bind-Value="tenantForm.CustomerCode" Label="Customer Code (optional)" 
+                                      HelperText="Leave blank to use Tenant Code" />
+                    </MudItem>
+                    <MudItem xs="12" md="6">
+                        <MudTextField @bind-Value="tenantForm.PrimaryContactName" Label="Primary Contact Name" />
+                    </MudItem>
+                    <MudItem xs="12" md="6">
+                        <MudTextField @bind-Value="tenantForm.Mobile" Label="Mobile" />
+                    </MudItem>
+                    <MudItem xs="12">
+                        <MudTextField @bind-Value="tenantForm.Address" Label="Address" Required="true" />
+                    </MudItem>
+                    <MudItem xs="12" md="6">
+                        <MudTextField @bind-Value="tenantForm.AddressLine2" Label="Address Line 2" />
+                    </MudItem>
+                    <MudItem xs="12" md="4">
+                        <MudTextField @bind-Value="tenantForm.City" Label="City" />
+                    </MudItem>
+                    <MudItem xs="12" md="4">
+                        <MudTextField @bind-Value="tenantForm.County" Label="County" />
+                    </MudItem>
+                    <MudItem xs="12" md="4">
+                        <MudTextField @bind-Value="tenantForm.PostCode" Label="Post Code" />
+                    </MudItem>
+                    <MudItem xs="12" md="6">
+                        <MudTextField @bind-Value="tenantForm.Country" Label="Country" />
+                    </MudItem>
+                }
+            </MudGrid>
+        </MudCardContent>
+        <MudCardActions>
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SaveTenant" Disabled="isSaving">
+                @if (isSaving)
+                {
+                    <MudProgressCircular Size="Size.Small" Indeterminate="true" />
+                    <MudText Class="ml-2">Saving...</MudText>
+                }
+                else
+                {
+                    <MudIcon Icon="@Icons.Material.Filled.Save" Class="mr-1" />
+                    @(isEditing ? "Update" : "Create Tenant & Customer")
+                }
+            </MudButton>
+            @if (isEditing)
+            {
+                <MudButton Variant="Variant.Outlined" OnClick="CancelEdit">Cancel</MudButton>
+            }
+        </MudCardActions>
+    </MudCard>
+
+    <MudDataGrid T="Tenant" Items="@tenants" Filterable="true" QuickFilter="@_quickFilter" 
+                 Loading="@loading" Hover="true" Dense="true">
+        <ToolBarContent>
+            <MudText Typo="Typo.h6">Existing Tenants</MudText>
+            <MudSpacer />
+            <MudTextField @bind-Value="_searchString" Placeholder="Search..." Adornment="Adornment.Start" 
+                         AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0" />
+        </ToolBarContent>
+        <Columns>
+            <PropertyColumn Property="x => x.TenantCode" Title="Tenant Code" />
+            <PropertyColumn Property="x => x.CompanyName" Title="Company Name" />
+            <PropertyColumn Property="x => x.ContactEmail" Title="Email" />
+            <PropertyColumn Property="x => x.ContactPhone" Title="Phone" />
+            <PropertyColumn Property="x => x.CreatedDate" Title="Created" Format="yyyy-MM-dd" />
+            <PropertyColumn Property="x => x.IsActive" Title="Status">
+                <CellTemplate>
+                    @if (context.Item.IsActive)
+                    {
+                        <MudChip Size="Size.Small" Color="Color.Success">Active</MudChip>
+                    }
+                    else
+                    {
+                        <MudChip Size="Size.Small" Color="Color.Default">Inactive</MudChip>
+                    }
+                </CellTemplate>
+            </PropertyColumn>
+            <TemplateColumn Title="Actions" Filterable="false" Sortable="false">
+                <CellTemplate>
+                    <MudStack Row="true" Spacing="1">
+                        <MudIconButton Icon="@Icons.Material.Filled.Edit" 
+                                     Color="Color.Warning" 
+                                     Size="Size.Small" 
+                                     OnClick="@(() => EditTenant(context.Item))" />
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete" 
+                                     Color="Color.Error" 
+                                     Size="Size.Small" 
+                                     OnClick="@(() => DeleteTenant(context.Item.Id))" />
+                    </MudStack>
+                </CellTemplate>
+            </TemplateColumn>
+        </Columns>
+        <PagerContent>
+            <MudDataGridPager T="Tenant" PageSizeOptions="new int[] { 10, 25, 50 }" />
+        </PagerContent>
+    </MudDataGrid>
+</MudContainer>
+
+@code {
+    private List<Tenant> tenants = new();
+    private TenantCustomerForm tenantForm = new();
+    private bool loading = true;
+    private bool isSaving = false;
+    private bool isEditing = false;
+    private string _searchString = "";
+
+    private Func<Tenant, bool> _quickFilter => x =>
+    {
+        if (string.IsNullOrWhiteSpace(_searchString))
+            return true;
+
+        if (x.TenantCode?.Contains(_searchString, StringComparison.OrdinalIgnoreCase) == true)
+            return true;
+
+        if (x.CompanyName?.Contains(_searchString, StringComparison.OrdinalIgnoreCase) == true)
+            return true;
+
+        return false;
+    };
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadTenants();
+    }
+
+    private async Task LoadTenants()
+    {
+        loading = true;
+        try
+        {
+            tenants = await Http.GetFromJsonAsync<List<Tenant>>("api/Tenants") ?? new();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading tenants: {ex.Message}");
+        }
+        loading = false;
+    }
+
+    private async Task SaveTenant()
+    {
+        isSaving = true;
+        try
+        {
+            if (isEditing)
+            {
+                var tenant = new Tenant
+                {
+                    Id = tenantForm.Id,
+                    TenantCode = tenantForm.TenantCode,
+                    CompanyName = tenantForm.CompanyName,
+                    ContactEmail = tenantForm.ContactEmail,
+                    ContactPhone = tenantForm.ContactPhone,
+                    IsActive = true
+                };
+                await Http.PutAsJsonAsync($"api/Tenants/{tenant.Id}", tenant);
+            }
+            else
+            {
+                await Http.PostAsJsonAsync("api/Tenants/CreateWithCustomer", tenantForm);
+            }
+            
+            tenantForm = new();
+            isEditing = false;
+            await LoadTenants();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error saving tenant: {ex.Message}");
+        }
+        isSaving = false;
+    }
+
+    private void EditTenant(Tenant tenant)
+    {
+        tenantForm = new TenantCustomerForm
+        {
+            Id = tenant.Id,
+            TenantCode = tenant.TenantCode,
+            CompanyName = tenant.CompanyName,
+            ContactEmail = tenant.ContactEmail,
+            ContactPhone = tenant.ContactPhone,
+            Address = ""
+        };
+        isEditing = true;
+    }
+
+    private void CancelEdit()
+    {
+        tenantForm = new();
+        isEditing = false;
+    }
+
+    private async Task DeleteTenant(int id)
+    {
+        try
+        {
+            await Http.DeleteAsync($"api/Tenants/{id}");
+            await LoadTenants();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error deleting tenant: {ex.Message}");
+        }
+    }
+
+    private class TenantCustomerForm
+    {
+        public int Id { get; set; }
+        public string TenantCode { get; set; } = "";
+        public string CompanyName { get; set; } = "";
+        public string? ContactEmail { get; set; }
+        public string? ContactPhone { get; set; }
+        public string? CustomerCode { get; set; }
+        public string? PrimaryContactName { get; set; }
+        public string? Mobile { get; set; }
+        public string Address { get; set; } = "";
+        public string? AddressLine2 { get; set; }
+        public string? City { get; set; }
+        public string? County { get; set; }
+        public string? PostCode { get; set; }
+        public string? Country { get; set; }
+    }
+}
