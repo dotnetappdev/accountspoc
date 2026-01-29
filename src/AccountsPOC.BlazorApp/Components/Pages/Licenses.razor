@@ -1,0 +1,396 @@
+@page "/licenses"
+@using System.Net.Http.Json
+@using AccountsPOC.BlazorApp.Models
+@inject HttpClient Http
+@rendermode InteractiveServer
+
+<PageTitle>License Management</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraExtraLarge" Class="mt-4">
+    <MudText Typo="Typo.h4" Class="mb-4">
+        <MudIcon Icon="@Icons.Material.Filled.Key" Class="mr-2" />
+        License Management
+    </MudText>
+
+    <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="ShowAddForm" Class="mb-4">
+        <MudIcon Icon="@Icons.Material.Filled.Add" Class="mr-1" />
+        Add New License
+    </MudButton>
+
+    @if (showForm)
+    {
+        <MudCard Class="mb-4">
+            <MudCardHeader>
+                <CardHeaderContent>
+                    <MudText Typo="Typo.h6">@(editingLicense != null ? "Edit License" : "Create New License")</MudText>
+                </CardHeaderContent>
+            </MudCardHeader>
+            <MudCardContent>
+                <MudGrid>
+                    <MudItem xs="12" md="6">
+                        <MudTextField @bind-Value="licenseForm.LicenseKey" Label="License Key" Required="true" />
+                    </MudItem>
+                    <MudItem xs="12" md="6">
+                        <MudSelect @bind-Value="licenseForm.LicenseType" Label="License Type" Required="true">
+                            <MudSelectItem Value="@("Starter")">Starter</MudSelectItem>
+                            <MudSelectItem Value="@("Professional")">Professional</MudSelectItem>
+                            <MudSelectItem Value="@("Enterprise")">Enterprise</MudSelectItem>
+                            <MudSelectItem Value="@("Custom")">Custom</MudSelectItem>
+                        </MudSelect>
+                    </MudItem>
+                    <MudItem xs="12" md="6">
+                        <MudNumericField @bind-Value="licenseForm.TenantId" Label="Tenant ID" Required="true" />
+                    </MudItem>
+                    <MudItem xs="12" md="6">
+                        <MudDatePicker @bind-Date="licenseForm.ExpiryDate" Label="Expiry Date" />
+                    </MudItem>
+                    
+                    <MudItem xs="12">
+                        <MudText Typo="Typo.h6" Class="mt-2">Installation Limits</MudText>
+                        <MudDivider />
+                    </MudItem>
+                    <MudItem xs="12" md="6">
+                        <MudNumericField @bind-Value="licenseForm.MaxInstallations" Label="Max Installations" />
+                    </MudItem>
+                    
+                    <MudItem xs="12">
+                        <MudText Typo="Typo.h6" Class="mt-2">Resource Limits (null = unlimited)</MudText>
+                        <MudDivider />
+                    </MudItem>
+                    <MudItem xs="12" md="4">
+                        <MudNumericField @bind-Value="licenseForm.MaxStockItems" Label="Max Stock Items" />
+                    </MudItem>
+                    <MudItem xs="12" md="4">
+                        <MudNumericField @bind-Value="licenseForm.MaxUsers" Label="Max Users" />
+                    </MudItem>
+                    <MudItem xs="12" md="4">
+                        <MudNumericField @bind-Value="licenseForm.MaxCustomers" Label="Max Customers" />
+                    </MudItem>
+                    <MudItem xs="12" md="4">
+                        <MudNumericField @bind-Value="licenseForm.MaxWarehouses" Label="Max Warehouses" />
+                    </MudItem>
+                    <MudItem xs="12" md="4">
+                        <MudNumericField @bind-Value="licenseForm.MaxProducts" Label="Max Products" />
+                    </MudItem>
+                    <MudItem xs="12" md="4">
+                        <MudNumericField @bind-Value="licenseForm.MaxRoles" Label="Max Roles" />
+                    </MudItem>
+                    
+                    <MudItem xs="12">
+                        <MudText Typo="Typo.h6" Class="mt-2">Stock Item Image Settings</MudText>
+                        <MudDivider />
+                    </MudItem>
+                    <MudItem xs="12" md="6">
+                        <MudSwitch @bind-Value="licenseForm.AllowMultipleImages" Label="Allow Multiple Images" Color="Color.Primary" />
+                    </MudItem>
+                    <MudItem xs="12" md="6">
+                        <MudNumericField @bind-Value="licenseForm.MaxImagesPerStockItem" Label="Max Images Per Stock Item" />
+                    </MudItem>
+                    
+                    <MudItem xs="12">
+                        <MudText Typo="Typo.h6" Class="mt-2">Feature Flags</MudText>
+                        <MudDivider />
+                    </MudItem>
+                    <MudItem xs="12" md="4">
+                        <MudSwitch @bind-Value="licenseForm.EnablePdfExport" Label="PDF Export" Color="Color.Primary" />
+                    </MudItem>
+                    <MudItem xs="12" md="4">
+                        <MudSwitch @bind-Value="licenseForm.EnableCustomForms" Label="Custom Forms" Color="Color.Primary" />
+                    </MudItem>
+                    <MudItem xs="12" md="4">
+                        <MudSwitch @bind-Value="licenseForm.EnablePaymentIntegration" Label="Payment Integration" Color="Color.Primary" />
+                    </MudItem>
+                    <MudItem xs="12" md="4">
+                        <MudSwitch @bind-Value="licenseForm.EnableAdvancedReporting" Label="Advanced Reporting" Color="Color.Primary" />
+                    </MudItem>
+                    <MudItem xs="12" md="4">
+                        <MudSwitch @bind-Value="licenseForm.EnableApiAccess" Label="API Access" Color="Color.Primary" />
+                    </MudItem>
+                    <MudItem xs="12" md="4">
+                        <MudSwitch @bind-Value="licenseForm.EnableMultipleCurrencies" Label="Multiple Currencies" Color="Color.Primary" />
+                    </MudItem>
+                    
+                    <MudItem xs="12">
+                        <MudTextField @bind-Value="licenseForm.Notes" Label="Notes" Lines="3" />
+                    </MudItem>
+                </MudGrid>
+            </MudCardContent>
+            <MudCardActions>
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SaveLicense">
+                    <MudIcon Icon="@Icons.Material.Filled.Save" Class="mr-1" />
+                    Save
+                </MudButton>
+                <MudButton Variant="Variant.Outlined" OnClick="CancelForm">Cancel</MudButton>
+            </MudCardActions>
+        </MudCard>
+    }
+
+    <MudDataGrid T="License" Items="@licenses" Filterable="true" QuickFilter="@_quickFilter" 
+                 Loading="@loading" Hover="true" Dense="true">
+        <ToolBarContent>
+            <MudText Typo="Typo.h6">Licenses</MudText>
+            <MudSpacer />
+            <MudTextField @bind-Value="_searchString" Placeholder="Search..." Adornment="Adornment.Start" 
+                         AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0" />
+        </ToolBarContent>
+        <Columns>
+            <PropertyColumn Property="x => x.LicenseKey" Title="License Key" />
+            <PropertyColumn Property="x => x.LicenseType" Title="Type">
+                <CellTemplate>
+                    <MudChip T="string" Size="Size.Small" Color="@GetLicenseTypeColor(context.Item.LicenseType)">@context.Item.LicenseType</MudChip>
+                </CellTemplate>
+            </PropertyColumn>
+            <PropertyColumn Property="x => x.MaxStockItems" Title="Stock Items">
+                <CellTemplate>
+                    @(context.Item.MaxStockItems?.ToString() ?? "Unlimited")
+                </CellTemplate>
+            </PropertyColumn>
+            <PropertyColumn Property="x => x.MaxInstallations" Title="Installations">
+                <CellTemplate>
+                    @context.Item.CurrentInstallations / @context.Item.MaxInstallations
+                </CellTemplate>
+            </PropertyColumn>
+            <PropertyColumn Property="x => x.ExpiryDate" Title="Expires" Format="yyyy-MM-dd">
+                <CellTemplate>
+                    @if (context.Item.ExpiryDate.HasValue)
+                    {
+                        var daysLeft = (context.Item.ExpiryDate.Value - DateTime.UtcNow).Days;
+                        <MudText Color="@(daysLeft < 30 ? Color.Warning : Color.Default)">
+                            @context.Item.ExpiryDate.Value.ToString("yyyy-MM-dd")
+                        </MudText>
+                    }
+                    else
+                    {
+                        <MudText>Never</MudText>
+                    }
+                </CellTemplate>
+            </PropertyColumn>
+            <PropertyColumn Property="x => x.IsActive" Title="Status">
+                <CellTemplate>
+                    @if (context.Item.IsActive)
+                    {
+                        <MudChip T="string" Size="Size.Small" Color="Color.Success">Active</MudChip>
+                    }
+                    else
+                    {
+                        <MudChip T="string" Size="Size.Small" Color="Color.Default">Inactive</MudChip>
+                    }
+                </CellTemplate>
+            </PropertyColumn>
+            <TemplateColumn Title="Actions" Filterable="false" Sortable="false">
+                <CellTemplate>
+                    <MudStack Row="true" Spacing="1">
+                        <MudIconButton Icon="@Icons.Material.Filled.Visibility" 
+                                     Color="Color.Info" 
+                                     Size="Size.Small" 
+                                     Href="@($"/license-usage/{context.Item.TenantId}")"
+                                     Title="View Usage" />
+                        <MudIconButton Icon="@Icons.Material.Filled.Edit" 
+                                     Color="Color.Warning" 
+                                     Size="Size.Small" 
+                                     OnClick="@(() => EditLicense(context.Item))" />
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete" 
+                                     Color="Color.Error" 
+                                     Size="Size.Small" 
+                                     OnClick="@(() => DeleteLicense(context.Item.Id))" />
+                    </MudStack>
+                </CellTemplate>
+            </TemplateColumn>
+        </Columns>
+        <PagerContent>
+            <MudDataGridPager T="License" PageSizeOptions="new int[] { 10, 25, 50 }" />
+        </PagerContent>
+    </MudDataGrid>
+</MudContainer>
+
+@code {
+    private List<License> licenses = new();
+    private LicenseForm licenseForm = new();
+    private License? editingLicense;
+    private bool showForm = false;
+    private bool loading = true;
+    private string _searchString = "";
+
+    private Func<License, bool> _quickFilter => x =>
+    {
+        if (string.IsNullOrWhiteSpace(_searchString))
+            return true;
+
+        if (x.LicenseKey?.Contains(_searchString, StringComparison.OrdinalIgnoreCase) == true)
+            return true;
+
+        if (x.LicenseType?.Contains(_searchString, StringComparison.OrdinalIgnoreCase) == true)
+            return true;
+
+        return false;
+    };
+
+    private Color GetLicenseTypeColor(string type) => type switch
+    {
+        "Starter" => Color.Info,
+        "Professional" => Color.Primary,
+        "Enterprise" => Color.Success,
+        "Custom" => Color.Warning,
+        _ => Color.Default
+    };
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadLicenses();
+    }
+
+    private async Task LoadLicenses()
+    {
+        loading = true;
+        try
+        {
+            licenses = await Http.GetFromJsonAsync<List<License>>("api/Licenses") ?? new();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading licenses: {ex.Message}");
+        }
+        loading = false;
+    }
+
+    private void ShowAddForm()
+    {
+        licenseForm = new() 
+        { 
+            LicenseType = "Professional",
+            MaxInstallations = 1,
+            AllowMultipleImages = true,
+            EnablePdfExport = true
+        };
+        editingLicense = null;
+        showForm = true;
+    }
+
+    private void EditLicense(License license)
+    {
+        editingLicense = license;
+        licenseForm = new LicenseForm
+        {
+            Id = license.Id,
+            TenantId = license.TenantId,
+            LicenseKey = license.LicenseKey,
+            LicenseType = license.LicenseType,
+            IsActive = license.IsActive,
+            ExpiryDate = license.ExpiryDate,
+            MaxInstallations = license.MaxInstallations,
+            MaxStockItems = license.MaxStockItems,
+            AllowMultipleImages = license.AllowMultipleImages,
+            MaxImagesPerStockItem = license.MaxImagesPerStockItem,
+            MaxUsers = license.MaxUsers,
+            MaxRoles = license.MaxRoles,
+            MaxCustomers = license.MaxCustomers,
+            MaxWarehouses = license.MaxWarehouses,
+            MaxProducts = license.MaxProducts,
+            EnablePdfExport = license.EnablePdfExport,
+            EnableCustomForms = license.EnableCustomForms,
+            EnablePaymentIntegration = license.EnablePaymentIntegration,
+            EnableAdvancedReporting = license.EnableAdvancedReporting,
+            EnableApiAccess = license.EnableApiAccess,
+            EnableMultipleCurrencies = license.EnableMultipleCurrencies,
+            Notes = license.Notes
+        };
+        showForm = true;
+    }
+
+    private async Task SaveLicense()
+    {
+        try
+        {
+            var dto = new
+            {
+                licenseForm.TenantId,
+                licenseForm.LicenseKey,
+                licenseForm.LicenseType,
+                licenseForm.IsActive,
+                ActivationDate = (DateTime?)null,
+                licenseForm.ExpiryDate,
+                licenseForm.MaxInstallations,
+                licenseForm.MaxStockItems,
+                licenseForm.AllowMultipleImages,
+                licenseForm.MaxImagesPerStockItem,
+                licenseForm.MaxUsers,
+                licenseForm.MaxRoles,
+                licenseForm.MaxCustomers,
+                MaxTenants = (int?)null,
+                MaxSalesOrdersPerMonth = (int?)null,
+                MaxPurchaseOrdersPerMonth = (int?)null,
+                licenseForm.MaxWarehouses,
+                licenseForm.MaxProducts,
+                licenseForm.EnablePdfExport,
+                EnableEmailTemplates = true,
+                licenseForm.EnableCustomForms,
+                licenseForm.EnablePaymentIntegration,
+                licenseForm.EnableAdvancedReporting,
+                licenseForm.EnableApiAccess,
+                licenseForm.EnableMultipleCurrencies,
+                licenseForm.Notes
+            };
+
+            if (editingLicense != null)
+            {
+                await Http.PutAsJsonAsync($"api/Licenses/{licenseForm.Id}", dto);
+            }
+            else
+            {
+                await Http.PostAsJsonAsync("api/Licenses", dto);
+            }
+            
+            showForm = false;
+            await LoadLicenses();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error saving license: {ex.Message}");
+        }
+    }
+
+    private async Task DeleteLicense(int id)
+    {
+        try
+        {
+            await Http.DeleteAsync($"api/Licenses/{id}");
+            await LoadLicenses();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error deleting license: {ex.Message}");
+        }
+    }
+
+    private void CancelForm()
+    {
+        showForm = false;
+        editingLicense = null;
+    }
+
+    private class LicenseForm
+    {
+        public int Id { get; set; }
+        public int TenantId { get; set; }
+        public string LicenseKey { get; set; } = "";
+        public string LicenseType { get; set; } = "";
+        public bool IsActive { get; set; } = true;
+        public DateTime? ExpiryDate { get; set; }
+        public int MaxInstallations { get; set; } = 1;
+        public int? MaxStockItems { get; set; }
+        public bool AllowMultipleImages { get; set; }
+        public int? MaxImagesPerStockItem { get; set; }
+        public int? MaxUsers { get; set; }
+        public int? MaxRoles { get; set; }
+        public int? MaxCustomers { get; set; }
+        public int? MaxWarehouses { get; set; }
+        public int? MaxProducts { get; set; }
+        public bool EnablePdfExport { get; set; }
+        public bool EnableCustomForms { get; set; }
+        public bool EnablePaymentIntegration { get; set; }
+        public bool EnableAdvancedReporting { get; set; }
+        public bool EnableApiAccess { get; set; }
+        public bool EnableMultipleCurrencies { get; set; }
+        public string? Notes { get; set; }
+    }
+}

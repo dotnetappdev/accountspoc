@@ -821,5 +821,39 @@ public class DataSeeder
         });
 
         await _context.SaveChangesAsync();
+
+        // Create default license for the tenant
+        var defaultLicense = new License
+        {
+            TenantId = tenantId,
+            LicenseKey = $"DEMO-{Guid.NewGuid().ToString().Substring(0, 8).ToUpper()}",
+            LicenseType = "Professional",
+            IsActive = true,
+            ActivationDate = DateTime.UtcNow,
+            ExpiryDate = DateTime.UtcNow.AddYears(1),
+            MaxInstallations = 5,
+            MaxStockItems = 1000,
+            AllowMultipleImages = true,
+            MaxImagesPerStockItem = 10,
+            MaxUsers = 50,
+            MaxRoles = 20,
+            MaxCustomers = 500,
+            MaxTenants = 1,
+            MaxSalesOrdersPerMonth = null, // Unlimited
+            MaxPurchaseOrdersPerMonth = null, // Unlimited
+            MaxWarehouses = 10,
+            MaxProducts = 1000,
+            EnablePdfExport = true,
+            EnableEmailTemplates = true,
+            EnableCustomForms = true,
+            EnablePaymentIntegration = true,
+            EnableAdvancedReporting = true,
+            EnableApiAccess = true,
+            EnableMultipleCurrencies = true,
+            Notes = "Demo Professional License",
+            CreatedDate = DateTime.UtcNow
+        };
+        _context.Licenses.Add(defaultLicense);
+        await _context.SaveChangesAsync();
     }
 }

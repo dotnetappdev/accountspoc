@@ -56,6 +56,8 @@ public class ApplicationDbContext : DbContext
     public DbSet<UserRole> UserRoles => Set<UserRole>();
     public DbSet<RolePermission> RolePermissions => Set<RolePermission>();
     public DbSet<StockItemImage> StockItemImages => Set<StockItemImage>();
+    public DbSet<License> Licenses => Set<License>();
+    public DbSet<Installation> Installations => Set<Installation>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -885,6 +887,45 @@ public class ApplicationDbContext : DbContext
             entity.HasOne(e => e.StockItem)
                 .WithMany()
                 .HasForeignKey(e => e.StockItemId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // License configuration
+        modelBuilder.Entity<License>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.LicenseKey).IsRequired().HasMaxLength(100);
+            entity.Property(e => e.LicenseType).IsRequired().HasMaxLength(50);
+            entity.HasIndex(e => e.LicenseKey).IsUnique();
+            entity.HasIndex(e => e.TenantId);
+            
+            entity.HasOne(e => e.Tenant)
+                .WithMany()
+                .HasForeignKey(e => e.TenantId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // Installation configuration
+        modelBuilder.Entity<Installation>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.InstallationKey).IsRequired().HasMaxLength(100);
+            entity.Property(e => e.MachineName).IsRequired().HasMaxLength(200);
+            entity.Property(e => e.MachineIdentifier).HasMaxLength(200);
+            entity.Property(e => e.IpAddress).HasMaxLength(45);
+            entity.Property(e => e.Version).HasMaxLength(50);
+            entity.HasIndex(e => e.InstallationKey).IsUnique();
+            entity.HasIndex(e => e.TenantId);
+            entity.HasIndex(e => e.LicenseId);
+            
+            entity.HasOne(e => e.Tenant)
+                .WithMany()
+                .HasForeignKey(e => e.TenantId)
+                .OnDelete(DeleteBehavior.Cascade);
+            
+            entity.HasOne(e => e.License)
+                .WithMany()
+                .HasForeignKey(e => e.LicenseId)
                 .OnDelete(DeleteBehavior.Cascade);
         });
     }
