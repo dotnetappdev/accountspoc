@@ -10,3 +10,4 @@
 /home/runner/work/accountspoc/accountspoc/src/AccountsPOC.Domain/obj/Debug/net10.0/refint/AccountsPOC.Domain.dll
 /home/runner/work/accountspoc/accountspoc/src/AccountsPOC.Domain/obj/Debug/net10.0/AccountsPOC.Domain.pdb
 /home/runner/work/accountspoc/accountspoc/src/AccountsPOC.Domain/obj/Debug/net10.0/ref/AccountsPOC.Domain.dll
+/home/runner/work/accountspoc/accountspoc/src/AccountsPOC.Domain/obj/Debug/net10.0/AccountsPOC.Domain.csproj.AssemblyReference.cache

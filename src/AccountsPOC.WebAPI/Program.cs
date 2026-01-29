@@ -1,7 +1,12 @@
+using AccountsPOC.Domain.Entities;
 using AccountsPOC.Infrastructure.Data;
 using AccountsPOC.PdfGenerator.Services;
 using AccountsPOC.WebAPI.Services;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -17,6 +22,52 @@ builder.Services.AddHttpClient();
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlite("Data Source=AccountsPOC.db"));
 
+// Add ASP.NET Identity
+builder.Services.AddIdentity<User, Role>(options =>
+{
+    // Password settings
+    options.Password.RequireDigit = true;
+    options.Password.RequireLowercase = true;
+    options.Password.RequireUppercase = true;
+    options.Password.RequireNonAlphanumeric = false;
+    options.Password.RequiredLength = 6;
+
+    // User settings
+    options.User.RequireUniqueEmail = true;
+
+    // Sign-in settings
+    options.SignIn.RequireConfirmedEmail = false;
+    options.SignIn.RequireConfirmedPhoneNumber = false;
+})
+.AddEntityFrameworkStores<ApplicationDbContext>()
+.AddDefaultTokenProviders();
+
+// Add JWT Authentication
+var jwtKey = builder.Configuration["Jwt:Key"] ?? "DefaultSecretKeyForDevelopmentPleaseChangeInProduction123456";
+var jwtIssuer = builder.Configuration["Jwt:Issuer"] ?? "AccountsPOC";
+var jwtAudience = builder.Configuration["Jwt:Audience"] ?? "AccountsPOCApp";
+
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        ValidIssuer = jwtIssuer,
+        ValidAudience = jwtAudience,
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey))
+    };
+});
+
+builder.Services.AddAuthorization();
+
 // Add data seeder
 builder.Services.AddScoped<DataSeeder>();
 
@@ -25,6 +76,9 @@ builder.Services.AddScoped<IPdfGeneratorService, PdfGeneratorService>();
 
 // Add License service
 builder.Services.AddScoped<ILicenseService, LicenseService>();
+
+// Add JWT token service
+builder.Services.AddScoped<IJwtTokenService, JwtTokenService>();
 
 // Add CORS
 builder.Services.AddCors(options =>
@@ -47,6 +101,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseCors("AllowBlazorApp");
+app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 

@@ -1,5 +1,6 @@
 using AccountsPOC.Domain.Entities;
 using AccountsPOC.Infrastructure.Data;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 namespace AccountsPOC.WebAPI.Services;
@@ -7,10 +8,14 @@ namespace AccountsPOC.WebAPI.Services;
 public class DataSeeder
 {
     private readonly ApplicationDbContext _context;
+    private readonly UserManager<User> _userManager;
+    private readonly RoleManager<Role> _roleManager;
 
-    public DataSeeder(ApplicationDbContext context)
+    public DataSeeder(ApplicationDbContext context, UserManager<User> userManager, RoleManager<Role> roleManager)
     {
         _context = context;
+        _userManager = userManager;
+        _roleManager = roleManager;
     }
 
     public async Task SeedAsync()
@@ -696,7 +701,7 @@ public class DataSeeder
         _context.Permissions.AddRange(permissions);
         await _context.SaveChangesAsync();
 
-        // Create roles
+        // Create roles using RoleManager
         var supportRole = new Role
         {
             Name = "Support",
@@ -704,7 +709,7 @@ public class DataSeeder
             IsSystemRole = true,
             CreatedDate = DateTime.UtcNow
         };
-        _context.Roles.Add(supportRole);
+        await _roleManager.CreateAsync(supportRole);
 
         var agentRole = new Role
         {
@@ -713,7 +718,7 @@ public class DataSeeder
             IsSystemRole = true,
             CreatedDate = DateTime.UtcNow
         };
-        _context.Roles.Add(agentRole);
+        await _roleManager.CreateAsync(agentRole);
 
         var adminRole = new Role
         {
@@ -722,9 +727,16 @@ public class DataSeeder
             IsSystemRole = true,
             CreatedDate = DateTime.UtcNow
         };
-        _context.Roles.Add(adminRole);
+        await _roleManager.CreateAsync(adminRole);
 
-        await _context.SaveChangesAsync();
+        var userRole = new Role
+        {
+            Name = "User",
+            Description = "Standard user with basic access",
+            IsSystemRole = true,
+            CreatedDate = DateTime.UtcNow
+        };
+        await _roleManager.CreateAsync(userRole);
 
         // Assign permissions to roles
         // Support role permissions
@@ -769,57 +781,52 @@ public class DataSeeder
 
         await _context.SaveChangesAsync();
 
-        // Create sample users
-        // NOTE: This is a POC implementation. In production, use BCrypt, PBKDF2, or Argon2 for password hashing
+        // Create sample users using UserManager
         var adminUser = new User
         {
             TenantId = tenantId,
-            Username = "admin",
+            UserName = "admin",
             Email = "admin@accountspoc.com",
-            PasswordHash = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes("admin123")),
             FirstName = "Admin",
             LastName = "User",
             IsActive = true,
             CreatedDate = DateTime.UtcNow
         };
-        _context.Users.Add(adminUser);
+        await _userManager.CreateAsync(adminUser, "Admin123!");
+        await _userManager.AddToRoleAsync(adminUser, "Administrator");
 
         var supportUser = new User
         {
             TenantId = tenantId,
-            Username = "support",
+            UserName = "support",
             Email = "support@accountspoc.com",
-            PasswordHash = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes("support123")),
             FirstName = "Support",
             LastName = "User",
             IsActive = true,
             CreatedDate = DateTime.UtcNow
         };
-        _context.Users.Add(supportUser);
+        await _userManager.CreateAsync(supportUser, "Support123!");
+        await _userManager.AddToRoleAsync(supportUser, "Support");
 
         var agentUser = new User
         {
             TenantId = tenantId,
-            Username = "agent",
+            UserName = "agent",
             Email = "agent@accountspoc.com",
-            PasswordHash = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes("agent123")),
             FirstName = "Field",
             LastName = "Agent",
             IsActive = true,
             CreatedDate = DateTime.UtcNow
         };
-        _context.Users.Add(agentUser);
+        await _userManager.CreateAsync(agentUser, "Agent123!");
+        await _userManager.AddToRoleAsync(agentUser, "Agent");
 
-        await _context.SaveChangesAsync();
-
-        // Assign roles to users
-        _context.UserRoles.AddRange(new[]
+        // Update UserRoles with AssignedDate
+        var userRoles = await _context.UserRoles.ToListAsync();
+        foreach (var ur in userRoles)
         {
-            new UserRole { UserId = adminUser.Id, RoleId = adminRole.Id, AssignedDate = DateTime.UtcNow },
-            new UserRole { UserId = supportUser.Id, RoleId = supportRole.Id, AssignedDate = DateTime.UtcNow },
-            new UserRole { UserId = agentUser.Id, RoleId = agentRole.Id, AssignedDate = DateTime.UtcNow }
-        });
-
+            ur.AssignedDate = DateTime.UtcNow;
+        }
         await _context.SaveChangesAsync();
 
         // Create default license for the tenant

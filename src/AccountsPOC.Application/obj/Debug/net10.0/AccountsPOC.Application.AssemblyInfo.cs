@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("AccountsPOC.Application")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+52e40cca8ee904d1628d842cfb514f2b75ea48a9")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+4c336087608586d1f221a19554d861203dcebac9")]
 [assembly: System.Reflection.AssemblyProductAttribute("AccountsPOC.Application")]
 [assembly: System.Reflection.AssemblyTitleAttribute("AccountsPOC.Application")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

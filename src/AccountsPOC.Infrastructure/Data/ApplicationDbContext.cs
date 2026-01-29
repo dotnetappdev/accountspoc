@@ -1,9 +1,12 @@
 using AccountsPOC.Domain.Entities;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace AccountsPOC.Infrastructure.Data;
 
-public class ApplicationDbContext : DbContext
+public class ApplicationDbContext : IdentityDbContext<User, Role, int, Microsoft.AspNetCore.Identity.IdentityUserClaim<int>, 
+    UserRole, Microsoft.AspNetCore.Identity.IdentityUserLogin<int>, 
+    Microsoft.AspNetCore.Identity.IdentityRoleClaim<int>, Microsoft.AspNetCore.Identity.IdentityUserToken<int>>
 {
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
         : base(options)
@@ -808,27 +811,18 @@ public class ApplicationDbContext : DbContext
                 .OnDelete(DeleteBehavior.SetNull);
         });
 
-        // User configuration
+        // User configuration (ASP.NET Identity)
         modelBuilder.Entity<User>(entity =>
         {
-            entity.HasKey(e => e.Id);
-            entity.Property(e => e.Username).IsRequired().HasMaxLength(100);
-            entity.Property(e => e.Email).IsRequired().HasMaxLength(200);
-            entity.Property(e => e.PasswordHash).IsRequired();
             entity.Property(e => e.FirstName).HasMaxLength(100);
             entity.Property(e => e.LastName).HasMaxLength(100);
-            entity.HasIndex(e => e.Username).IsUnique();
-            entity.HasIndex(e => e.Email).IsUnique();
             entity.HasIndex(e => e.TenantId);
         });
 
-        // Role configuration
+        // Role configuration (ASP.NET Identity)
         modelBuilder.Entity<Role>(entity =>
         {
-            entity.HasKey(e => e.Id);
-            entity.Property(e => e.Name).IsRequired().HasMaxLength(100);
             entity.Property(e => e.Description).HasMaxLength(500);
-            entity.HasIndex(e => e.Name).IsUnique();
         });
 
         // Permission configuration
@@ -842,11 +836,10 @@ public class ApplicationDbContext : DbContext
             entity.HasIndex(e => new { e.Resource, e.Action }).IsUnique();
         });
 
-        // UserRole configuration
+        // UserRole configuration (ASP.NET Identity)
         modelBuilder.Entity<UserRole>(entity =>
         {
-            entity.HasKey(e => e.Id);
-            entity.HasIndex(e => new { e.UserId, e.RoleId }).IsUnique();
+            entity.HasKey(ur => new { ur.UserId, ur.RoleId });
             
             entity.HasOne(e => e.User)
                 .WithMany(e => e.UserRoles)

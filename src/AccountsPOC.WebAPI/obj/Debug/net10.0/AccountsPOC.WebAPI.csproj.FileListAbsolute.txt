@@ -239,3 +239,5 @@
 /home/runner/work/accountspoc/accountspoc/src/AccountsPOC.WebAPI/obj/Debug/net10.0/ref/AccountsPOC.WebAPI.dll
 /home/runner/work/accountspoc/accountspoc/src/AccountsPOC.WebAPI/bin/Debug/net10.0/AccountsPOC.PdfGenerator.dll
 /home/runner/work/accountspoc/accountspoc/src/AccountsPOC.WebAPI/bin/Debug/net10.0/AccountsPOC.PdfGenerator.pdb
+/home/runner/work/accountspoc/accountspoc/src/AccountsPOC.WebAPI/bin/Debug/net10.0/Microsoft.AspNetCore.Authentication.JwtBearer.dll
+/home/runner/work/accountspoc/accountspoc/src/AccountsPOC.WebAPI/bin/Debug/net10.0/Microsoft.AspNetCore.Identity.EntityFrameworkCore.dll

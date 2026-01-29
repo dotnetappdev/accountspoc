@@ -1,9 +1,9 @@
+using Microsoft.AspNetCore.Identity;
+
 namespace AccountsPOC.Domain.Entities;
 
-public class Role
+public class Role : IdentityRole<int>
 {
-    public int Id { get; set; }
-    public required string Name { get; set; }
     public string? Description { get; set; }
     public bool IsSystemRole { get; set; } = false; // System roles like Support, Agent cannot be deleted
     public DateTime CreatedDate { get; set; }
