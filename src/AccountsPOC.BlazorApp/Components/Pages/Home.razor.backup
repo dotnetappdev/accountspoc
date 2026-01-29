@@ -1,0 +1,344 @@
+﻿@page "/"
+@inject IJSRuntime JSRuntime
+
+<PageTitle>Dashboard</PageTitle>
+
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0">Dashboard</h1>
+            </div>
+            <div class="col-sm-6">
+                <div class="float-sm-end">
+                    <button class="btn btn-sm btn-primary" @onclick="RefreshData">
+                        <i class="bi bi-arrow-clockwise"></i> Refresh
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content">
+    <div class="container-fluid">
+        <!-- Key Metrics Row -->
+        <div class="row">
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-info">
+                    <div class="inner">
+                        <h3>1,247</h3>
+                        <p>Total Stock Items</p>
+                    </div>
+                    <div class="icon">
+                        <i class="bi bi-box-seam"></i>
+                    </div>
+                    <a href="/stock-items" class="small-box-footer">
+                        More info <i class="bi bi-arrow-right-circle"></i>
+                    </a>
+                </div>
+            </div>
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-success">
+                    <div class="inner">
+                        <h3>348</h3>
+                        <p>Sales Orders</p>
+                    </div>
+                    <div class="icon">
+                        <i class="bi bi-cart-check"></i>
+                    </div>
+                    <a href="/sales-orders" class="small-box-footer">
+                        More info <i class="bi bi-arrow-right-circle"></i>
+                    </a>
+                </div>
+            </div>
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-warning">
+                    <div class="inner">
+                        <h3>$284,590</h3>
+                        <p>Total Revenue</p>
+                    </div>
+                    <div class="icon">
+                        <i class="bi bi-receipt"></i>
+                    </div>
+                    <a href="/sales-invoices" class="small-box-footer">
+                        More info <i class="bi bi-arrow-right-circle"></i>
+                    </a>
+                </div>
+            </div>
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-danger">
+                    <div class="inner">
+                        <h3>$68,240</h3>
+                        <p>Profit (YTD)</p>
+                    </div>
+                    <div class="icon">
+                        <i class="bi bi-graph-up-arrow"></i>
+                    </div>
+                    <a href="#" class="small-box-footer">
+                        More info <i class="bi bi-arrow-right-circle"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Secondary Metrics Row -->
+        <div class="row">
+            <div class="col-lg-3 col-6">
+                <div class="info-box">
+                    <span class="info-box-icon bg-info"><i class="bi bi-people"></i></span>
+                    <div class="info-box-content">
+                        <span class="info-box-text">Total Customers</span>
+                        <span class="info-box-number">423</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-6">
+                <div class="info-box">
+                    <span class="info-box-icon bg-warning"><i class="bi bi-clock-history"></i></span>
+                    <div class="info-box-content">
+                        <span class="info-box-text">Pending Orders</span>
+                        <span class="info-box-number">28</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-6">
+                <div class="info-box">
+                    <span class="info-box-icon bg-danger"><i class="bi bi-exclamation-triangle"></i></span>
+                    <div class="info-box-content">
+                        <span class="info-box-text">Low Stock Alerts</span>
+                        <span class="info-box-number">12</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-6">
+                <div class="info-box">
+                    <span class="info-box-icon bg-success"><i class="bi bi-bank2"></i></span>
+                    <div class="info-box-content">
+                        <span class="info-box-text">Bank Balance</span>
+                        <span class="info-box-number">$142,850</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+                <div class="stat-details">
+                    <div class="stat-value">28</div>
+                    <div class="stat-label">Pending Orders</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6">
+            <div class="stat-card">
+                <div class="stat-icon bg-warning-subtle">
+                    <i class="bi bi-exclamation-triangle"></i>
+                </div>
+                <div class="stat-details">
+                    <div class="stat-value">12</div>
+                    <div class="stat-label">Low Stock Alerts</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6">
+            <div class="stat-card">
+                <div class="stat-icon bg-info-subtle">
+                    <i class="bi bi-bank2"></i>
+                </div>
+                <div class="stat-details">
+                    <div class="stat-value">$142,850</div>
+                    <div class="stat-label">Total Bank Balance</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions & Recent Activity -->
+    <div class="row g-3">
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-lightning-charge"></i> Quick Actions
+                    </h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="quick-actions-list">
+                        <a href="/sales-orders" class="quick-action-item">
+                            <div class="action-icon bg-primary">
+                                <i class="bi bi-plus-circle"></i>
+                            </div>
+                            <div class="action-content">
+                                <div class="action-title">New Sales Order</div>
+                                <div class="action-desc">Create a new order</div>
+                            </div>
+                            <i class="bi bi-chevron-right"></i>
+                        </a>
+                        <a href="/sales-invoices" class="quick-action-item">
+                            <div class="action-icon bg-success">
+                                <i class="bi bi-file-earmark-text"></i>
+                            </div>
+                            <div class="action-content">
+                                <div class="action-title">New Invoice</div>
+                                <div class="action-desc">Generate invoice</div>
+                            </div>
+                            <i class="bi bi-chevron-right"></i>
+                        </a>
+                        <a href="/products" class="quick-action-item">
+                            <div class="action-icon bg-warning">
+                                <i class="bi bi-box"></i>
+                            </div>
+                            <div class="action-content">
+                                <div class="action-title">Add Product</div>
+                                <div class="action-desc">Add to inventory</div>
+                            </div>
+                            <i class="bi bi-chevron-right"></i>
+                        </a>
+                        <a href="/customers" class="quick-action-item">
+                            <div class="action-icon bg-info">
+                                <i class="bi bi-person-plus"></i>
+                            </div>
+                            <div class="action-content">
+                                <div class="action-title">New Customer</div>
+                                <div class="action-desc">Add customer</div>
+                            </div>
+                            <i class="bi bi-chevron-right"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-clock-history"></i> Recent Activity
+                    </h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="activity-timeline">
+                        <div class="timeline-item">
+                            <div class="timeline-marker bg-success"></div>
+                            <div class="timeline-content">
+                                <div class="timeline-header">
+                                    <strong>Sales Order #SO-2024-0348</strong>
+                                    <span class="timeline-time">2 hours ago</span>
+                                </div>
+                                <div class="timeline-body">
+                                    New order received from Acme Corporation - $12,450
+                                </div>
+                            </div>
+                        </div>
+                        <div class="timeline-item">
+                            <div class="timeline-marker bg-primary"></div>
+                            <div class="timeline-content">
+                                <div class="timeline-header">
+                                    <strong>Invoice #INV-2024-0891</strong>
+                                    <span class="timeline-time">4 hours ago</span>
+                                </div>
+                                <div class="timeline-body">
+                                    Invoice generated and sent to TechStart Inc.
+                                </div>
+                            </div>
+                        </div>
+                        <div class="timeline-item">
+                            <div class="timeline-marker bg-warning"></div>
+                            <div class="timeline-content">
+                                <div class="timeline-header">
+                                    <strong>Stock Alert</strong>
+                                    <span class="timeline-time">5 hours ago</span>
+                                </div>
+                                <div class="timeline-body">
+                                    Low stock alert for Product SKU-1234 (12 units remaining)
+                                </div>
+                            </div>
+                        </div>
+                        <div class="timeline-item">
+                            <div class="timeline-marker bg-info"></div>
+                            <div class="timeline-content">
+                                <div class="timeline-header">
+                                    <strong>New Customer</strong>
+                                    <span class="timeline-time">Yesterday</span>
+                                </div>
+                                <div class="timeline-body">
+                                    GlobalTech Solutions added to customer database
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Section -->
+    <div class="row g-3 mb-4">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-graph-up"></i> Sales Revenue Trend
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container">
+                        <canvas id="salesChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-pie-chart"></i> Order Status
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container" style="height: 250px;">
+                        <canvas id="orderStatusChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Additional Chart -->
+    <div class="row g-3 mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-bar-chart"></i> Inventory Trends
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container">
+                        <canvas id="inventoryChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await InitializeCharts();
+        }
+    }
+
+    private async Task InitializeCharts()
+    {
+        try
+        {
+            await JSRuntime.InvokeVoidAsync("DashboardCharts.initializeCharts");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error initializing charts: {ex.Message}");
+        }
+    }
+}

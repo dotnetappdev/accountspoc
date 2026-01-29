@@ -1,296 +1,265 @@
 ﻿@page "/"
 @inject IJSRuntime JSRuntime
 
-<PageTitle>Dashboard - Accounts POC</PageTitle>
+<PageTitle>Dashboard</PageTitle>
 
-<div class="container-fluid dashboard-page">
-    <!-- Dashboard Header -->
-    <div class="dashboard-header">
-        <div>
-            <h1 class="display-4">
-                <i class="bi bi-speedometer2"></i>
-                Dashboard
-            </h1>
-            <p class="lead">Welcome back! Here's what's happening with your business today.</p>
-        </div>
-        <div class="dashboard-actions">
-            <button class="btn btn-outline-primary">
-                <i class="bi bi-arrow-clockwise"></i> Refresh
-            </button>
-        </div>
-    </div>
-
-    <!-- Key Metrics Row -->
-    <div class="row metrics-row g-3 mb-4">
-        <div class="col-md-3 col-sm-6">
-            <div class="metric-card metric-primary">
-                <div class="metric-icon">
-                    <i class="bi bi-box-seam"></i>
-                </div>
-                <div class="metric-content">
-                    <div class="metric-value">1,247</div>
-                    <div class="metric-label">Total Stock Items</div>
-                    <div class="metric-change positive">
-                        <i class="bi bi-arrow-up"></i> 12% from last month
-                    </div>
-                </div>
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0">Dashboard</h1>
             </div>
-        </div>
-        <div class="col-md-3 col-sm-6">
-            <div class="metric-card metric-success">
-                <div class="metric-icon">
-                    <i class="bi bi-cart-check"></i>
-                </div>
-                <div class="metric-content">
-                    <div class="metric-value">348</div>
-                    <div class="metric-label">Sales Orders</div>
-                    <div class="metric-change positive">
-                        <i class="bi bi-arrow-up"></i> 8% from last month
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3 col-sm-6">
-            <div class="metric-card metric-warning">
-                <div class="metric-icon">
-                    <i class="bi bi-receipt"></i>
-                </div>
-                <div class="metric-content">
-                    <div class="metric-value">$284,590</div>
-                    <div class="metric-label">Total Revenue</div>
-                    <div class="metric-change positive">
-                        <i class="bi bi-arrow-up"></i> 15% from last month
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3 col-sm-6">
-            <div class="metric-card metric-info">
-                <div class="metric-icon">
-                    <i class="bi bi-graph-up-arrow"></i>
-                </div>
-                <div class="metric-content">
-                    <div class="metric-value">$68,240</div>
-                    <div class="metric-label">Profit (YTD)</div>
-                    <div class="metric-change positive">
-                        <i class="bi bi-arrow-up"></i> 22% from last year
-                    </div>
+            <div class="col-sm-6">
+                <div class="float-sm-end">
+                    <button class="btn btn-sm btn-primary" @onclick="RefreshData">
+                        <i class="bi bi-arrow-clockwise"></i> Refresh
+                    </button>
                 </div>
             </div>
         </div>
     </div>
+</div>
 
-    <!-- Secondary Metrics -->
-    <div class="row g-3 mb-4">
-        <div class="col-md-3 col-sm-6">
-            <div class="stat-card">
-                <div class="stat-icon bg-primary-subtle">
-                    <i class="bi bi-people"></i>
+<div class="content">
+    <div class="container-fluid">
+        <!-- Key Metrics Row -->
+        <div class="row">
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-info">
+                    <div class="inner">
+                        <h3>1,247</h3>
+                        <p>Total Stock Items</p>
+                    </div>
+                    <div class="icon">
+                        <i class="bi bi-box-seam"></i>
+                    </div>
+                    <a href="/stock-items" class="small-box-footer">
+                        More info <i class="bi bi-arrow-right-circle"></i>
+                    </a>
                 </div>
-                <div class="stat-details">
-                    <div class="stat-value">423</div>
-                    <div class="stat-label">Total Customers</div>
+            </div>
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-success">
+                    <div class="inner">
+                        <h3>348</h3>
+                        <p>Sales Orders</p>
+                    </div>
+                    <div class="icon">
+                        <i class="bi bi-cart-check"></i>
+                    </div>
+                    <a href="/sales-orders" class="small-box-footer">
+                        More info <i class="bi bi-arrow-right-circle"></i>
+                    </a>
+                </div>
+            </div>
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-warning">
+                    <div class="inner">
+                        <h3>$284,590</h3>
+                        <p>Total Revenue</p>
+                    </div>
+                    <div class="icon">
+                        <i class="bi bi-receipt"></i>
+                    </div>
+                    <a href="/sales-invoices" class="small-box-footer">
+                        More info <i class="bi bi-arrow-right-circle"></i>
+                    </a>
+                </div>
+            </div>
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-danger">
+                    <div class="inner">
+                        <h3>$68,240</h3>
+                        <p>Profit (YTD)</p>
+                    </div>
+                    <div class="icon">
+                        <i class="bi bi-graph-up-arrow"></i>
+                    </div>
+                    <a href="#" class="small-box-footer">
+                        More info <i class="bi bi-arrow-right-circle"></i>
+                    </a>
                 </div>
             </div>
         </div>
-        <div class="col-md-3 col-sm-6">
-            <div class="stat-card">
-                <div class="stat-icon bg-success-subtle">
-                    <i class="bi bi-clock-history"></i>
-                </div>
-                <div class="stat-details">
-                    <div class="stat-value">28</div>
-                    <div class="stat-label">Pending Orders</div>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3 col-sm-6">
-            <div class="stat-card">
-                <div class="stat-icon bg-warning-subtle">
-                    <i class="bi bi-exclamation-triangle"></i>
-                </div>
-                <div class="stat-details">
-                    <div class="stat-value">12</div>
-                    <div class="stat-label">Low Stock Alerts</div>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3 col-sm-6">
-            <div class="stat-card">
-                <div class="stat-icon bg-info-subtle">
-                    <i class="bi bi-bank2"></i>
-                </div>
-                <div class="stat-details">
-                    <div class="stat-value">$142,850</div>
-                    <div class="stat-label">Total Bank Balance</div>
-                </div>
-            </div>
-        </div>
-    </div>
 
-    <!-- Quick Actions & Recent Activity -->
-    <div class="row g-3">
-        <div class="col-lg-4">
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="card-title mb-0">
-                        <i class="bi bi-lightning-charge"></i> Quick Actions
-                    </h5>
+        <!-- Secondary Metrics Row -->
+        <div class="row">
+            <div class="col-lg-3 col-6">
+                <div class="info-box">
+                    <span class="info-box-icon bg-info"><i class="bi bi-people"></i></span>
+                    <div class="info-box-content">
+                        <span class="info-box-text">Total Customers</span>
+                        <span class="info-box-number">423</span>
+                    </div>
                 </div>
-                <div class="card-body p-0">
-                    <div class="quick-actions-list">
-                        <a href="/sales-orders" class="quick-action-item">
-                            <div class="action-icon bg-primary">
-                                <i class="bi bi-plus-circle"></i>
-                            </div>
-                            <div class="action-content">
-                                <div class="action-title">New Sales Order</div>
-                                <div class="action-desc">Create a new order</div>
-                            </div>
-                            <i class="bi bi-chevron-right"></i>
-                        </a>
-                        <a href="/sales-invoices" class="quick-action-item">
-                            <div class="action-icon bg-success">
-                                <i class="bi bi-file-earmark-text"></i>
-                            </div>
-                            <div class="action-content">
-                                <div class="action-title">New Invoice</div>
-                                <div class="action-desc">Generate invoice</div>
-                            </div>
-                            <i class="bi bi-chevron-right"></i>
-                        </a>
-                        <a href="/products" class="quick-action-item">
-                            <div class="action-icon bg-warning">
-                                <i class="bi bi-box"></i>
-                            </div>
-                            <div class="action-content">
-                                <div class="action-title">Add Product</div>
-                                <div class="action-desc">Add to inventory</div>
-                            </div>
-                            <i class="bi bi-chevron-right"></i>
-                        </a>
-                        <a href="/customers" class="quick-action-item">
-                            <div class="action-icon bg-info">
-                                <i class="bi bi-person-plus"></i>
-                            </div>
-                            <div class="action-content">
-                                <div class="action-title">New Customer</div>
-                                <div class="action-desc">Add customer</div>
-                            </div>
-                            <i class="bi bi-chevron-right"></i>
-                        </a>
+            </div>
+            <div class="col-lg-3 col-6">
+                <div class="info-box">
+                    <span class="info-box-icon bg-warning"><i class="bi bi-clock-history"></i></span>
+                    <div class="info-box-content">
+                        <span class="info-box-text">Pending Orders</span>
+                        <span class="info-box-number">28</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-6">
+                <div class="info-box">
+                    <span class="info-box-icon bg-danger"><i class="bi bi-exclamation-triangle"></i></span>
+                    <div class="info-box-content">
+                        <span class="info-box-text">Low Stock Alerts</span>
+                        <span class="info-box-number">12</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-6">
+                <div class="info-box">
+                    <span class="info-box-icon bg-success"><i class="bi bi-bank2"></i></span>
+                    <div class="info-box-content">
+                        <span class="info-box-text">Bank Balance</span>
+                        <span class="info-box-number">$142,850</span>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="col-lg-8">
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="card-title mb-0">
-                        <i class="bi bi-clock-history"></i> Recent Activity
-                    </h5>
+        <!-- Charts Row -->
+        <div class="row">
+            <div class="col-lg-8">
+                <div class="card">
+                    <div class="card-header border-0">
+                        <div class="d-flex justify-content-between">
+                            <h3 class="card-title">Sales Revenue Trend</h3>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="position-relative mb-4">
+                            <canvas id="salesChart" height="200"></canvas>
+                        </div>
+                    </div>
                 </div>
-                <div class="card-body p-0">
-                    <div class="activity-timeline">
-                        <div class="timeline-item">
-                            <div class="timeline-marker bg-success"></div>
-                            <div class="timeline-content">
-                                <div class="timeline-header">
-                                    <strong>Sales Order #SO-2024-0348</strong>
-                                    <span class="timeline-time">2 hours ago</span>
-                                </div>
-                                <div class="timeline-body">
-                                    New order received from Acme Corporation - $12,450
-                                </div>
-                            </div>
-                        </div>
-                        <div class="timeline-item">
-                            <div class="timeline-marker bg-primary"></div>
-                            <div class="timeline-content">
-                                <div class="timeline-header">
-                                    <strong>Invoice #INV-2024-0891</strong>
-                                    <span class="timeline-time">4 hours ago</span>
-                                </div>
-                                <div class="timeline-body">
-                                    Invoice generated and sent to TechStart Inc.
-                                </div>
-                            </div>
-                        </div>
-                        <div class="timeline-item">
-                            <div class="timeline-marker bg-warning"></div>
-                            <div class="timeline-content">
-                                <div class="timeline-header">
-                                    <strong>Stock Alert</strong>
-                                    <span class="timeline-time">5 hours ago</span>
-                                </div>
-                                <div class="timeline-body">
-                                    Low stock alert for Product SKU-1234 (12 units remaining)
-                                </div>
-                            </div>
-                        </div>
-                        <div class="timeline-item">
-                            <div class="timeline-marker bg-info"></div>
-                            <div class="timeline-content">
-                                <div class="timeline-header">
-                                    <strong>New Customer</strong>
-                                    <span class="timeline-time">Yesterday</span>
-                                </div>
-                                <div class="timeline-body">
-                                    GlobalTech Solutions added to customer database
-                                </div>
-                            </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="card">
+                    <div class="card-header border-0">
+                        <h3 class="card-title">Order Status</h3>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="orderStatusChart" height="250"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header border-0">
+                        <h3 class="card-title">Inventory Trends</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="position-relative mb-4">
+                            <canvas id="inventoryChart" height="180"></canvas>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
 
-    <!-- Charts Section -->
-    <div class="row g-3 mb-4">
-        <div class="col-lg-8">
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="card-title mb-0">
-                        <i class="bi bi-graph-up"></i> Sales Revenue Trend
-                    </h5>
-                </div>
-                <div class="card-body">
-                    <div class="chart-container">
-                        <canvas id="salesChart"></canvas>
+        <!-- Quick Actions & Recent Activity -->
+        <div class="row">
+            <div class="col-lg-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="bi bi-lightning-charge"></i> Quick Actions
+                        </h3>
+                    </div>
+                    <div class="card-body p-0">
+                        <ul class="nav nav-pills flex-column">
+                            <li class="nav-item">
+                                <a href="/sales-orders" class="nav-link">
+                                    <i class="bi bi-plus-circle text-primary"></i> New Sales Order
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="/sales-invoices" class="nav-link">
+                                    <i class="bi bi-file-earmark-text text-success"></i> New Invoice
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="/products" class="nav-link">
+                                    <i class="bi bi-box text-warning"></i> Add Product
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="/customers" class="nav-link">
+                                    <i class="bi bi-person-plus text-info"></i> New Customer
+                                </a>
+                            </li>
+                        </ul>
                     </div>
                 </div>
             </div>
-        </div>
-        <div class="col-lg-4">
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="card-title mb-0">
-                        <i class="bi bi-pie-chart"></i> Order Status
-                    </h5>
-                </div>
-                <div class="card-body">
-                    <div class="chart-container" style="height: 250px;">
-                        <canvas id="orderStatusChart"></canvas>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
 
-    <!-- Additional Chart -->
-    <div class="row g-3 mb-4">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="card-title mb-0">
-                        <i class="bi bi-bar-chart"></i> Inventory Trends
-                    </h5>
-                </div>
-                <div class="card-body">
-                    <div class="chart-container">
-                        <canvas id="inventoryChart"></canvas>
+            <div class="col-lg-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="bi bi-clock-history"></i> Recent Activity
+                        </h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="timeline">
+                            <div class="time-label">
+                                <span class="bg-success">Today</span>
+                            </div>
+                            <div>
+                                <i class="bi bi-cart-check bg-success"></i>
+                                <div class="timeline-item">
+                                    <span class="time"><i class="bi bi-clock"></i> 2 hours ago</span>
+                                    <h3 class="timeline-header">Sales Order #SO-2024-0348</h3>
+                                    <div class="timeline-body">
+                                        New order received from Acme Corporation - $12,450
+                                    </div>
+                                </div>
+                            </div>
+                            <div>
+                                <i class="bi bi-file-earmark-text bg-primary"></i>
+                                <div class="timeline-item">
+                                    <span class="time"><i class="bi bi-clock"></i> 4 hours ago</span>
+                                    <h3 class="timeline-header">Invoice #INV-2024-0891</h3>
+                                    <div class="timeline-body">
+                                        Invoice generated and sent to TechStart Inc.
+                                    </div>
+                                </div>
+                            </div>
+                            <div>
+                                <i class="bi bi-exclamation-triangle bg-warning"></i>
+                                <div class="timeline-item">
+                                    <span class="time"><i class="bi bi-clock"></i> 5 hours ago</span>
+                                    <h3 class="timeline-header">Stock Alert</h3>
+                                    <div class="timeline-body">
+                                        Low stock alert for Product SKU-1234 (12 units remaining)
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="time-label">
+                                <span class="bg-secondary">Yesterday</span>
+                            </div>
+                            <div>
+                                <i class="bi bi-person-plus bg-info"></i>
+                                <div class="timeline-item">
+                                    <span class="time"><i class="bi bi-clock"></i> Yesterday</span>
+                                    <h3 class="timeline-header">New Customer</h3>
+                                    <div class="timeline-body">
+                                        GlobalTech Solutions added to customer database
+                                    </div>
+                                </div>
+                            </div>
+                            <div>
+                                <i class="bi bi-clock bg-gray"></i>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -317,5 +286,11 @@
         {
             Console.WriteLine($"Error initializing charts: {ex.Message}");
         }
+    }
+
+    private async Task RefreshData()
+    {
+        // Refresh dashboard data
+        await Task.CompletedTask;
     }
 }
