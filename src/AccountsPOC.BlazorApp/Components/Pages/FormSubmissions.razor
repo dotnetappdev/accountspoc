@@ -1,0 +1,129 @@
+@page "/form-submissions/{FormId:int}"
+@using System.Net.Http.Json
+@using System.Text.Json
+@inject HttpClient Http
+@inject NavigationManager Navigation
+@rendermode InteractiveServer
+
+<PageTitle>Form Submissions</PageTitle>
+
+<div class="container-fluid">
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">
+                <i class="bi bi-list-check"></i> Form Submissions
+            </h1>
+            @if (form != null)
+            {
+                <p class="text-muted">Submissions for: @form.Title</p>
+            }
+        </div>
+        <button class="btn btn-secondary" @onclick="GoBack">
+            <i class="bi bi-arrow-left"></i> Back to Forms
+        </button>
+    </div>
+
+    @if (loading)
+    {
+        <div class="text-center py-5">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading submissions...</span>
+            </div>
+        </div>
+    }
+    else if (submissions == null || !submissions.Any())
+    {
+        <div class="alert alert-info">
+            <i class="bi bi-info-circle"></i> No submissions yet for this form.
+        </div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Submission ID</th>
+                        <th>Submitted Date</th>
+                        <th>Submitted By</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var submission in submissions)
+                    {
+                        <tr>
+                            <td>#@submission.Id</td>
+                            <td>@submission.SubmittedDate.ToString("MMM dd, yyyy HH:mm")</td>
+                            <td>@(submission.SubmittedBy ?? "Anonymous")</td>
+                            <td>
+                                <button class="btn btn-sm btn-outline-primary" @onclick="() => ViewSubmission(submission.Id)">
+                                    <i class="bi bi-eye"></i> View
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public int FormId { get; set; }
+
+    private CustomFormDto? form;
+    private List<FormSubmissionDto>? submissions;
+    private bool loading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadSubmissions();
+    }
+
+    private async Task LoadSubmissions()
+    {
+        loading = true;
+        try
+        {
+            // Load form details
+            form = await Http.GetFromJsonAsync<CustomFormDto>($"api/CustomForms/{FormId}");
+            
+            // Load submissions
+            submissions = await Http.GetFromJsonAsync<List<FormSubmissionDto>>($"api/CustomForms/{FormId}/submissions");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading submissions: {ex.Message}");
+            submissions = new List<FormSubmissionDto>();
+        }
+        loading = false;
+    }
+
+    private void ViewSubmission(int submissionId)
+    {
+        // In a real application, navigate to a detailed submission view
+        Console.WriteLine($"Viewing submission {submissionId}");
+    }
+
+    private void GoBack()
+    {
+        Navigation.NavigateTo("/forms");
+    }
+
+    private class CustomFormDto
+    {
+        public int Id { get; set; }
+        public string Title { get; set; } = "";
+        public string? Description { get; set; }
+    }
+
+    private class FormSubmissionDto
+    {
+        public int Id { get; set; }
+        public int CustomFormId { get; set; }
+        public DateTime SubmittedDate { get; set; }
+        public string? SubmittedBy { get; set; }
+    }
+}

@@ -1,17 +1,18 @@
 @page "/form-builder"
+@page "/form-builder/{FormId:int}"
 @inject HttpClient Http
 @inject NavigationManager Navigation
 @inject IJSRuntime JSRuntime
 
-<PageTitle>Form Builder</PageTitle>
+<PageTitle>@(FormId.HasValue ? "Edit Form" : "Create Form")</PageTitle>
 
 <div class="container-fluid">
     <div class="row mb-3">
         <div class="col">
             <h1 class="display-6">
-                <i class="bi bi-ui-checks-grid"></i> Form Builder
+                <i class="bi bi-ui-checks-grid"></i> @(FormId.HasValue ? "Edit Form" : "Form Builder")
             </h1>
-            <p class="text-muted">Create custom forms with drag-and-drop field types</p>
+            <p class="text-muted">@(FormId.HasValue ? "Update your custom form" : "Create custom forms with drag-and-drop field types")</p>
         </div>
         <div class="col-auto">
             <button class="btn btn-primary" @onclick="SaveForm" disabled="@isSaving">
@@ -27,11 +28,21 @@
         </div>
     </div>
 
-    <div class="row">
-        <!-- Form Configuration Panel -->
-        <div class="col-lg-3">
-            <div class="card mb-3">
-                <div class="card-header">
+    @if (isLoading)
+    {
+        <div class="text-center py-5">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading form...</span>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="row">
+            <!-- Form Configuration Panel -->
+            <div class="col-lg-3">
+                <div class="card mb-3">
+                    <div class="card-header">
                     <h5 class="card-title mb-0">
                         <i class="bi bi-gear"></i> Form Settings
                     </h5>
@@ -184,15 +195,20 @@
             </div>
         </div>
     </div>
+    }
 </div>
 
 @code {
+    [Parameter]
+    public int? FormId { get; set; }
+
     private string formTitle = "";
     private string formDescription = "";
     private bool allowMultipleSubmissions = true;
     private bool requireAuthentication = false;
     private bool isSaving = false;
     private int selectedFieldIndex = -1;
+    private bool isLoading = false;
 
     private List<FormFieldModel> formFields = new();
 
@@ -210,6 +226,44 @@
         new() { Type = "checkbox", Label = "Checkboxes", Icon = "bi-check-square" },
         new() { Type = "file", Label = "File Upload", Icon = "bi-file-earmark-arrow-up" },
     };
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (FormId.HasValue)
+        {
+            await LoadForm();
+        }
+    }
+
+    private async Task LoadForm()
+    {
+        isLoading = true;
+        try
+        {
+            var form = await Http.GetFromJsonAsync<CustomFormDto>($"api/CustomForms/{FormId}");
+            if (form != null)
+            {
+                formTitle = form.Title;
+                formDescription = form.Description ?? "";
+                allowMultipleSubmissions = form.AllowMultipleSubmissions;
+                requireAuthentication = form.RequireAuthentication;
+
+                // Deserialize form fields
+                if (!string.IsNullOrEmpty(form.FormFieldsJson))
+                {
+                    formFields = System.Text.Json.JsonSerializer.Deserialize<List<FormFieldModel>>(form.FormFieldsJson) ?? new();
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading form: {ex.Message}");
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
 
     private void AddField(FieldTypeOption fieldType)
     {
@@ -344,6 +398,7 @@
         {
             var formData = new
             {
+                Id = FormId ?? 0,
                 Title = formTitle,
                 Description = formDescription,
                 FormFieldsJson = System.Text.Json.JsonSerializer.Serialize(formFields),
@@ -352,7 +407,17 @@
                 IsActive = true
             };
 
-            var response = await Http.PostAsJsonAsync("http://localhost:5001/api/CustomForms", formData);
+            HttpResponseMessage response;
+            if (FormId.HasValue)
+            {
+                // Update existing form
+                response = await Http.PutAsJsonAsync($"api/CustomForms/{FormId}", formData);
+            }
+            else
+            {
+                // Create new form
+                response = await Http.PostAsJsonAsync("api/CustomForms", formData);
+            }
             
             if (response.IsSuccessStatusCode)
             {
@@ -372,6 +437,17 @@
     private void ViewForms()
     {
         Navigation.NavigateTo("/forms");
+    }
+
+    private class CustomFormDto
+    {
+        public int Id { get; set; }
+        public string Title { get; set; } = "";
+        public string? Description { get; set; }
+        public string FormFieldsJson { get; set; } = "[]";
+        public bool IsActive { get; set; }
+        public bool AllowMultipleSubmissions { get; set; }
+        public bool RequireAuthentication { get; set; }
     }
 
     private class FormFieldModel
