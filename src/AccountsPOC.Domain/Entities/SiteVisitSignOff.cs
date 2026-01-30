@@ -3,7 +3,8 @@ namespace AccountsPOC.Domain.Entities;
 public class SiteVisitSignOff
 {
     public int Id { get; set; }
-    public int WorkOrderId { get; set; }
+    public int? WorkOrderId { get; set; }
+    public int? SiteVisitId { get; set; }
     
     public DateTime VisitDate { get; set; }
     public required string VisitType { get; set; } // Initial, Progress, Completion, Inspection
@@ -31,4 +32,5 @@ public class SiteVisitSignOff
     
     // Navigation properties
     public WorkOrder? WorkOrder { get; set; }
+    public SiteVisit? SiteVisit { get; set; }
 }

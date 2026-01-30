@@ -32,6 +32,7 @@ public class WorkOrder
     // Related Orders
     public int? SalesOrderId { get; set; }
     public int? QuoteId { get; set; }
+    public int? SiteVisitId { get; set; }
     
     // Costing
     public decimal EstimatedHours { get; set; }
@@ -54,6 +55,7 @@ public class WorkOrder
     public User? AssignedTo { get; set; }
     public SalesOrder? SalesOrder { get; set; }
     public Quote? Quote { get; set; }
+    public SiteVisit? SiteVisit { get; set; }
     public ICollection<WorkOrderTask> WorkOrderTasks { get; set; } = new List<WorkOrderTask>();
     public ICollection<SiteVisitSignOff> SiteVisitSignOffs { get; set; } = new List<SiteVisitSignOff>();
 }

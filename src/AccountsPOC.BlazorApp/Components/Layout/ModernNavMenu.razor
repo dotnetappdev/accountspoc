@@ -79,7 +79,7 @@
                     <a href="#" class="nav-link" @onclick="@(() => ToggleSection("workorders"))" @onclick:preventDefault>
                         <i class="nav-icon bi bi-wrench"></i>
                         <p>
-                            Work Orders
+                            Work Orders & Visits
                             <i class="right bi @(expandedSections.Contains("workorders") ? "bi-chevron-down" : "bi-chevron-right")"></i>
                         </p>
                     </a>
@@ -91,9 +91,15 @@
                             </NavLink>
                         </li>
                         <li class="nav-item">
+                            <NavLink class="nav-link" href="site-visits">
+                                <i class="bi bi-calendar-check nav-icon"></i>
+                                <p>Site Visits</p>
+                            </NavLink>
+                        </li>
+                        <li class="nav-item">
                             <NavLink class="nav-link" href="site-visit-signoffs">
                                 <i class="bi bi-pen nav-icon"></i>
-                                <p>Site Visit Sign-offs</p>
+                                <p>Visit Sign-offs</p>
                             </NavLink>
                         </li>
                     </ul>

@@ -65,6 +65,7 @@ public class ApplicationDbContext : IdentityDbContext<User, Role, int, Microsoft
     public DbSet<QuoteItem> QuoteItems => Set<QuoteItem>();
     public DbSet<WorkOrder> WorkOrders => Set<WorkOrder>();
     public DbSet<WorkOrderTask> WorkOrderTasks => Set<WorkOrderTask>();
+    public DbSet<SiteVisit> SiteVisits => Set<SiteVisit>();
     public DbSet<SiteVisitSignOff> SiteVisitSignOffs => Set<SiteVisitSignOff>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -1038,6 +1039,37 @@ public class ApplicationDbContext : IdentityDbContext<User, Role, int, Microsoft
                 .OnDelete(DeleteBehavior.SetNull);
         });
 
+        // SiteVisit configuration
+        modelBuilder.Entity<SiteVisit>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.VisitNumber).IsRequired().HasMaxLength(50);
+            entity.Property(e => e.VisitType).IsRequired().HasMaxLength(50);
+            entity.Property(e => e.Status).HasMaxLength(50);
+            entity.HasIndex(e => e.VisitNumber).IsUnique();
+            entity.HasIndex(e => e.TenantId);
+            
+            entity.HasOne(e => e.Customer)
+                .WithMany()
+                .HasForeignKey(e => e.CustomerId)
+                .OnDelete(DeleteBehavior.SetNull);
+            
+            entity.HasOne(e => e.AssignedTo)
+                .WithMany()
+                .HasForeignKey(e => e.AssignedToUserId)
+                .OnDelete(DeleteBehavior.SetNull);
+            
+            entity.HasMany(e => e.WorkOrders)
+                .WithOne(e => e.SiteVisit)
+                .HasForeignKey(e => e.SiteVisitId)
+                .OnDelete(DeleteBehavior.SetNull);
+            
+            entity.HasMany(e => e.SiteVisitSignOffs)
+                .WithOne(e => e.SiteVisit)
+                .HasForeignKey(e => e.SiteVisitId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
         // SiteVisitSignOff configuration
         modelBuilder.Entity<SiteVisitSignOff>(entity =>
         {
@@ -1046,6 +1078,12 @@ public class ApplicationDbContext : IdentityDbContext<User, Role, int, Microsoft
             entity.Property(e => e.SignedByName).IsRequired().HasMaxLength(200);
             entity.Property(e => e.SignedByTitle).HasMaxLength(100);
             entity.HasIndex(e => e.WorkOrderId);
+            entity.HasIndex(e => e.SiteVisitId);
+            
+            entity.HasOne(e => e.WorkOrder)
+                .WithMany(e => e.SiteVisitSignOffs)
+                .HasForeignKey(e => e.WorkOrderId)
+                .OnDelete(DeleteBehavior.SetNull);
         });
     }
 }
