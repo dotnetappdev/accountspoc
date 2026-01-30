@@ -1,0 +1,98 @@
+@page "/login"
+@using AccountsPOC.BlazorApp.Services
+@using Microsoft.AspNetCore.Authorization
+@attribute [AllowAnonymous]
+@inject CustomAuthenticationStateProvider AuthStateProvider
+@inject NavigationManager Navigation
+@rendermode InteractiveServer
+
+<PageTitle>Login</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Small" Class="d-flex flex-column justify-center" Style="min-height: 100vh;">
+    <MudPaper Elevation="3" Class="pa-8">
+        <MudText Typo="Typo.h4" Align="Align.Center" GutterBottom="true">
+            <MudIcon Icon="@Icons.Material.Filled.Lock" Size="Size.Large" Class="mr-2" />
+            Login
+        </MudText>
+        
+        @if (!string.IsNullOrEmpty(errorMessage))
+        {
+            <MudAlert Severity="Severity.Error" Class="mt-4">@errorMessage</MudAlert>
+        }
+
+        <MudForm @ref="form" Class="mt-6">
+            <MudTextField @bind-Value="email" 
+                          Label="Email" 
+                          Variant="Variant.Outlined" 
+                          Required="true"
+                          InputType="InputType.Email"
+                          Class="mb-4" />
+            
+            <MudTextField @bind-Value="password" 
+                          Label="Password" 
+                          Variant="Variant.Outlined" 
+                          Required="true"
+                          InputType="InputType.Password"
+                          Class="mb-4" />
+
+            <MudButton Variant="Variant.Filled" 
+                       Color="Color.Primary" 
+                       FullWidth="true"
+                       Size="Size.Large"
+                       OnClick="HandleLogin"
+                       Disabled="isLoading">
+                @if (isLoading)
+                {
+                    <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                    <span>Logging in...</span>
+                }
+                else
+                {
+                    <span>Login</span>
+                }
+            </MudButton>
+        </MudForm>
+
+        <MudDivider Class="my-6" />
+
+        <MudText Align="Align.Center">
+            Don't have an account? 
+            <MudLink Href="/register">Register here</MudLink>
+        </MudText>
+    </MudPaper>
+</MudContainer>
+
+@code {
+    private MudForm? form;
+    private string email = "";
+    private string password = "";
+    private string errorMessage = "";
+    private bool isLoading = false;
+
+    private async Task HandleLogin()
+    {
+        errorMessage = "";
+        isLoading = true;
+
+        try
+        {
+            var success = await AuthStateProvider.LoginAsync(email, password);
+            if (success)
+            {
+                Navigation.NavigateTo("/", forceLoad: true);
+            }
+            else
+            {
+                errorMessage = "Invalid email or password";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"An error occurred: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+}

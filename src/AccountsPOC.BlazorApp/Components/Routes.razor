@@ -1,6 +1,51 @@
-﻿<Router AppAssembly="typeof(Program).Assembly" NotFoundPage="typeof(Pages.NotFound)">
-    <Found Context="routeData">
-        <RouteView RouteData="routeData" DefaultLayout="typeof(Layout.MainLayout)" />
-        <FocusOnNavigate RouteData="routeData" Selector="h1" />
-    </Found>
-</Router>
+@using Microsoft.AspNetCore.Components.Web
+<ErrorBoundary>
+    <ChildContent>
+        <CascadingAuthenticationState>
+            <Router AppAssembly="typeof(Program).Assembly" NotFoundPage="typeof(Pages.NotFound)">
+                <Found Context="routeData">
+                    <AuthorizeRouteView RouteData="routeData" DefaultLayout="typeof(Layout.MainLayout)">
+                        <NotAuthorized>
+                            @if (context.User.Identity?.IsAuthenticated != true)
+                            {
+                                <RedirectToLogin />
+                            }
+                            else
+                            {
+                                <p role="alert">You are not authorized to access this resource.</p>
+                            }
+                        </NotAuthorized>
+                    </AuthorizeRouteView>
+                    <FocusOnNavigate RouteData="routeData" Selector="h1" />
+                </Found>
+            </Router>
+        </CascadingAuthenticationState>
+    </ChildContent>
+    <ErrorContent>
+        <div class="alert alert-warning m-3" role="alert">
+            <h4 class="alert-heading">Connection Issue</h4>
+            <p>Unable to connect to the API server. If you're setting up the application for the first time, this is normal.</p>
+            <hr />
+            <p class="mb-0">
+                <a href="/setup" class="btn btn-primary">Go to Setup</a>
+                <button class="btn btn-secondary ms-2" @onclick="ReloadPage">Reload Page</button>
+            </p>
+        </div>
+    </ErrorContent>
+</ErrorBoundary>
+
+@code {
+    [CascadingParameter]
+    private Task<AuthenticationState>? AuthState { get; set; }
+
+    private void ReloadPage()
+    {
+        Microsoft.AspNetCore.Components.NavigationManager? navManager = null;
+        // This will trigger a page reload
+        if (navManager != null)
+        {
+            navManager.NavigateTo(navManager.Uri, forceLoad: true);
+        }
+    }
+}
+

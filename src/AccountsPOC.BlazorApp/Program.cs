@@ -1,4 +1,6 @@
 using AccountsPOC.BlazorApp.Components;
+using AccountsPOC.BlazorApp.Services;
+using Microsoft.AspNetCore.Components.Authorization;
 using MudBlazor.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -18,6 +20,13 @@ builder.Services.AddHttpClient("AccountsAPI", client =>
 
 builder.Services.AddScoped(sp => sp.GetRequiredService<IHttpClientFactory>()
     .CreateClient("AccountsAPI"));
+
+// Add authentication services
+builder.Services.AddAuthorizationCore();
+builder.Services.AddCascadingAuthenticationState();
+builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthenticationStateProvider>();
+builder.Services.AddScoped<CustomAuthenticationStateProvider>(sp => 
+    (CustomAuthenticationStateProvider)sp.GetRequiredService<AuthenticationStateProvider>());
 
 var app = builder.Build();
 

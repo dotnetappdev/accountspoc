@@ -8,12 +8,14 @@
 
   <ItemGroup>
     <PackageReference Include="MailKit" Version="4.14.1" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.2" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.1" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.2">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="QuestPDF" Version="2025.12.3" />
+    <PackageReference Include="Sentry.AspNetCore" Version="6.0.0" />
     <PackageReference Include="Stripe.net" Version="50.2.0" />
   </ItemGroup>
 

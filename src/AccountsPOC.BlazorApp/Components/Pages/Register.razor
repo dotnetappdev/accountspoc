@@ -1,0 +1,205 @@
+@page "/register"
+@using AccountsPOC.BlazorApp.Services
+@using System.Net.Http.Json
+@using Microsoft.AspNetCore.Authorization
+@attribute [AllowAnonymous]
+@inject CustomAuthenticationStateProvider AuthStateProvider
+@inject HttpClient Http
+@inject NavigationManager Navigation
+@rendermode InteractiveServer
+
+<PageTitle>Register</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Medium" Class="d-flex flex-column justify-center" Style="min-height: 100vh; padding: 40px 0;">
+    <MudPaper Elevation="3" Class="pa-8">
+        <MudText Typo="Typo.h4" Align="Align.Center" GutterBottom="true">
+            <MudIcon Icon="@Icons.Material.Filled.PersonAdd" Size="Size.Large" Class="mr-2" />
+            Create Account
+        </MudText>
+        
+        @if (!string.IsNullOrEmpty(errorMessage))
+        {
+            <MudAlert Severity="Severity.Error" Class="mt-4">@errorMessage</MudAlert>
+        }
+
+        <MudForm @ref="form" Class="mt-6">
+            <MudGrid>
+                <MudItem xs="12">
+                    <MudSelect T="int" @bind-Value="tenantId" Label="Tenant" Variant="Variant.Outlined" Required="true">
+                        @foreach (var tenant in tenants)
+                        {
+                            <MudSelectItem Value="@tenant.Id">@tenant.CompanyName</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+                
+                <MudItem xs="12" md="6">
+                    <MudTextField @bind-Value="username" 
+                                  Label="Username" 
+                                  Variant="Variant.Outlined" 
+                                  Required="true" />
+                </MudItem>
+                
+                <MudItem xs="12" md="6">
+                    <MudTextField @bind-Value="email" 
+                                  Label="Email" 
+                                  Variant="Variant.Outlined" 
+                                  Required="true"
+                                  InputType="InputType.Email" />
+                </MudItem>
+                
+                <MudItem xs="12" md="6">
+                    <MudTextField @bind-Value="firstName" 
+                                  Label="First Name" 
+                                  Variant="Variant.Outlined" />
+                </MudItem>
+                
+                <MudItem xs="12" md="6">
+                    <MudTextField @bind-Value="lastName" 
+                                  Label="Last Name" 
+                                  Variant="Variant.Outlined" />
+                </MudItem>
+                
+                <MudItem xs="12">
+                    <MudTextField @bind-Value="phoneNumber" 
+                                  Label="Phone Number" 
+                                  Variant="Variant.Outlined" />
+                </MudItem>
+                
+                <MudItem xs="12" md="6">
+                    <MudTextField @bind-Value="password" 
+                                  Label="Password" 
+                                  Variant="Variant.Outlined" 
+                                  Required="true"
+                                  InputType="InputType.Password"
+                                  HelperText="Min 6 characters, requires uppercase, lowercase and digit" />
+                </MudItem>
+                
+                <MudItem xs="12" md="6">
+                    <MudTextField @bind-Value="confirmPassword" 
+                                  Label="Confirm Password" 
+                                  Variant="Variant.Outlined" 
+                                  Required="true"
+                                  InputType="InputType.Password" />
+                </MudItem>
+
+                <MudItem xs="12">
+                    <MudButton Variant="Variant.Filled" 
+                               Color="Color.Primary" 
+                               FullWidth="true"
+                               Size="Size.Large"
+                               OnClick="HandleRegister"
+                               Disabled="isLoading">
+                        @if (isLoading)
+                        {
+                            <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                            <span>Creating account...</span>
+                        }
+                        else
+                        {
+                            <span>Register</span>
+                        }
+                    </MudButton>
+                </MudItem>
+            </MudGrid>
+        </MudForm>
+
+        <MudDivider Class="my-6" />
+
+        <MudText Align="Align.Center">
+            Already have an account? 
+            <MudLink Href="/login">Login here</MudLink>
+        </MudText>
+    </MudPaper>
+</MudContainer>
+
+@code {
+    private MudForm? form;
+    private int tenantId = 1;
+    private string username = "";
+    private string email = "";
+    private string firstName = "";
+    private string lastName = "";
+    private string phoneNumber = "";
+    private string password = "";
+    private string confirmPassword = "";
+    private string errorMessage = "";
+    private bool isLoading = false;
+    private List<TenantDto> tenants = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadTenants();
+    }
+
+    private async Task LoadTenants()
+    {
+        try
+        {
+            var result = await Http.GetFromJsonAsync<List<TenantDto>>("api/tenants");
+            if (result != null)
+            {
+                tenants = result;
+                if (tenants.Any())
+                {
+                    tenantId = tenants.First().Id;
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Failed to load tenants: {ex.Message}");
+        }
+    }
+
+    private async Task HandleRegister()
+    {
+        errorMessage = "";
+
+        if (password != confirmPassword)
+        {
+            errorMessage = "Passwords do not match";
+            return;
+        }
+
+        isLoading = true;
+
+        try
+        {
+            var registerDto = new RegisterDto
+            {
+                TenantId = tenantId,
+                Username = username,
+                Email = email,
+                Password = password,
+                FirstName = firstName,
+                LastName = lastName,
+                PhoneNumber = phoneNumber
+            };
+
+            var success = await AuthStateProvider.RegisterAsync(registerDto);
+            if (success)
+            {
+                Navigation.NavigateTo("/", forceLoad: true);
+            }
+            else
+            {
+                errorMessage = "Registration failed. Please check your details and try again.";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"An error occurred: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    public class TenantDto
+    {
+        public int Id { get; set; }
+        public required string CompanyName { get; set; }
+    }
+}

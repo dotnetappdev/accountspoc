@@ -1,5 +1,7 @@
 using AccountsPOC.Domain.Entities;
 using AccountsPOC.Infrastructure.Data;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -7,13 +9,18 @@ namespace AccountsPOC.WebAPI.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[Authorize]
 public class UsersController : ControllerBase
 {
     private readonly ApplicationDbContext _context;
+    private readonly UserManager<User> _userManager;
+    private readonly RoleManager<Role> _roleManager;
 
-    public UsersController(ApplicationDbContext context)
+    public UsersController(ApplicationDbContext context, UserManager<User> userManager, RoleManager<Role> roleManager)
     {
         _context = context;
+        _userManager = userManager;
+        _roleManager = roleManager;
     }
 
     [HttpGet]
@@ -26,7 +33,7 @@ public class UsersController : ControllerBase
             {
                 u.Id,
                 u.TenantId,
-                u.Username,
+                Username = u.UserName,
                 u.Email,
                 u.FirstName,
                 u.LastName,
@@ -53,7 +60,7 @@ public class UsersController : ControllerBase
             {
                 u.Id,
                 u.TenantId,
-                u.Username,
+                Username = u.UserName,
                 u.Email,
                 u.FirstName,
                 u.LastName,
@@ -84,28 +91,22 @@ public class UsersController : ControllerBase
         }
 
         // Validate username uniqueness
-        if (await _context.Users.AnyAsync(u => u.Username == dto.Username))
+        if (await _userManager.FindByNameAsync(dto.Username) != null)
         {
             return BadRequest("Username already exists.");
         }
 
         // Validate email uniqueness
-        if (await _context.Users.AnyAsync(u => u.Email == dto.Email))
+        if (await _userManager.FindByEmailAsync(dto.Email) != null)
         {
             return BadRequest("Email already exists.");
         }
 
-        // Simple password hashing (in production, use proper password hashing like BCrypt)
-        // NOTE: This is a POC implementation. In production, use BCrypt, PBKDF2, or Argon2
-        var passwordHash = Convert.ToBase64String(
-            System.Text.Encoding.UTF8.GetBytes(dto.Password));
-
         var user = new User
         {
             TenantId = dto.TenantId,
-            Username = dto.Username,
+            UserName = dto.Username,
             Email = dto.Email,
-            PasswordHash = passwordHash,
             FirstName = dto.FirstName,
             LastName = dto.LastName,
             PhoneNumber = dto.PhoneNumber,
@@ -113,29 +114,27 @@ public class UsersController : ControllerBase
             CreatedDate = DateTime.UtcNow
         };
 
-        _context.Users.Add(user);
-        await _context.SaveChangesAsync();
+        var result = await _userManager.CreateAsync(user, dto.Password);
+        if (!result.Succeeded)
+        {
+            return BadRequest(new { error = "Failed to create user", errors = result.Errors.Select(e => e.Description) });
+        }
 
         // Assign roles if provided
         if (dto.RoleIds != null && dto.RoleIds.Any())
         {
-            // Validate all roles exist
-            var existingRoleIds = await _context.Roles.Where(r => dto.RoleIds.Contains(r.Id)).Select(r => r.Id).ToListAsync();
-            var invalidRoleIds = dto.RoleIds.Except(existingRoleIds).ToList();
-            if (invalidRoleIds.Any())
+            // Get role names from IDs
+            var roles = await _context.Roles.Where(r => dto.RoleIds.Contains(r.Id)).ToListAsync();
+            foreach (var role in roles)
             {
-                return BadRequest($"Invalid RoleIds: {string.Join(", ", invalidRoleIds)}");
+                await _userManager.AddToRoleAsync(user, role.Name!);
             }
 
-            foreach (var roleId in dto.RoleIds)
+            // Update UserRoles with AssignedDate
+            var userRoles = await _context.UserRoles.Where(ur => ur.UserId == user.Id).ToListAsync();
+            foreach (var userRole in userRoles)
             {
-                var userRole = new UserRole
-                {
-                    UserId = user.Id,
-                    RoleId = roleId,
-                    AssignedDate = DateTime.UtcNow
-                };
-                _context.UserRoles.Add(userRole);
+                userRole.AssignedDate = DateTime.UtcNow;
             }
             await _context.SaveChangesAsync();
         }
@@ -146,7 +145,7 @@ public class UsersController : ControllerBase
     [HttpPut("{id}")]
     public async Task<IActionResult> PutUser(int id, UpdateUserDto dto)
     {
-        var user = await _context.Users.FindAsync(id);
+        var user = await _userManager.FindByIdAsync(id.ToString());
         if (user == null)
         {
             return NotFound();
@@ -159,42 +158,44 @@ public class UsersController : ControllerBase
         user.IsActive = dto.IsActive;
         user.LastModifiedDate = DateTime.UtcNow;
 
+        var updateResult = await _userManager.UpdateAsync(user);
+        if (!updateResult.Succeeded)
+        {
+            return BadRequest(new { error = "Failed to update user", errors = updateResult.Errors.Select(e => e.Description) });
+        }
+
         if (!string.IsNullOrEmpty(dto.Password))
         {
-            // NOTE: This is a POC implementation. In production, use BCrypt, PBKDF2, or Argon2
-            user.PasswordHash = Convert.ToBase64String(
-                System.Text.Encoding.UTF8.GetBytes(dto.Password));
+            var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+            var passwordResult = await _userManager.ResetPasswordAsync(user, token, dto.Password);
+            if (!passwordResult.Succeeded)
+            {
+                return BadRequest(new { error = "Failed to update password", errors = passwordResult.Errors.Select(e => e.Description) });
+            }
         }
 
         // Update roles if provided
         if (dto.RoleIds != null)
         {
-            // Validate all roles exist
-            var existingRoleIds = await _context.Roles.Where(r => dto.RoleIds.Contains(r.Id)).Select(r => r.Id).ToListAsync();
-            var invalidRoleIds = dto.RoleIds.Except(existingRoleIds).ToList();
-            if (invalidRoleIds.Any())
-            {
-                return BadRequest($"Invalid RoleIds: {string.Join(", ", invalidRoleIds)}");
-            }
-
+            // Get role names from IDs
+            var roles = await _context.Roles.Where(r => dto.RoleIds.Contains(r.Id)).ToListAsync();
+            var roleNames = roles.Select(r => r.Name!).ToList();
+            
             // Remove existing roles
-            var existingRoles = await _context.UserRoles.Where(ur => ur.UserId == id).ToListAsync();
-            _context.UserRoles.RemoveRange(existingRoles);
-
+            var existingRoles = await _userManager.GetRolesAsync(user);
+            await _userManager.RemoveFromRolesAsync(user, existingRoles);
+            
             // Add new roles
-            foreach (var roleId in dto.RoleIds)
-            {
-                var userRole = new UserRole
-                {
-                    UserId = user.Id,
-                    RoleId = roleId,
-                    AssignedDate = DateTime.UtcNow
-                };
-                _context.UserRoles.Add(userRole);
-            }
-        }
+            await _userManager.AddToRolesAsync(user, roleNames);
 
-        await _context.SaveChangesAsync();
+            // Update UserRoles with AssignedDate
+            var userRoles = await _context.UserRoles.Where(ur => ur.UserId == id).ToListAsync();
+            foreach (var userRole in userRoles)
+            {
+                userRole.AssignedDate = DateTime.UtcNow;
+            }
+            await _context.SaveChangesAsync();
+        }
 
         return NoContent();
     }
@@ -202,14 +203,17 @@ public class UsersController : ControllerBase
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteUser(int id)
     {
-        var user = await _context.Users.FindAsync(id);
+        var user = await _userManager.FindByIdAsync(id.ToString());
         if (user == null)
         {
             return NotFound();
         }
 
-        _context.Users.Remove(user);
-        await _context.SaveChangesAsync();
+        var result = await _userManager.DeleteAsync(user);
+        if (!result.Succeeded)
+        {
+            return BadRequest(new { error = "Failed to delete user", errors = result.Errors.Select(e => e.Description) });
+        }
 
         return NoContent();
     }

@@ -1,10 +1,9 @@
+using Microsoft.AspNetCore.Identity;
+
 namespace AccountsPOC.Domain.Entities;
 
-public class UserRole
+public class UserRole : IdentityUserRole<int>
 {
-    public int Id { get; set; }
-    public int UserId { get; set; }
-    public int RoleId { get; set; }
     public DateTime AssignedDate { get; set; }
     
     // Navigation properties
