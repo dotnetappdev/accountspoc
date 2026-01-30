@@ -45,7 +45,17 @@ const SettingsScreen = () => {
     if (available) {
       const description = await getBiometricDescription();
       setBiometricType(description);
+    } else {
+      // If biometrics are no longer available, disable the setting
+      setBiometricEnabled(false);
     }
+  };
+
+  const getBiometricLabel = (): string => {
+    if (biometricType?.includes('Face')) return 'Face ID';
+    if (biometricType?.includes('Touch')) return 'Touch ID';
+    if (biometricType?.includes('Iris')) return 'Iris Recognition';
+    return 'Biometric Auth';
   };
 
   const checkNetworkStatus = async () => {
@@ -72,6 +82,7 @@ const SettingsScreen = () => {
       setApiUrl(settings.apiUrl || 'http://localhost:5001/api');
       setSyncEnabled(settings.syncEnabled === '1');
       setWifiOnlySync(settings.wifiOnlySync === '1');
+      // Biometric setting will be validated against availability in checkBiometricAvailability
       setBiometricEnabled(settings.biometricEnabled === '1');
       setLastSync(settings.lastSync || null);
     } catch (error) {
@@ -103,7 +114,14 @@ const SettingsScreen = () => {
       
       if (result.success) {
         setBiometricEnabled(true);
-        Alert.alert('Success', 'Biometric authentication enabled');
+        // Auto-save after successful enable
+        try {
+          db.runSync('INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)', ['biometricEnabled', '1']);
+          Alert.alert('Success', 'Biometric authentication enabled');
+        } catch (error) {
+          console.error('Error saving biometric setting:', error);
+          Alert.alert('Error', 'Biometric enabled but could not save setting');
+        }
       } else {
         Alert.alert('Authentication Failed', result.error || 'Could not authenticate');
       }
@@ -117,7 +135,15 @@ const SettingsScreen = () => {
           {
             text: 'Disable',
             style: 'destructive',
-            onPress: () => setBiometricEnabled(false),
+            onPress: () => {
+              setBiometricEnabled(false);
+              // Auto-save after disable
+              try {
+                db.runSync('INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)', ['biometricEnabled', '0']);
+              } catch (error) {
+                console.error('Error saving biometric setting:', error);
+              }
+            },
           },
         ]
       );
@@ -308,7 +334,7 @@ const SettingsScreen = () => {
           <>
             <View style={styles.switchContainer}>
               <View style={styles.switchLabelContainer}>
-                <Text style={styles.label}>Use {biometricType?.includes('Face') ? 'Face ID' : biometricType?.includes('Touch') ? 'Touch ID' : 'Biometric Auth'}</Text>
+                <Text style={styles.label}>Use {getBiometricLabel()}</Text>
                 <Text style={styles.helpText}>{biometricType}</Text>
               </View>
               <Switch value={biometricEnabled} onValueChange={handleBiometricToggle} />

@@ -16,7 +16,7 @@ export const isBiometricAvailable = async (): Promise<boolean> => {
 
 /**
  * Get the type of biometric authentication available
- * Returns: 'Face ID', 'Touch ID', 'Biometric', or null
+ * Returns: 'Face ID', 'Touch ID', 'Iris', 'Biometric', or null
  */
 export const getBiometricType = async (): Promise<string | null> => {
   try {
@@ -70,11 +70,11 @@ export const authenticateWithBiometrics = async (
         error: result.error || 'Authentication failed',
       };
     }
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Biometric authentication error:', error);
     return {
       success: false,
-      error: error.message || 'An error occurred during authentication',
+      error: error instanceof Error ? error.message : 'An error occurred during authentication',
     };
   }
 };
