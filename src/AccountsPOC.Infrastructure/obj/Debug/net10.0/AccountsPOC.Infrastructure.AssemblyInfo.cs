@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("AccountsPOC.Infrastructure")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+11d121a472a1c3a36ca1c871c61b9c1b6ab256e0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+1fc19c5d24df3e327c8364f660de101d29e55797")]
 [assembly: System.Reflection.AssemblyProductAttribute("AccountsPOC.Infrastructure")]
 [assembly: System.Reflection.AssemblyTitleAttribute("AccountsPOC.Infrastructure")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
