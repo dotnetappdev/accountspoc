@@ -512,3 +512,8 @@ D:/code/accountspoc/src/AccountsPOC.WebAPI/obj/Debug/net10.0/ref/AccountsPOC.Web
 /home/runner/work/accountspoc/accountspoc/src/AccountsPOC.WebAPI/bin/Debug/net10.0/bin/Debug/net10.0/bin/Debug/net10.0/bin/Debug/net10.0/AccountsPOC.WebAPI.staticwebassets.endpoints.json
 /home/runner/work/accountspoc/accountspoc/src/AccountsPOC.WebAPI/bin/Debug/net10.0/bin/Debug/net10.0/bin/Debug/net10.0/bin/Debug/net10.0/appsettings.Development.json
 /home/runner/work/accountspoc/accountspoc/src/AccountsPOC.WebAPI/bin/Debug/net10.0/bin/Debug/net10.0/bin/Debug/net10.0/bin/Debug/net10.0/appsettings.json
+/home/runner/work/accountspoc/accountspoc/src/AccountsPOC.WebAPI/bin/Debug/net10.0/bin/Debug/net10.0/bin/Debug/net10.0/bin/Debug/net10.0/bin/Debug/net10.0/AccountsPOC.WebAPI.deps.json
+/home/runner/work/accountspoc/accountspoc/src/AccountsPOC.WebAPI/bin/Debug/net10.0/bin/Debug/net10.0/bin/Debug/net10.0/bin/Debug/net10.0/bin/Debug/net10.0/AccountsPOC.WebAPI.runtimeconfig.json
+/home/runner/work/accountspoc/accountspoc/src/AccountsPOC.WebAPI/bin/Debug/net10.0/bin/Debug/net10.0/bin/Debug/net10.0/bin/Debug/net10.0/bin/Debug/net10.0/AccountsPOC.WebAPI.staticwebassets.endpoints.json
+/home/runner/work/accountspoc/accountspoc/src/AccountsPOC.WebAPI/bin/Debug/net10.0/bin/Debug/net10.0/bin/Debug/net10.0/bin/Debug/net10.0/bin/Debug/net10.0/appsettings.Development.json
+/home/runner/work/accountspoc/accountspoc/src/AccountsPOC.WebAPI/bin/Debug/net10.0/bin/Debug/net10.0/bin/Debug/net10.0/bin/Debug/net10.0/bin/Debug/net10.0/appsettings.json
