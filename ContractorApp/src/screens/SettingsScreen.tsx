@@ -14,11 +14,19 @@ import db, { seedTestData } from '../database/database';
 import apiService from '../services/apiService';
 import { ThemeContext } from '../contexts/ThemeContext';
 import { isWiFiConnected, isCellularConnected } from '../utils/networkUtils';
+import { 
+  isBiometricAvailable, 
+  getBiometricDescription, 
+  authenticateWithBiometrics 
+} from '../utils/biometricUtils';
 
 const SettingsScreen = () => {
   const [apiUrl, setApiUrl] = useState('http://localhost:5001/api');
   const [syncEnabled, setSyncEnabled] = useState(true);
   const [wifiOnlySync, setWifiOnlySync] = useState(true);
+  const [biometricEnabled, setBiometricEnabled] = useState(false);
+  const [biometricAvailable, setBiometricAvailable] = useState(false);
+  const [biometricType, setBiometricType] = useState<string>('');
   const [lastSync, setLastSync] = useState<string | null>(null);
   const [syncing, setSyncing] = useState(false);
   const [networkStatus, setNetworkStatus] = useState<string>('Checking...');
@@ -27,7 +35,18 @@ const SettingsScreen = () => {
   useEffect(() => {
     loadSettings();
     checkNetworkStatus();
+    checkBiometricAvailability();
   }, []);
+
+  const checkBiometricAvailability = async () => {
+    const available = await isBiometricAvailable();
+    setBiometricAvailable(available);
+    
+    if (available) {
+      const description = await getBiometricDescription();
+      setBiometricType(description);
+    }
+  };
 
   const checkNetworkStatus = async () => {
     const wifi = await isWiFiConnected();
@@ -53,6 +72,7 @@ const SettingsScreen = () => {
       setApiUrl(settings.apiUrl || 'http://localhost:5001/api');
       setSyncEnabled(settings.syncEnabled === '1');
       setWifiOnlySync(settings.wifiOnlySync === '1');
+      setBiometricEnabled(settings.biometricEnabled === '1');
       setLastSync(settings.lastSync || null);
     } catch (error) {
       console.error('Error loading settings:', error);
@@ -65,6 +85,7 @@ const SettingsScreen = () => {
       db.runSync('INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)', ['apiUrl', apiUrl]);
       db.runSync('INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)', ['syncEnabled', syncEnabled ? '1' : '0']);
       db.runSync('INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)', ['wifiOnlySync', wifiOnlySync ? '1' : '0']);
+      db.runSync('INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)', ['biometricEnabled', biometricEnabled ? '1' : '0']);
       
       apiService.updateBaseURL(apiUrl);
       
@@ -72,6 +93,44 @@ const SettingsScreen = () => {
     } catch (error) {
       console.error('Error saving settings:', error);
       Alert.alert('Error', 'Failed to save settings');
+    }
+  };
+
+  const handleBiometricToggle = async (value: boolean) => {
+    if (value) {
+      // When enabling, test biometric authentication
+      const result = await authenticateWithBiometrics('Authenticate to enable biometric security');
+      
+      if (result.success) {
+        setBiometricEnabled(true);
+        Alert.alert('Success', 'Biometric authentication enabled');
+      } else {
+        Alert.alert('Authentication Failed', result.error || 'Could not authenticate');
+      }
+    } else {
+      // When disabling, require confirmation
+      Alert.alert(
+        'Disable Biometric Auth',
+        'Are you sure you want to disable biometric authentication?',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          {
+            text: 'Disable',
+            style: 'destructive',
+            onPress: () => setBiometricEnabled(false),
+          },
+        ]
+      );
+    }
+  };
+
+  const testBiometricAuth = async () => {
+    const result = await authenticateWithBiometrics('Test biometric authentication');
+    
+    if (result.success) {
+      Alert.alert('Success', 'Biometric authentication successful!');
+    } else {
+      Alert.alert('Failed', result.error || 'Authentication failed');
     }
   };
 
@@ -240,6 +299,36 @@ const SettingsScreen = () => {
             <Text style={[styles.themeButtonText, theme === 'auto' && styles.themeButtonTextActive]}>Auto</Text>
           </TouchableOpacity>
         </View>
+      </View>
+
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Security</Text>
+        
+        {biometricAvailable ? (
+          <>
+            <View style={styles.switchContainer}>
+              <View style={styles.switchLabelContainer}>
+                <Text style={styles.label}>Use {biometricType?.includes('Face') ? 'Face ID' : biometricType?.includes('Touch') ? 'Touch ID' : 'Biometric Auth'}</Text>
+                <Text style={styles.helpText}>{biometricType}</Text>
+              </View>
+              <Switch value={biometricEnabled} onValueChange={handleBiometricToggle} />
+            </View>
+            
+            {biometricEnabled && (
+              <TouchableOpacity style={styles.buttonSecondary} onPress={testBiometricAuth}>
+                <Ionicons name="finger-print" size={20} color="#007AFF" />
+                <Text style={styles.buttonTextSecondary}>Test Authentication</Text>
+              </TouchableOpacity>
+            )}
+          </>
+        ) : (
+          <View style={styles.infoBox}>
+            <Ionicons name="information-circle" size={20} color="#8E8E93" />
+            <Text style={styles.infoText}>
+              Biometric authentication not available on this device
+            </Text>
+          </View>
+        )}
       </View>
 
       <View style={styles.section}>
