@@ -152,12 +152,41 @@ public class SetupController : ControllerBase
                 ConnectionString = connectionString
             };
 
-            // Seed data if requested
-            if (request.SeedUserData)
+            // Save configuration to file for runtime use
+            var configFilePath = _configuration["DatabaseSetup:ConfigFilePath"] ?? "database-config.json";
+            var fullConfigPath = Path.Combine(Directory.GetCurrentDirectory(), configFilePath);
+            
+            var dbConfig = new DatabaseConfiguration
+            {
+                ConnectionString = connectionString,
+                DatabaseProvider = request.DatabaseProvider,
+                ConfiguredDate = DateTime.UtcNow,
+                ConfiguredBy = "Setup"
+            };
+            
+            var configJson = System.Text.Json.JsonSerializer.Serialize(dbConfig, new System.Text.Json.JsonSerializerOptions
+            {
+                WriteIndented = true
+            });
+            await System.IO.File.WriteAllTextAsync(fullConfigPath, configJson);
+
+            // Seed basic data if requested
+            if (request.SeedBasicData || request.SeedUserData)
             {
                 using var scope = _serviceProvider.CreateScope();
                 var seeder = scope.ServiceProvider.GetRequiredService<DataSeeder>();
-                await seeder.SeedAsync();
+                
+                // Seed basic setup (tenants, warehouses, etc.) if requested
+                if (request.SeedBasicData)
+                {
+                    await seeder.SeedBasicDataAsync();
+                }
+                
+                // Seed full user data if requested
+                if (request.SeedUserData)
+                {
+                    await seeder.SeedAsync();
+                }
 
                 // Count seeded data
                 var userCount = await context.Users.CountAsync();
@@ -165,7 +194,19 @@ public class SetupController : ControllerBase
 
                 response.UsersSeeded = userCount;
                 response.RolesSeeded = roleCount;
-                response.Message += $" | Seeded {userCount} users and {roleCount} roles";
+                
+                if (request.SeedBasicData && request.SeedUserData)
+                {
+                    response.Message += $" | Seeded {userCount} users, {roleCount} roles and basic data";
+                }
+                else if (request.SeedUserData)
+                {
+                    response.Message += $" | Seeded {userCount} users and {roleCount} roles";
+                }
+                else if (request.SeedBasicData)
+                {
+                    response.Message += " | Seeded basic data (tenants, warehouses, etc.)";
+                }
             }
 
             return Ok(response);

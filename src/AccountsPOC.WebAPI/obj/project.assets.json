@@ -957,6 +957,37 @@
           }
         }
       },
+      "Npgsql/10.0.0": {
+        "type": "package",
+        "compile": {
+          "lib/net10.0/Npgsql.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net10.0/Npgsql.dll": {
+            "related": ".xml"
+          }
+        }
+      },
+      "Npgsql.EntityFrameworkCore.PostgreSQL/10.0.0": {
+        "type": "package",
+        "dependencies": {
+          "Microsoft.EntityFrameworkCore": "[10.0.0, 11.0.0)",
+          "Microsoft.EntityFrameworkCore.Relational": "[10.0.0, 11.0.0)",
+          "Npgsql": "10.0.0"
+        },
+        "compile": {
+          "lib/net10.0/Npgsql.EntityFrameworkCore.PostgreSQL.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net10.0/Npgsql.EntityFrameworkCore.PostgreSQL.dll": {
+            "related": ".xml"
+          }
+        }
+      },
       "QuestPDF/2025.12.3": {
         "type": "package",
         "compile": {
@@ -1060,6 +1091,58 @@
           "runtimes/win-x86/native/zlib1.dll": {
             "assetType": "native",
             "rid": "win-x86"
+          }
+        }
+      },
+      "Sentry/6.0.0": {
+        "type": "package",
+        "compile": {
+          "lib/net10.0/Sentry.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net10.0/Sentry.dll": {
+            "related": ".xml"
+          }
+        },
+        "build": {
+          "buildTransitive/Sentry.props": {},
+          "buildTransitive/Sentry.targets": {}
+        }
+      },
+      "Sentry.AspNetCore/6.0.0": {
+        "type": "package",
+        "dependencies": {
+          "Sentry.Extensions.Logging": "6.0.0"
+        },
+        "compile": {
+          "lib/net10.0/Sentry.AspNetCore.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net10.0/Sentry.AspNetCore.dll": {
+            "related": ".xml"
+          }
+        },
+        "frameworkReferences": [
+          "Microsoft.AspNetCore.App"
+        ]
+      },
+      "Sentry.Extensions.Logging/6.0.0": {
+        "type": "package",
+        "dependencies": {
+          "Sentry": "6.0.0"
+        },
+        "compile": {
+          "lib/net10.0/Sentry.Extensions.Logging.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net10.0/Sentry.Extensions.Logging.dll": {
+            "related": ".xml"
           }
         }
       },
@@ -1483,7 +1566,8 @@
           "AccountsPOC.Domain": "1.0.0",
           "Microsoft.AspNetCore.Identity.EntityFrameworkCore": "10.0.2",
           "Microsoft.EntityFrameworkCore.SqlServer": "10.0.2",
-          "Microsoft.EntityFrameworkCore.Sqlite": "10.0.2"
+          "Microsoft.EntityFrameworkCore.Sqlite": "10.0.2",
+          "Npgsql.EntityFrameworkCore.PostgreSQL": "10.0.0"
         },
         "compile": {
           "bin/placeholder/AccountsPOC.Infrastructure.dll": {}
@@ -3380,6 +3464,40 @@
         "packageIcon.png"
       ]
     },
+    "Npgsql/10.0.0": {
+      "sha512": "xZAYhPOU2rUIFpV48xsqhCx9vXs6Y+0jX2LCoSEfDFYMw9jtAOUk3iQsCnDLrFIv9NT3JGMihn7nnuZsPKqJmA==",
+      "type": "package",
+      "path": "npgsql/10.0.0",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "README.md",
+        "lib/net10.0/Npgsql.dll",
+        "lib/net10.0/Npgsql.xml",
+        "lib/net8.0/Npgsql.dll",
+        "lib/net8.0/Npgsql.xml",
+        "lib/net9.0/Npgsql.dll",
+        "lib/net9.0/Npgsql.xml",
+        "npgsql.10.0.0.nupkg.sha512",
+        "npgsql.nuspec",
+        "postgresql.png"
+      ]
+    },
+    "Npgsql.EntityFrameworkCore.PostgreSQL/10.0.0": {
+      "sha512": "E2+uSWxSB8LdsUVwPaqRWOcGOP92biry2JEwc0KJMdLJF+aZdczeIdEXVwEyv4nSVMQJH0o8tLhyAMiR6VF0lw==",
+      "type": "package",
+      "path": "npgsql.entityframeworkcore.postgresql/10.0.0",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "README.md",
+        "lib/net10.0/Npgsql.EntityFrameworkCore.PostgreSQL.dll",
+        "lib/net10.0/Npgsql.EntityFrameworkCore.PostgreSQL.xml",
+        "npgsql.entityframeworkcore.postgresql.10.0.0.nupkg.sha512",
+        "npgsql.entityframeworkcore.postgresql.nuspec",
+        "postgresql.png"
+      ]
+    },
     "QuestPDF/2025.12.3": {
       "sha512": "cJ1Kvm3wFjs8uLOMze0wjOCAkicraLmUhhHYF2v33S2c7syA5RL+Mp5ty0HnsvFwqF8FaDmn2elndklms4SnwA==",
       "type": "package",
@@ -3464,6 +3582,105 @@
         "runtimes/win-x86/native/libwinpthread-1.dll",
         "runtimes/win-x86/native/qpdf.dll",
         "runtimes/win-x86/native/zlib1.dll"
+      ]
+    },
+    "Sentry/6.0.0": {
+      "sha512": "KomDnmKInN30NIaf52UsRYCK/QS8cBe1jV+JslxBzys30wPH0Wv0U20YQ2oJ65P0+XLv0JqNHmgAjN1zDy/fzQ==",
+      "type": "package",
+      "path": "sentry/6.0.0",
+      "hasTools": true,
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "README.md",
+        "analyzers/dotnet/roslyn4.3/cs/Sentry.Compiler.Extensions.dll",
+        "build/Sentry.Native.targets",
+        "build/Sentry.props",
+        "build/Sentry.targets",
+        "buildTransitive/Sentry.Native.targets",
+        "buildTransitive/Sentry.props",
+        "buildTransitive/Sentry.targets",
+        "lib/net10.0-android36.0/Sentry.dll",
+        "lib/net10.0-android36.0/Sentry.xml",
+        "lib/net10.0-ios26.0/Sentry.dll",
+        "lib/net10.0-ios26.0/Sentry.xml",
+        "lib/net10.0-maccatalyst26.0/Sentry.dll",
+        "lib/net10.0-maccatalyst26.0/Sentry.xml",
+        "lib/net10.0/Sentry.dll",
+        "lib/net10.0/Sentry.xml",
+        "lib/net462/Sentry.dll",
+        "lib/net462/Sentry.xml",
+        "lib/net8.0/Sentry.dll",
+        "lib/net8.0/Sentry.xml",
+        "lib/net9.0-android35.0/Sentry.dll",
+        "lib/net9.0-android35.0/Sentry.xml",
+        "lib/net9.0-ios18.0/Sentry.dll",
+        "lib/net9.0-ios18.0/Sentry.xml",
+        "lib/net9.0-maccatalyst18.0/Sentry.dll",
+        "lib/net9.0-maccatalyst18.0/Sentry.xml",
+        "lib/net9.0/Sentry.dll",
+        "lib/net9.0/Sentry.xml",
+        "lib/netstandard2.0/Sentry.dll",
+        "lib/netstandard2.0/Sentry.xml",
+        "lib/netstandard2.1/Sentry.dll",
+        "lib/netstandard2.1/Sentry.xml",
+        "sentry-native/linux-arm64/libsentry-native.a",
+        "sentry-native/linux-musl-arm64/libsentry-native.a",
+        "sentry-native/linux-musl-x64/libsentry-native.a",
+        "sentry-native/linux-x64/libsentry-native.a",
+        "sentry-native/osx/libsentry-native.a",
+        "sentry-native/win-arm64/sentry-native.lib",
+        "sentry-native/win-x64/sentry-native.lib",
+        "sentry-nuget.png",
+        "sentry.6.0.0.nupkg.sha512",
+        "sentry.nuspec",
+        "tools/sentry-cli-Darwin-arm64",
+        "tools/sentry-cli-Darwin-x86_64",
+        "tools/sentry-cli-Linux-aarch64",
+        "tools/sentry-cli-Linux-i686",
+        "tools/sentry-cli-Linux-x86_64",
+        "tools/sentry-cli-Windows-i686.exe",
+        "tools/sentry-cli-Windows-x86_64.exe"
+      ]
+    },
+    "Sentry.AspNetCore/6.0.0": {
+      "sha512": "PI8Zx2IHI8r88rBn73B/5IXGIAG4LHXECjWhk58IXI/b2iHuBlbJKtv6onzfySOs3TFPhmfRtYkVI5nAYWALVQ==",
+      "type": "package",
+      "path": "sentry.aspnetcore/6.0.0",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "README.md",
+        "lib/net10.0/Sentry.AspNetCore.dll",
+        "lib/net10.0/Sentry.AspNetCore.xml",
+        "lib/net8.0/Sentry.AspNetCore.dll",
+        "lib/net8.0/Sentry.AspNetCore.xml",
+        "lib/net9.0/Sentry.AspNetCore.dll",
+        "lib/net9.0/Sentry.AspNetCore.xml",
+        "sentry-nuget.png",
+        "sentry.aspnetcore.6.0.0.nupkg.sha512",
+        "sentry.aspnetcore.nuspec"
+      ]
+    },
+    "Sentry.Extensions.Logging/6.0.0": {
+      "sha512": "c9jXcKZPq6qTWsg7y8MWgOXuuUxxSR/56xKA/GLNEuqxOUTeJ/pWxR4tgrhQ4oTyZwdTEoNyiZpa3Go9ij7Gaw==",
+      "type": "package",
+      "path": "sentry.extensions.logging/6.0.0",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "README.md",
+        "lib/net10.0/Sentry.Extensions.Logging.dll",
+        "lib/net10.0/Sentry.Extensions.Logging.xml",
+        "lib/net8.0/Sentry.Extensions.Logging.dll",
+        "lib/net8.0/Sentry.Extensions.Logging.xml",
+        "lib/net9.0/Sentry.Extensions.Logging.dll",
+        "lib/net9.0/Sentry.Extensions.Logging.xml",
+        "lib/netstandard2.0/Sentry.Extensions.Logging.dll",
+        "lib/netstandard2.0/Sentry.Extensions.Logging.xml",
+        "sentry-nuget.png",
+        "sentry.extensions.logging.6.0.0.nupkg.sha512",
+        "sentry.extensions.logging.nuspec"
       ]
     },
     "SQLitePCLRaw.bundle_e_sqlite3/2.1.11": {
@@ -3972,6 +4189,7 @@
       "Microsoft.AspNetCore.OpenApi >= 10.0.1",
       "Microsoft.EntityFrameworkCore.Design >= 10.0.2",
       "QuestPDF >= 2025.12.3",
+      "Sentry.AspNetCore >= 6.0.0",
       "Stripe.net >= 50.2.0"
     ]
   },
@@ -4049,6 +4267,10 @@
           "QuestPDF": {
             "target": "Package",
             "version": "[2025.12.3, )"
+          },
+          "Sentry.AspNetCore": {
+            "target": "Package",
+            "version": "[6.0.0, )"
           },
           "Stripe.net": {
             "target": "Package",

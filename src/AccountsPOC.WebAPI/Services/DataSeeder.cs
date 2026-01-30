@@ -18,7 +18,10 @@ public class DataSeeder
         _roleManager = roleManager;
     }
 
-    public async Task SeedAsync()
+    /// <summary>
+    /// Seeds only basic data (tenants, warehouses, drivers, etc.) without users
+    /// </summary>
+    public async Task SeedBasicDataAsync()
     {
         // Ensure database is created
         await _context.Database.EnsureCreatedAsync();
@@ -26,9 +29,17 @@ public class DataSeeder
         // Check if data already exists
         if (await _context.Warehouses.AnyAsync())
         {
-            return; // Database already seeded
+            return; // Database already seeded with basic data
         }
 
+        await SeedTenantAndWarehousesAsync();
+    }
+
+    /// <summary>
+    /// Seeds the tenant and warehouses
+    /// </summary>
+    private async Task<(Tenant tenant, Warehouse warehouse, List<Driver> drivers)> SeedTenantAndWarehousesAsync()
+    {
         // Seed Tenant
         var tenant = new Tenant
         {
@@ -42,10 +53,18 @@ public class DataSeeder
         _context.Tenants.Add(tenant);
         await _context.SaveChangesAsync();
 
+        // Seed Warehouses and related data
+        var (warehouse, drivers) = await SeedWarehousesAndDriversAsync(tenant.Id);
+        
+        return (tenant, warehouse, drivers);
+    }
+
+    private async Task<(Warehouse warehouse, List<Driver> drivers)> SeedWarehousesAndDriversAsync(int tenantId)
+    {
         // Seed Warehouses
         var warehouse = new Warehouse
         {
-            TenantId = tenant.Id,
+            TenantId = tenantId,
             WarehouseCode = "WH-01",
             WarehouseName = "Main Distribution Center",
             Address = "123 Warehouse Lane",
@@ -65,7 +84,7 @@ public class DataSeeder
         {
             new Driver
             {
-                TenantId = tenant.Id,
+                TenantId = tenantId,
                 DriverCode = "DRV-001",
                 FirstName = "John",
                 LastName = "Driver",
@@ -82,50 +101,27 @@ public class DataSeeder
                 IsActive = true,
                 EmploymentStartDate = DateTime.UtcNow.AddYears(-1),
                 CreatedDate = DateTime.UtcNow
-            },
-            new Driver
-            {
-                TenantId = tenant.Id,
-                DriverCode = "DRV-002",
-                FirstName = "Jane",
-                LastName = "Transport",
-                Email = "jane.transport@fulfillment.com",
-                Phone = "+1234567893",
-                MobilePhone = "+1987654322",
-                LicenseNumber = "DL789012",
-                LicenseExpiryDate = DateTime.UtcNow.AddYears(3),
-                EmergencyContactName = "Robert Transport",
-                EmergencyContactPhone = "+1234567898",
-                VehicleRegistration = "VAN-002",
-                VehicleType = "Box Truck",
-                VehicleCapacity = "1000kg / 200 parcels",
-                IsActive = true,
-                EmploymentStartDate = DateTime.UtcNow.AddMonths(-6),
-                CreatedDate = DateTime.UtcNow
-            },
-            new Driver
-            {
-                TenantId = tenant.Id,
-                DriverCode = "DRV-003",
-                FirstName = "Mike",
-                LastName = "Courier",
-                Email = "mike.courier@fulfillment.com",
-                Phone = "+1234567896",
-                MobilePhone = "+1987654324",
-                LicenseNumber = "DL345678",
-                LicenseExpiryDate = DateTime.UtcNow.AddYears(1).AddMonths(6),
-                EmergencyContactName = "Lisa Courier",
-                EmergencyContactPhone = "+1234567897",
-                VehicleRegistration = "VAN-003",
-                VehicleType = "Cargo Van",
-                VehicleCapacity = "750kg / 150 parcels",
-                IsActive = true,
-                EmploymentStartDate = DateTime.UtcNow.AddMonths(-3),
-                CreatedDate = DateTime.UtcNow
             }
         };
         _context.Drivers.AddRange(drivers);
         await _context.SaveChangesAsync();
+        
+        return (warehouse, drivers);
+    }
+
+    public async Task SeedAsync()
+    {
+        // Ensure database is created
+        await _context.Database.EnsureCreatedAsync();
+
+        // Check if data already exists
+        if (await _context.Warehouses.AnyAsync())
+        {
+            return; // Database already seeded
+        }
+
+        // Seed basic data first
+        var (tenant, warehouse, drivers) = await SeedTenantAndWarehousesAsync();
 
         // Seed Customers
         var customers = new List<Customer>

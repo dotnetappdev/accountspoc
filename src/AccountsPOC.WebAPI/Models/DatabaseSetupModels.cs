@@ -12,7 +12,8 @@ public class DatabaseSetupRequest
     public bool Encrypt { get; set; } = false;
     public bool IntegratedSecurity { get; set; } = true;
     public string DatabaseProvider { get; set; } = "SqlServer"; // SqlServer, SQLite, PostgreSQL
-    public bool SeedUserData { get; set; } = false;
+    public bool SeedBasicData { get; set; } = false; // Seed tenants, warehouses, basic setup
+    public bool SeedUserData { get; set; } = false; // Seed 30 sample users with roles
 }
 
 public class DatabaseSetupResponse

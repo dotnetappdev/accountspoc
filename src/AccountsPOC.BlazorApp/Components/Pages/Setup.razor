@@ -133,15 +133,25 @@
                                Disabled="@(setupRequest.DatabaseProvider == "SQLite")" />
                 </MudItem>
 
-                <!-- Seed Data Toggle -->
+                <!-- Seed Data Toggles -->
                 <MudItem xs="12">
                     <MudDivider Class="my-2" />
-                    <MudText Typo="Typo.subtitle2" Class="mb-2">Data Options</MudText>
+                    <MudText Typo="Typo.subtitle2" Class="mb-2">Data Seeding Options</MudText>
                 </MudItem>
 
-                <MudItem xs="12">
+                <MudItem xs="12" md="6">
+                    <MudSwitch @bind-Value="setupRequest.SeedBasicData" 
+                               Label="Seed Basic Setup Data"
+                               Color="Color.Info">
+                        <MudText Typo="Typo.body2" Class="ml-2">
+                            Include tenants, warehouses, drivers, customers, and basic configuration
+                        </MudText>
+                    </MudSwitch>
+                </MudItem>
+
+                <MudItem xs="12" md="6">
                     <MudSwitch @bind-Value="setupRequest.SeedUserData" 
-                               Label="Seed Sample User Data"
+                               Label="Seed Sample Users"
                                Color="Color.Success">
                         <MudText Typo="Typo.body2" Class="ml-2">
                             Include 30 pre-configured users with roles and permissions for testing
@@ -259,6 +269,7 @@
         setupRequest.Database = "AccountsPOCDb";
         setupRequest.TrustedConnection = true;
         setupRequest.TrustServerCertificate = true;
+        setupRequest.SeedBasicData = true;
         setupRequest.SeedUserData = true;
     }
 
@@ -386,6 +397,7 @@
         public bool Encrypt { get; set; } = false;
         public bool IntegratedSecurity { get; set; } = true;
         public string DatabaseProvider { get; set; } = "SqlServer";
+        public bool SeedBasicData { get; set; } = false;
         public bool SeedUserData { get; set; } = false;
     }
 
