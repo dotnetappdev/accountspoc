@@ -3,8 +3,9 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
+import { useTheme } from '../contexts/ThemeContext';
 
-// Import screens (we'll create these next)
+// Import screens
 import HomeScreen from '../screens/HomeScreen';
 import SalesOrdersListScreen from '../screens/SalesOrdersListScreen';
 import SalesOrderFormScreen from '../screens/SalesOrderFormScreen';
@@ -12,6 +13,7 @@ import QuotesListScreen from '../screens/QuotesListScreen';
 import QuoteFormScreen from '../screens/QuoteFormScreen';
 import WorkOrdersListScreen from '../screens/WorkOrdersListScreen';
 import WorkOrderFormScreen from '../screens/WorkOrderFormScreen';
+import WorkOrderDetailScreen from '../screens/WorkOrderDetailScreen';
 import SettingsScreen from '../screens/SettingsScreen';
 
 export type RootStackParamList = {
@@ -19,6 +21,7 @@ export type RootStackParamList = {
   SalesOrderForm: { id?: number };
   QuoteForm: { id?: number };
   WorkOrderForm: { id?: number };
+  WorkOrderDetail: { id: number };
 };
 
 export type TabParamList = {
@@ -33,6 +36,8 @@ const Tab = createBottomTabNavigator<TabParamList>();
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 const TabNavigator = () => {
+  const { colors } = useTheme();
+
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
@@ -53,10 +58,14 @@ const TabNavigator = () => {
 
           return <Ionicons name={iconName} size={size} color={color} />;
         },
-        tabBarActiveTintColor: '#007AFF',
-        tabBarInactiveTintColor: 'gray',
+        tabBarActiveTintColor: colors.primary,
+        tabBarInactiveTintColor: colors.textSecondary,
+        tabBarStyle: {
+          backgroundColor: colors.card,
+          borderTopColor: colors.border,
+        },
         headerStyle: {
-          backgroundColor: '#007AFF',
+          backgroundColor: colors.primary,
         },
         headerTintColor: '#fff',
         headerTitleStyle: {
@@ -94,9 +103,21 @@ const TabNavigator = () => {
 };
 
 const Navigation = () => {
+  const { colors } = useTheme();
+
   return (
     <NavigationContainer>
-      <Stack.Navigator>
+      <Stack.Navigator
+        screenOptions={{
+          headerStyle: {
+            backgroundColor: colors.primary,
+          },
+          headerTintColor: '#fff',
+          contentStyle: {
+            backgroundColor: colors.background,
+          },
+        }}
+      >
         <Stack.Screen 
           name="MainTabs" 
           component={TabNavigator}
@@ -116,6 +137,11 @@ const Navigation = () => {
           name="WorkOrderForm" 
           component={WorkOrderFormScreen}
           options={{ title: 'Work Order' }}
+        />
+        <Stack.Screen 
+          name="WorkOrderDetail" 
+          component={WorkOrderDetailScreen}
+          options={{ title: 'Work Order Details' }}
         />
       </Stack.Navigator>
     </NavigationContainer>
