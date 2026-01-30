@@ -52,14 +52,27 @@ public class SalesOrdersController : ControllerBase
     [HttpPost]
     public async Task<ActionResult<SalesOrder>> PostSalesOrder(SalesOrder salesOrder)
     {
-        salesOrder.CreatedDate = DateTime.UtcNow;
-        salesOrder.OrderDate = DateTime.UtcNow;
-        
+        // Validate items
         foreach (var item in salesOrder.SalesOrderItems)
         {
+            if (item.Quantity <= 0)
+            {
+                return BadRequest("Quantity must be greater than zero.");
+            }
+            if (item.UnitPrice < 0)
+            {
+                return BadRequest("Unit price cannot be negative.");
+            }
+            if (!await _context.Products.AnyAsync(p => p.Id == item.ProductId))
+            {
+                return BadRequest($"Product with ID {item.ProductId} does not exist.");
+            }
+            
             item.TotalPrice = item.Quantity * item.UnitPrice;
         }
         
+        salesOrder.CreatedDate = DateTime.UtcNow;
+        salesOrder.OrderDate = DateTime.UtcNow;
         salesOrder.TotalAmount = salesOrder.SalesOrderItems.Sum(i => i.TotalPrice);
         
         _context.SalesOrders.Add(salesOrder);
@@ -76,16 +89,7 @@ public class SalesOrdersController : ControllerBase
             return BadRequest();
         }
 
-        salesOrder.LastModifiedDate = DateTime.UtcNow;
-        
-        foreach (var item in salesOrder.SalesOrderItems)
-        {
-            item.TotalPrice = item.Quantity * item.UnitPrice;
-        }
-        
-        salesOrder.TotalAmount = salesOrder.SalesOrderItems.Sum(i => i.TotalPrice);
-        
-        // Get existing order with items
+        // Get existing order with items first
         var existingOrder = await _context.SalesOrders
             .Include(o => o.SalesOrderItems)
             .FirstOrDefaultAsync(o => o.Id == id);
@@ -94,6 +98,28 @@ public class SalesOrdersController : ControllerBase
         {
             return NotFound();
         }
+
+        // Validate items
+        foreach (var item in salesOrder.SalesOrderItems)
+        {
+            if (item.Quantity <= 0)
+            {
+                return BadRequest("Quantity must be greater than zero.");
+            }
+            if (item.UnitPrice < 0)
+            {
+                return BadRequest("Unit price cannot be negative.");
+            }
+            if (!await _context.Products.AnyAsync(p => p.Id == item.ProductId))
+            {
+                return BadRequest($"Product with ID {item.ProductId} does not exist.");
+            }
+            
+            item.TotalPrice = item.Quantity * item.UnitPrice;
+        }
+        
+        salesOrder.LastModifiedDate = DateTime.UtcNow;
+        salesOrder.TotalAmount = salesOrder.SalesOrderItems.Sum(i => i.TotalPrice);
         
         // Update order properties
         existingOrder.OrderNumber = salesOrder.OrderNumber;

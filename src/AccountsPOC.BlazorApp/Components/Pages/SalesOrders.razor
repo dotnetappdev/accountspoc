@@ -99,8 +99,16 @@
                                                  Striped="true"
                                                  Bordered="true">
                                         <Columns>
-                                            <PropertyColumn Property="x => x.Product!.ProductName" Title="Product" />
-                                            <PropertyColumn Property="x => x.Product!.ProductCode" Title="Code" />
+                                            <TemplateColumn Title="Product">
+                                                <CellTemplate Context="itemContext">
+                                                    @(itemContext.Item.Product?.ProductName ?? "Unknown")
+                                                </CellTemplate>
+                                            </TemplateColumn>
+                                            <TemplateColumn Title="Code">
+                                                <CellTemplate Context="itemContext">
+                                                    @(itemContext.Item.Product?.ProductCode ?? "N/A")
+                                                </CellTemplate>
+                                            </TemplateColumn>
                                             <PropertyColumn Property="x => x.Quantity" Title="Quantity" />
                                             <PropertyColumn Property="x => x.UnitPrice" Title="Unit Price" Format="C" />
                                             <PropertyColumn Property="x => x.TotalPrice" Title="Total" Format="C" />
@@ -234,7 +242,13 @@
 @code {
     private List<SalesOrder>? salesOrders;
     private List<Product>? products;
-    private SalesOrder currentOrder = new() { OrderNumber = "", CustomerName = "", Status = "Pending" };
+    private SalesOrder currentOrder = new() 
+    { 
+        OrderNumber = "", 
+        CustomerName = "", 
+        Status = "Pending",
+        SalesOrderItems = new List<SalesOrderItem>()
+    };
     private SalesOrder? editingOrder;
     private bool showForm = false;
     private bool loading = true;
@@ -331,33 +345,41 @@
         ResetLineItemFields();
     }
 
-    private async void EditSalesOrder(SalesOrder order)
+    private async Task EditSalesOrder(SalesOrder order)
     {
         editingOrder = order;
         
-        // Fetch the full order with items
-        var fullOrder = await Http.GetFromJsonAsync<SalesOrder>($"api/SalesOrders/{order.Id}");
-        
-        if (fullOrder != null)
+        try
         {
-            currentOrder = new SalesOrder
+            // Fetch the full order with items
+            var fullOrder = await Http.GetFromJsonAsync<SalesOrder>($"api/SalesOrders/{order.Id}");
+            
+            if (fullOrder != null)
             {
-                Id = fullOrder.Id,
-                OrderNumber = fullOrder.OrderNumber,
-                OrderDate = fullOrder.OrderDate,
-                CustomerName = fullOrder.CustomerName,
-                CustomerEmail = fullOrder.CustomerEmail,
-                CustomerPhone = fullOrder.CustomerPhone,
-                TotalAmount = fullOrder.TotalAmount,
-                Status = fullOrder.Status,
-                CreatedDate = fullOrder.CreatedDate,
-                LastModifiedDate = fullOrder.LastModifiedDate,
-                SalesOrderItems = fullOrder.SalesOrderItems.ToList()
-            };
+                currentOrder = new SalesOrder
+                {
+                    Id = fullOrder.Id,
+                    OrderNumber = fullOrder.OrderNumber,
+                    OrderDate = fullOrder.OrderDate,
+                    CustomerName = fullOrder.CustomerName,
+                    CustomerEmail = fullOrder.CustomerEmail,
+                    CustomerPhone = fullOrder.CustomerPhone,
+                    TotalAmount = fullOrder.TotalAmount,
+                    Status = fullOrder.Status,
+                    CreatedDate = fullOrder.CreatedDate,
+                    LastModifiedDate = fullOrder.LastModifiedDate,
+                    SalesOrderItems = fullOrder.SalesOrderItems?.ToList() ?? new List<SalesOrderItem>()
+                };
+            }
+            
+            showForm = true;
+            ResetLineItemFields();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading order details: {ex.Message}");
         }
         
-        showForm = true;
-        ResetLineItemFields();
         StateHasChanged();
     }
 
@@ -388,7 +410,7 @@
 
     private void AddLineItem()
     {
-        if (selectedProductId == 0 || newItemQuantity <= 0)
+        if (selectedProductId == 0 || newItemQuantity <= 0 || newItemUnitPrice < 0)
         {
             return;
         }
