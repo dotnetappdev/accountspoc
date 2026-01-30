@@ -27,14 +27,17 @@ public class CustomAuthenticationStateProvider : AuthenticationStateProvider
             _httpClient.DefaultRequestHeaders.Authorization = 
                 new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
 
-            var response = await _httpClient.GetAsync("api/auth/me");
+            // Use a timeout to prevent hanging if API is not available
+            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(3));
+            var response = await _httpClient.GetAsync("api/auth/me", cts.Token);
+            
             if (!response.IsSuccessStatusCode)
             {
                 await ClearTokenAsync();
                 return new AuthenticationState(_anonymous);
             }
 
-            var userInfo = await response.Content.ReadFromJsonAsync<UserInfoDto>();
+            var userInfo = await response.Content.ReadFromJsonAsync<UserInfoDto>(cancellationToken: cts.Token);
             if (userInfo == null)
             {
                 await ClearTokenAsync();
@@ -65,8 +68,10 @@ public class CustomAuthenticationStateProvider : AuthenticationStateProvider
 
             return new AuthenticationState(user);
         }
-        catch
+        catch (Exception ex)
         {
+            // Log the error silently but don't throw - return anonymous user
+            Console.WriteLine($"Authentication check failed: {ex.Message}");
             await ClearTokenAsync();
             return new AuthenticationState(_anonymous);
         }
