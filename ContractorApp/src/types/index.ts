@@ -97,6 +97,7 @@ export interface SiteVisitSignOff {
   signedByName: string;
   signedByTitle?: string;
   signedDate: string;
+  signatureImagePath?: string;
   workCompleted?: string;
   issuesIdentified?: string;
   nextSteps?: string;
@@ -104,6 +105,42 @@ export interface SiteVisitSignOff {
   customerSatisfactionRating?: number;
   syncStatus?: string;
   createdAt: string;
+}
+
+export interface WorkEvidenceImage {
+  id?: number;
+  workOrderId: number;
+  imagePath: string;
+  description?: string;
+  capturedAt: string;
+  syncStatus?: string;
+}
+
+export interface Customer {
+  id?: number;
+  serverCustomerId?: number;
+  name: string;
+  email?: string;
+  phone?: string;
+  address?: string;
+  city?: string;
+  postCode?: string;
+  country?: string;
+  syncStatus?: string;
+  lastSyncedAt?: string;
+}
+
+export interface StockItem {
+  id?: number;
+  serverStockItemId?: number;
+  code: string;
+  name: string;
+  description?: string;
+  unitPrice: number;
+  quantityOnHand: number;
+  category?: string;
+  syncStatus?: string;
+  lastSyncedAt?: string;
 }
 
 export interface Settings {

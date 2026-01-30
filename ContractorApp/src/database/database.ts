@@ -126,6 +126,7 @@ export const initDatabase = () => {
         signedByName TEXT NOT NULL,
         signedByTitle TEXT,
         signedDate TEXT NOT NULL,
+        signatureImagePath TEXT,
         workCompleted TEXT,
         issuesIdentified TEXT,
         nextSteps TEXT,
@@ -137,13 +138,63 @@ export const initDatabase = () => {
       );
     `);
 
-    // Initialize default settings if not exists
-    const settings = db.getFirstSync('SELECT * FROM settings');
-    if (!settings) {
-      db.runSync(
-        'INSERT INTO settings (apiUrl, syncEnabled, lastSync) VALUES (?, ?, ?)',
-        ['http://localhost:5001/api', 1, null]
+    db.execSync(`
+      CREATE TABLE IF NOT EXISTS work_evidence_images (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        workOrderId INTEGER NOT NULL,
+        imagePath TEXT NOT NULL,
+        description TEXT,
+        capturedAt TEXT NOT NULL,
+        syncStatus TEXT DEFAULT 'pending',
+        FOREIGN KEY (workOrderId) REFERENCES work_orders(id) ON DELETE CASCADE
       );
+    `);
+
+    db.execSync(`
+      CREATE TABLE IF NOT EXISTS customers (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        serverCustomerId INTEGER,
+        name TEXT NOT NULL,
+        email TEXT,
+        phone TEXT,
+        address TEXT,
+        city TEXT,
+        postCode TEXT,
+        country TEXT,
+        syncStatus TEXT DEFAULT 'synced',
+        lastSyncedAt TEXT
+      );
+    `);
+
+    db.execSync(`
+      CREATE TABLE IF NOT EXISTS stock_items (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        serverStockItemId INTEGER,
+        code TEXT NOT NULL,
+        name TEXT NOT NULL,
+        description TEXT,
+        unitPrice REAL DEFAULT 0,
+        quantityOnHand INTEGER DEFAULT 0,
+        category TEXT,
+        syncStatus TEXT DEFAULT 'synced',
+        lastSyncedAt TEXT
+      );
+    `);
+
+    db.execSync(`
+      CREATE TABLE IF NOT EXISTS settings (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        key TEXT UNIQUE NOT NULL,
+        value TEXT
+      );
+    `);
+
+    // Initialize default settings if not exists
+    const apiUrlSetting = db.getFirstSync('SELECT * FROM settings WHERE key = ?', ['apiUrl']);
+    if (!apiUrlSetting) {
+      db.runSync('INSERT INTO settings (key, value) VALUES (?, ?)', ['apiUrl', 'http://localhost:5001/api']);
+      db.runSync('INSERT INTO settings (key, value) VALUES (?, ?)', ['syncEnabled', '1']);
+      db.runSync('INSERT INTO settings (key, value) VALUES (?, ?)', ['theme', 'auto']);
     }
 
     console.log('Database initialized successfully');
@@ -161,10 +212,51 @@ export const seedTestData = () => {
     db.execSync('DELETE FROM quote_items');
     db.execSync('DELETE FROM quotes');
     db.execSync('DELETE FROM work_order_tasks');
+    db.execSync('DELETE FROM work_evidence_images');
     db.execSync('DELETE FROM site_visit_signoffs');
     db.execSync('DELETE FROM work_orders');
+    db.execSync('DELETE FROM customers');
+    db.execSync('DELETE FROM stock_items');
 
     const now = new Date().toISOString();
+
+    // Seed Customers
+    db.runSync(
+      `INSERT INTO customers (serverCustomerId, name, email, phone, address, city, postCode, country, lastSyncedAt) 
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [1, 'John Doe', 'john@example.com', '555-0100', '123 Main St', 'Springfield', 'SP1 1AA', 'UK', now]
+    );
+    
+    db.runSync(
+      `INSERT INTO customers (serverCustomerId, name, email, phone, address, city, postCode, country, lastSyncedAt) 
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [2, 'Jane Smith', 'jane@example.com', '555-0200', '456 Oak Ave', 'London', 'L1 2BB', 'UK', now]
+    );
+    
+    db.runSync(
+      `INSERT INTO customers (serverCustomerId, name, email, phone, address, city, postCode, country, lastSyncedAt) 
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [3, 'Bob Johnson', 'bob@example.com', '555-0300', '789 Elm Rd', 'Manchester', 'M1 3CC', 'UK', now]
+    );
+
+    // Seed Stock Items
+    db.runSync(
+      `INSERT INTO stock_items (serverStockItemId, code, name, description, unitPrice, quantityOnHand, category, lastSyncedAt) 
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+      [1, 'PROD-001', 'Product A', 'High-quality product A', 500.00, 100, 'Hardware', now]
+    );
+    
+    db.runSync(
+      `INSERT INTO stock_items (serverStockItemId, code, name, description, unitPrice, quantityOnHand, category, lastSyncedAt) 
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+      [2, 'PROD-002', 'Product B', 'Premium product B', 750.00, 50, 'Hardware', now]
+    );
+    
+    db.runSync(
+      `INSERT INTO stock_items (serverStockItemId, code, name, description, unitPrice, quantityOnHand, category, lastSyncedAt) 
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+      [3, 'SERV-001', 'Service Package A', 'Comprehensive service package', 2500.00, 999, 'Services', now]
+    );
 
     // Seed Sales Orders
     const soResult = db.runSync(
