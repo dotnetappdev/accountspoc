@@ -1,4 +1,5 @@
 ﻿@inherits LayoutComponentBase
+@inject IJSRuntime JSRuntime
 
 <div class="wrapper">
     <!-- Navbar -->
@@ -40,10 +41,19 @@
 
 @code {
     private ModernNavMenu? navMenu;
+    private bool sidebarCollapsed = false;
 
     private void ToggleMobileMenu()
     {
-        // TODO: Implement mobile menu toggle functionality
-        // This will require adding a CSS class to show/hide the sidebar on mobile
+        sidebarCollapsed = !sidebarCollapsed;
+        StateHasChanged();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await JSRuntime.InvokeVoidAsync("initSidebar");
+        }
     }
 }

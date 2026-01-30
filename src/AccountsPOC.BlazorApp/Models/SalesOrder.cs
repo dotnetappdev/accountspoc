@@ -8,8 +8,11 @@ public class SalesOrder
     public required string CustomerName { get; set; }
     public string? CustomerEmail { get; set; }
     public string? CustomerPhone { get; set; }
+    public decimal SubTotal { get; set; }
+    public decimal TaxAmount { get; set; }
+    public decimal DiscountAmount { get; set; }
     public decimal TotalAmount { get; set; }
-    public string Status { get; set; } = "Pending"; // Pending, Processing, Completed, Cancelled
+    public string Status { get; set; } = "Pending";
     public DateTime CreatedDate { get; set; }
     public DateTime? LastModifiedDate { get; set; }
     

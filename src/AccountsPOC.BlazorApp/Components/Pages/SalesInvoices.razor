@@ -104,42 +104,217 @@
 <ModalDialog Title="@(editingInvoice != null ? "Edit Invoice" : "Create New Invoice")"
              IsVisible="showForm"
              OnClose="CancelForm"
-             Size="lg">
+             Size="xl">
     <Body>
         <EditForm Model="currentInvoice" OnValidSubmit="SaveSalesInvoice">
-            <div class="row">
-                <div class="col-md-6 mb-3">
-                    <label class="form-label">Invoice Number</label>
-                    <InputText class="form-control" @bind-Value="currentInvoice.InvoiceNumber" />
-                </div>
-                <div class="col-md-6 mb-3">
-                    <label class="form-label">Sales Order ID</label>
-                    <InputNumber class="form-control" @bind-Value="currentInvoice.SalesOrderId" />
-                </div>
+            <ul class="nav nav-tabs mb-3" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link @(activeTab == "invoice" ? "active" : "")" 
+                            type="button" 
+                            @onclick="@(() => SetActiveTab("invoice"))">
+                        <i class="bi bi-receipt"></i> Invoice Details
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link @(activeTab == "salesorder" ? "active" : "")" 
+                            type="button" 
+                            @onclick="@(() => SetActiveTab("salesorder"))"
+                            disabled="@(currentSalesOrder == null)">
+                        <i class="bi bi-cart3"></i> Sales Order
+                        @if (currentSalesOrder != null)
+                        {
+                            <span class="badge bg-primary ms-2">@currentSalesOrder.OrderNumber</span>
+                        }
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link @(activeTab == "items" ? "active" : "")" 
+                            type="button" 
+                            @onclick="@(() => SetActiveTab("items"))"
+                            disabled="@(currentSalesOrder == null || currentSalesOrder.SalesOrderItems == null || !currentSalesOrder.SalesOrderItems.Any())">
+                        <i class="bi bi-list-ul"></i> Order Items
+                        @if (currentSalesOrder?.SalesOrderItems != null && currentSalesOrder.SalesOrderItems.Any())
+                        {
+                            <span class="badge bg-info ms-2">@currentSalesOrder.SalesOrderItems.Count</span>
+                        }
+                    </button>
+                </li>
+            </ul>
+
+            <div class="tab-content">
+                @if (activeTab == "invoice")
+                {
+                    <div class="tab-pane-content">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Invoice Number</label>
+                                <InputText class="form-control" @bind-Value="currentInvoice.InvoiceNumber" />
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Sales Order</label>
+                                <InputSelect class="form-select" @bind-Value="currentInvoice.SalesOrderId" @bind-Value:after="LoadSalesOrderDetails">
+                                    <option value="0">-- Select Sales Order --</option>
+                                    @if (availableSalesOrders != null)
+                                    {
+                                        @foreach (var order in availableSalesOrders)
+                                        {
+                                            <option value="@order.Id">@order.OrderNumber - @order.CustomerName</option>
+                                        }
+                                    }
+                                </InputSelect>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Sub Total</label>
+                                <CurrencyInput @bind-Value="currentInvoice.SubTotal" Currency="USD" />
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Tax Amount</label>
+                                <CurrencyInput @bind-Value="currentInvoice.TaxAmount" Currency="USD" />
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Total Amount</label>
+                                <CurrencyInput @bind-Value="currentInvoice.TotalAmount" Currency="USD" />
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Status</label>
+                            <InputSelect class="form-select" @bind-Value="currentInvoice.Status">
+                                <option value="Unpaid">Unpaid</option>
+                                <option value="Paid">Paid</option>
+                                <option value="Overdue">Overdue</option>
+                                <option value="Cancelled">Cancelled</option>
+                            </InputSelect>
+                        </div>
+                    </div>
+                }
+                else if (activeTab == "salesorder" && currentSalesOrder != null)
+                {
+                    <div class="tab-pane-content">
+                        <div class="sales-order-details">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h6 class="section-title">Order Information</h6>
+                                    <div class="detail-row">
+                                        <span class="label">Order Number:</span>
+                                        <span class="value">@currentSalesOrder.OrderNumber</span>
+                                    </div>
+                                    <div class="detail-row">
+                                        <span class="label">Order Date:</span>
+                                        <span class="value">@currentSalesOrder.OrderDate.ToString("MMM dd, yyyy")</span>
+                                    </div>
+                                    <div class="detail-row">
+                                        <span class="label">Status:</span>
+                                        <span class="value">
+                                            <span class="badge bg-secondary">@currentSalesOrder.Status</span>
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <h6 class="section-title">Customer Information</h6>
+                                    <div class="detail-row">
+                                        <span class="label">Customer:</span>
+                                        <span class="value">@currentSalesOrder.CustomerName</span>
+                                    </div>
+                                    @if (!string.IsNullOrEmpty(currentSalesOrder.CustomerEmail))
+                                    {
+                                        <div class="detail-row">
+                                            <span class="label">Email:</span>
+                                            <span class="value">@currentSalesOrder.CustomerEmail</span>
+                                        </div>
+                                    }
+                                    @if (!string.IsNullOrEmpty(currentSalesOrder.CustomerPhone))
+                                    {
+                                        <div class="detail-row">
+                                            <span class="label">Phone:</span>
+                                            <span class="value">@currentSalesOrder.CustomerPhone</span>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                            <div class="row mt-3">
+                                <div class="col-md-12">
+                                    <h6 class="section-title">Order Totals</h6>
+                                    <div class="order-totals">
+                                        <div class="total-row">
+                                            <span class="label">Subtotal:</span>
+                                            <span class="value">@currentSalesOrder.SubTotal.ToString("C")</span>
+                                        </div>
+                                        <div class="total-row">
+                                            <span class="label">Tax:</span>
+                                            <span class="value">@currentSalesOrder.TaxAmount.ToString("C")</span>
+                                        </div>
+                                        <div class="total-row">
+                                            <span class="label">Discount:</span>
+                                            <span class="value">-@currentSalesOrder.DiscountAmount.ToString("C")</span>
+                                        </div>
+                                        <div class="total-row total">
+                                            <span class="label">Total:</span>
+                                            <span class="value">@currentSalesOrder.TotalAmount.ToString("C")</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+                else if (activeTab == "items" && currentSalesOrder?.SalesOrderItems != null)
+                {
+                    <div class="tab-pane-content">
+                        <div class="order-items-table">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Line #</th>
+                                        <th>Product</th>
+                                        <th>Description</th>
+                                        <th class="text-end">Quantity</th>
+                                        <th class="text-end">Unit Price</th>
+                                        <th class="text-end">Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var item in currentSalesOrder.SalesOrderItems.OrderBy(i => i.LineNumber))
+                                    {
+                                        <tr>
+                                            <td>@item.LineNumber</td>
+                                            <td>
+                                                @if (item.Product != null)
+                                                {
+                                                    <strong>@item.Product.ProductCode</strong>
+                                                }
+                                                else if (item.IsFreeTextItem)
+                                                {
+                                                    <em>Free Text Item</em>
+                                                }
+                                            </td>
+                                            <td>
+                                                @if (!string.IsNullOrEmpty(item.Description))
+                                                {
+                                                    @item.Description
+                                                }
+                                                else if (item.Product != null)
+                                                {
+                                                    @item.Product.ProductName
+                                                }
+                                                @if (!string.IsNullOrEmpty(item.Notes))
+                                                {
+                                                    <br /><small class="text-muted">@item.Notes</small>
+                                                }
+                                            </td>
+                                            <td class="text-end">@item.Quantity</td>
+                                            <td class="text-end">@item.UnitPrice.ToString("C")</td>
+                                            <td class="text-end"><strong>@item.TotalPrice.ToString("C")</strong></td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                }
             </div>
-            <div class="row">
-                <div class="col-md-4 mb-3">
-                    <label class="form-label">Sub Total</label>
-                    <CurrencyInput @bind-Value="currentInvoice.SubTotal" Currency="USD" />
-                </div>
-                <div class="col-md-4 mb-3">
-                    <label class="form-label">Tax Amount</label>
-                    <CurrencyInput @bind-Value="currentInvoice.TaxAmount" Currency="USD" />
-                </div>
-                <div class="col-md-4 mb-3">
-                    <label class="form-label">Total Amount</label>
-                    <CurrencyInput @bind-Value="currentInvoice.TotalAmount" Currency="USD" />
-                </div>
-            </div>
-            <div class="mb-3">
-                <label class="form-label">Status</label>
-                <InputSelect class="form-select" @bind-Value="currentInvoice.Status">
-                    <option value="Unpaid">Unpaid</option>
-                    <option value="Paid">Paid</option>
-                    <option value="Overdue">Overdue</option>
-                    <option value="Cancelled">Cancelled</option>
-                </InputSelect>
-            </div>
+
             <div class="modal-actions">
                 <button type="submit" class="btn-gradient btn-success">
                     <i class="bi bi-check-circle"></i> Save Invoice
@@ -534,18 +709,145 @@
     .link-container button {
         white-space: nowrap;
     }
+
+    .nav-tabs {
+        border-bottom: 2px solid #e9ecef;
+    }
+
+    .nav-tabs .nav-link {
+        border: none;
+        color: #6c757d;
+        font-weight: 500;
+        padding: 0.75rem 1.5rem;
+        transition: all 0.2s ease;
+    }
+
+    .nav-tabs .nav-link:hover:not(:disabled) {
+        color: #667eea;
+        border-bottom: 2px solid #667eea;
+    }
+
+    .nav-tabs .nav-link.active {
+        color: #667eea;
+        border-bottom: 2px solid #667eea;
+        background: transparent;
+    }
+
+    .nav-tabs .nav-link:disabled {
+        color: #adb5bd;
+        cursor: not-allowed;
+    }
+
+    .tab-pane-content {
+        padding: 1.5rem 0;
+        animation: fadeIn 0.3s ease-in;
+    }
+
+    @@keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .sales-order-details {
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 1.5rem;
+    }
+
+    .section-title {
+        font-weight: 600;
+        color: #2d3748;
+        margin-bottom: 1rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 2px solid #e9ecef;
+    }
+
+    .detail-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 0.5rem 0;
+        border-bottom: 1px solid #e9ecef;
+    }
+
+    .detail-row:last-child {
+        border-bottom: none;
+    }
+
+    .detail-row .label {
+        color: #6c757d;
+        font-weight: 500;
+    }
+
+    .detail-row .value {
+        color: #2d3748;
+        font-weight: 600;
+    }
+
+    .order-totals {
+        background: white;
+        border-radius: 8px;
+        padding: 1rem;
+    }
+
+    .total-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 0.5rem 0;
+        border-bottom: 1px solid #f1f3f5;
+    }
+
+    .total-row.total {
+        border-top: 2px solid #667eea;
+        border-bottom: none;
+        margin-top: 0.5rem;
+        padding-top: 0.75rem;
+        font-weight: 700;
+        font-size: 1.125rem;
+    }
+
+    .total-row .label {
+        color: #6c757d;
+    }
+
+    .total-row.total .label,
+    .total-row.total .value {
+        color: #667eea;
+    }
+
+    .order-items-table {
+        background: white;
+        border-radius: 8px;
+        overflow: hidden;
+    }
+
+    .order-items-table table {
+        margin-bottom: 0;
+    }
+
+    .order-items-table thead {
+        background: #f8f9fa;
+    }
+
+    .order-items-table thead th {
+        font-weight: 600;
+        color: #2d3748;
+        border-bottom: 2px solid #e9ecef;
+    }
 </style>
 
 @code {
     private List<SalesInvoice>? salesInvoices;
+    private List<SalesOrder>? availableSalesOrders;
     private SalesInvoice currentInvoice = new() { InvoiceNumber = "", Status = "Unpaid" };
     private SalesInvoice? editingInvoice;
     private SalesInvoice? selectedInvoice;
+    private SalesOrder? currentSalesOrder;
     private bool showForm = false;
     private bool showEmailModal = false;
     private bool showPaymentLinkModal = false;
     private bool loading = true;
     private string currentPaymentLink = "";
+    private string activeTab = "invoice";
 
     private class EmailForm
     {
@@ -559,7 +861,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-        await LoadSalesInvoices();
+        await Task.WhenAll(LoadSalesInvoices(), LoadSalesOrders());
     }
 
     private async Task LoadSalesInvoices()
@@ -577,10 +879,51 @@
         loading = false;
     }
 
+    private async Task LoadSalesOrders()
+    {
+        try
+        {
+            availableSalesOrders = await Http.GetFromJsonAsync<List<SalesOrder>>("api/SalesOrders");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading sales orders: {ex.Message}");
+            availableSalesOrders = new List<SalesOrder>();
+        }
+    }
+
+    private async Task LoadSalesOrderDetails()
+    {
+        if (currentInvoice.SalesOrderId > 0)
+        {
+            try
+            {
+                currentSalesOrder = await Http.GetFromJsonAsync<SalesOrder>($"api/SalesOrders/{currentInvoice.SalesOrderId}");
+                
+                if (currentSalesOrder != null)
+                {
+                    currentInvoice.SubTotal = currentSalesOrder.SubTotal;
+                    currentInvoice.TaxAmount = currentSalesOrder.TaxAmount;
+                    currentInvoice.TotalAmount = currentSalesOrder.TotalAmount;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error loading sales order details: {ex.Message}");
+            }
+        }
+        else
+        {
+            currentSalesOrder = null;
+        }
+    }
+
     private void ShowAddForm()
     {
         currentInvoice = new() { InvoiceNumber = $"INV-{DateTime.Now:yyyyMMddHHmmss}", Status = "Unpaid" };
         editingInvoice = null;
+        currentSalesOrder = null;
+        activeTab = "invoice";
         showForm = true;
     }
 
@@ -601,7 +944,14 @@
             CreatedDate = invoice.CreatedDate,
             LastModifiedDate = invoice.LastModifiedDate
         };
+        activeTab = "invoice";
+        _ = LoadSalesOrderDetails();
         showForm = true;
+    }
+
+    private void SetActiveTab(string tab)
+    {
+        activeTab = tab;
     }
 
     private async Task SaveSalesInvoice()
@@ -643,6 +993,8 @@
     {
         showForm = false;
         editingInvoice = null;
+        currentSalesOrder = null;
+        activeTab = "invoice";
     }
 
     private void ShowEmailModal(SalesInvoice invoice)
