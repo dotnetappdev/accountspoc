@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import {
   View,
   Text,
@@ -12,25 +12,48 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import db, { seedTestData } from '../database/database';
 import apiService from '../services/apiService';
+import { ThemeContext } from '../contexts/ThemeContext';
+import { isWiFiConnected, isCellularConnected } from '../utils/networkUtils';
 
 const SettingsScreen = () => {
   const [apiUrl, setApiUrl] = useState('http://localhost:5001/api');
   const [syncEnabled, setSyncEnabled] = useState(true);
+  const [wifiOnlySync, setWifiOnlySync] = useState(true);
   const [lastSync, setLastSync] = useState<string | null>(null);
   const [syncing, setSyncing] = useState(false);
+  const [networkStatus, setNetworkStatus] = useState<string>('Checking...');
+  const { theme, setTheme } = useContext(ThemeContext);
 
   useEffect(() => {
     loadSettings();
+    checkNetworkStatus();
   }, []);
+
+  const checkNetworkStatus = async () => {
+    const wifi = await isWiFiConnected();
+    const cellular = await isCellularConnected();
+    
+    if (wifi) {
+      setNetworkStatus('Connected to WiFi');
+    } else if (cellular) {
+      setNetworkStatus('Connected to Mobile Data');
+    } else {
+      setNetworkStatus('Offline');
+    }
+  };
 
   const loadSettings = () => {
     try {
-      const settings = db.getFirstSync('SELECT * FROM settings WHERE id = 1') as any;
-      if (settings) {
-        setApiUrl(settings.apiUrl);
-        setSyncEnabled(settings.syncEnabled === 1);
-        setLastSync(settings.lastSync);
-      }
+      const settings: Record<string, string> = {};
+      const rows = db.getAllSync('SELECT key, value FROM settings') as any[];
+      rows.forEach(row => {
+        settings[row.key] = row.value;
+      });
+      
+      setApiUrl(settings.apiUrl || 'http://localhost:5001/api');
+      setSyncEnabled(settings.syncEnabled === '1');
+      setWifiOnlySync(settings.wifiOnlySync === '1');
+      setLastSync(settings.lastSync || null);
     } catch (error) {
       console.error('Error loading settings:', error);
     }
@@ -38,10 +61,29 @@ const SettingsScreen = () => {
 
   const saveSettings = () => {
     try {
-      db.runSync(
-        'UPDATE settings SET apiUrl = ?, syncEnabled = ? WHERE id = 1',
-        [apiUrl, syncEnabled ? 1 : 0]
-      );
+      // Update or insert apiUrl
+      const apiUrlSetting = db.getFirstSync('SELECT * FROM settings WHERE key = ?', ['apiUrl']) as any;
+      if (apiUrlSetting) {
+        db.runSync('UPDATE settings SET value = ? WHERE key = ?', [apiUrl, 'apiUrl']);
+      } else {
+        db.runSync('INSERT INTO settings (key, value) VALUES (?, ?)', ['apiUrl', apiUrl]);
+      }
+      
+      // Update or insert syncEnabled
+      const syncEnabledSetting = db.getFirstSync('SELECT * FROM settings WHERE key = ?', ['syncEnabled']) as any;
+      if (syncEnabledSetting) {
+        db.runSync('UPDATE settings SET value = ? WHERE key = ?', [syncEnabled ? '1' : '0', 'syncEnabled']);
+      } else {
+        db.runSync('INSERT INTO settings (key, value) VALUES (?, ?)', ['syncEnabled', syncEnabled ? '1' : '0']);
+      }
+      
+      // Update or insert wifiOnlySync
+      const wifiOnlySetting = db.getFirstSync('SELECT * FROM settings WHERE key = ?', ['wifiOnlySync']) as any;
+      if (wifiOnlySetting) {
+        db.runSync('UPDATE settings SET value = ? WHERE key = ?', [wifiOnlySync ? '1' : '0', 'wifiOnlySync']);
+      } else {
+        db.runSync('INSERT INTO settings (key, value) VALUES (?, ?)', ['wifiOnlySync', wifiOnlySync ? '1' : '0']);
+      }
       
       apiService.updateBaseURL(apiUrl);
       
@@ -144,6 +186,17 @@ const SettingsScreen = () => {
   return (
     <ScrollView style={styles.container}>
       <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Network Status</Text>
+        <View style={styles.infoBox}>
+          <Ionicons name="wifi" size={20} color="#8E8E93" />
+          <Text style={styles.infoText}>{networkStatus}</Text>
+        </View>
+        <Text style={styles.helpText}>
+          App works fully offline. Sync only when needed.
+        </Text>
+      </View>
+
+      <View style={styles.section}>
         <Text style={styles.sectionTitle}>API Configuration</Text>
         
         <Text style={styles.label}>API URL</Text>
@@ -155,16 +208,57 @@ const SettingsScreen = () => {
           autoCapitalize="none"
           autoCorrect={false}
         />
+        <Text style={styles.helpText}>
+          Configure your backend API URL. Leave as default for local development.
+        </Text>
         
         <View style={styles.switchContainer}>
           <Text style={styles.label}>Enable Sync</Text>
           <Switch value={syncEnabled} onValueChange={setSyncEnabled} />
         </View>
 
+        <View style={styles.switchContainer}>
+          <View style={{flex: 1}}>
+            <Text style={styles.label}>WiFi Only Sync</Text>
+            <Text style={styles.helpText}>Only sync when connected to WiFi (recommended)</Text>
+          </View>
+          <Switch value={wifiOnlySync} onValueChange={setWifiOnlySync} />
+        </View>
+
         <TouchableOpacity style={styles.button} onPress={saveSettings}>
           <Ionicons name="save" size={20} color="#fff" />
           <Text style={styles.buttonText}>Save Settings</Text>
         </TouchableOpacity>
+      </View>
+
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Appearance</Text>
+        
+        <View style={styles.themeButtons}>
+          <TouchableOpacity 
+            style={[styles.themeButton, theme === 'light' && styles.themeButtonActive]}
+            onPress={() => setTheme('light')}
+          >
+            <Ionicons name="sunny" size={24} color={theme === 'light' ? '#007AFF' : '#8E8E93'} />
+            <Text style={[styles.themeButtonText, theme === 'light' && styles.themeButtonTextActive]}>Light</Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity 
+            style={[styles.themeButton, theme === 'dark' && styles.themeButtonActive]}
+            onPress={() => setTheme('dark')}
+          >
+            <Ionicons name="moon" size={24} color={theme === 'dark' ? '#007AFF' : '#8E8E93'} />
+            <Text style={[styles.themeButtonText, theme === 'dark' && styles.themeButtonTextActive]}>Dark</Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity 
+            style={[styles.themeButton, theme === 'auto' && styles.themeButtonActive]}
+            onPress={() => setTheme('auto')}
+          >
+            <Ionicons name="contrast" size={24} color={theme === 'auto' ? '#007AFF' : '#8E8E93'} />
+            <Text style={[styles.themeButtonText, theme === 'auto' && styles.themeButtonTextActive]}>Auto</Text>
+          </TouchableOpacity>
+        </View>
       </View>
 
       <View style={styles.section}>
@@ -218,7 +312,9 @@ const SettingsScreen = () => {
         <Text style={styles.aboutText}>
           Contractor App v1.0{'\n'}
           Developed for AccountsPOC{'\n'}
-          Supports Windows, Linux, iOS, and Android
+          Supports Windows, Linux, iOS, and Android{'\n\n'}
+          Offline-First Architecture{'\n'}
+          All features work without internet connection
         </Text>
       </View>
     </ScrollView>
@@ -327,6 +423,40 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#666',
     lineHeight: 22,
+  },
+  helpText: {
+    fontSize: 12,
+    color: '#8E8E93',
+    marginBottom: 12,
+    marginTop: -8,
+  },
+  themeButtons: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    gap: 10,
+  },
+  themeButton: {
+    flex: 1,
+    alignItems: 'center',
+    padding: 15,
+    borderRadius: 8,
+    borderWidth: 2,
+    borderColor: '#E5E5EA',
+    backgroundColor: '#fff',
+  },
+  themeButtonActive: {
+    borderColor: '#007AFF',
+    backgroundColor: '#E3F2FD',
+  },
+  themeButtonText: {
+    marginTop: 8,
+    fontSize: 14,
+    color: '#8E8E93',
+    fontWeight: '500',
+  },
+  themeButtonTextActive: {
+    color: '#007AFF',
+    fontWeight: '600',
   },
 });
 

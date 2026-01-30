@@ -6,16 +6,6 @@ export const initDatabase = () => {
   try {
     // Create tables
     db.execSync(`
-      CREATE TABLE IF NOT EXISTS settings (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        apiUrl TEXT NOT NULL,
-        apiKey TEXT,
-        syncEnabled INTEGER DEFAULT 1,
-        lastSync TEXT
-      );
-    `);
-
-    db.execSync(`
       CREATE TABLE IF NOT EXISTS sales_orders (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         serverOrderId INTEGER,
@@ -194,6 +184,7 @@ export const initDatabase = () => {
     if (!apiUrlSetting) {
       db.runSync('INSERT INTO settings (key, value) VALUES (?, ?)', ['apiUrl', 'http://localhost:5001/api']);
       db.runSync('INSERT INTO settings (key, value) VALUES (?, ?)', ['syncEnabled', '1']);
+      db.runSync('INSERT INTO settings (key, value) VALUES (?, ?)', ['wifiOnlySync', '1']);
       db.runSync('INSERT INTO settings (key, value) VALUES (?, ?)', ['theme', 'auto']);
     }
 

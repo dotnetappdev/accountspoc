@@ -1,12 +1,16 @@
 import axios, { AxiosInstance } from 'axios';
 import { SalesOrder, Quote, WorkOrder, SiteVisitSignOff } from '../types';
 import db from '../database/database';
+import config from '../config/environment';
+import { isConnected, shouldAllowSync } from '../utils/networkUtils';
 
 class ApiService {
   private api: AxiosInstance;
-  private baseURL: string = 'http://localhost:5001/api';
+  private baseURL: string;
 
   constructor() {
+    // Load API URL from settings database or use config default
+    this.baseURL = this.loadApiUrlFromSettings();
     this.api = axios.create({
       baseURL: this.baseURL,
       timeout: 10000,
@@ -14,6 +18,16 @@ class ApiService {
         'Content-Type': 'application/json',
       },
     });
+  }
+
+  private loadApiUrlFromSettings(): string {
+    try {
+      const settings = db.getFirstSync('SELECT value FROM settings WHERE key = ?', ['apiUrl']) as any;
+      return settings?.value || config.apiUrl;
+    } catch (error) {
+      console.log('Could not load API URL from settings, using default');
+      return config.apiUrl;
+    }
   }
 
   updateBaseURL(url: string) {
@@ -25,6 +39,22 @@ class ApiService {
         'Content-Type': 'application/json',
       },
     });
+  }
+
+  /**
+   * Check if network is available for API calls
+   */
+  async isNetworkAvailable(): Promise<boolean> {
+    return await isConnected();
+  }
+
+  /**
+   * Check if sync should be performed based on network conditions
+   */
+  async canSync(): Promise<boolean> {
+    const settings = db.getFirstSync('SELECT value FROM settings WHERE key = ?', ['wifiOnlySync']) as any;
+    const wifiOnly = settings?.value === '1';
+    return await shouldAllowSync(wifiOnly);
   }
 
   // Sales Orders
@@ -154,6 +184,12 @@ class ApiService {
 
   // Sync functions
   async syncToServer(): Promise<void> {
+    // Check network availability first
+    const canSync = await this.canSync();
+    if (!canSync) {
+      throw new Error('Sync not available. Please connect to WiFi or enable mobile data sync in settings.');
+    }
+
     try {
       // Sync pending sales orders
       const pendingSO = db.getAllSync(
@@ -225,10 +261,18 @@ class ApiService {
       }
 
       // Update last sync time
-      db.runSync(
-        'UPDATE settings SET lastSync = ? WHERE id = 1',
-        [new Date().toISOString()]
-      );
+      const lastSyncSetting = db.getFirstSync('SELECT * FROM settings WHERE key = ?', ['lastSync']) as any;
+      if (lastSyncSetting) {
+        db.runSync(
+          'UPDATE settings SET value = ? WHERE key = ?',
+          [new Date().toISOString(), 'lastSync']
+        );
+      } else {
+        db.runSync(
+          'INSERT INTO settings (key, value) VALUES (?, ?)',
+          ['lastSync', new Date().toISOString()]
+        );
+      }
       
       console.log('Sync completed successfully');
     } catch (error) {
@@ -238,6 +282,12 @@ class ApiService {
   }
 
   async syncFromServer(): Promise<void> {
+    // Check network availability first
+    const canSync = await this.canSync();
+    if (!canSync) {
+      throw new Error('Sync not available. Please connect to WiFi or enable mobile data sync in settings.');
+    }
+
     try {
       // Pull sales orders from server
       const salesOrders = await this.getSalesOrders();
