@@ -85,7 +85,41 @@ public class SalesOrdersController : ControllerBase
         
         salesOrder.TotalAmount = salesOrder.SalesOrderItems.Sum(i => i.TotalPrice);
         
-        _context.Entry(salesOrder).State = EntityState.Modified;
+        // Get existing order with items
+        var existingOrder = await _context.SalesOrders
+            .Include(o => o.SalesOrderItems)
+            .FirstOrDefaultAsync(o => o.Id == id);
+            
+        if (existingOrder == null)
+        {
+            return NotFound();
+        }
+        
+        // Update order properties
+        existingOrder.OrderNumber = salesOrder.OrderNumber;
+        existingOrder.OrderDate = salesOrder.OrderDate;
+        existingOrder.CustomerName = salesOrder.CustomerName;
+        existingOrder.CustomerEmail = salesOrder.CustomerEmail;
+        existingOrder.CustomerPhone = salesOrder.CustomerPhone;
+        existingOrder.TotalAmount = salesOrder.TotalAmount;
+        existingOrder.Status = salesOrder.Status;
+        existingOrder.LastModifiedDate = salesOrder.LastModifiedDate;
+        
+        // Remove old items
+        _context.SalesOrderItems.RemoveRange(existingOrder.SalesOrderItems);
+        
+        // Add new items
+        foreach (var item in salesOrder.SalesOrderItems)
+        {
+            existingOrder.SalesOrderItems.Add(new SalesOrderItem
+            {
+                ProductId = item.ProductId,
+                Quantity = item.Quantity,
+                UnitPrice = item.UnitPrice,
+                TotalPrice = item.TotalPrice,
+                BillOfMaterialId = item.BillOfMaterialId
+            });
+        }
 
         try
         {
