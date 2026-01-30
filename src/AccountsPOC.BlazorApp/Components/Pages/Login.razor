@@ -1,5 +1,7 @@
 @page "/login"
 @using AccountsPOC.BlazorApp.Services
+@using Microsoft.AspNetCore.Authorization
+@attribute [AllowAnonymous]
 @inject CustomAuthenticationStateProvider AuthStateProvider
 @inject NavigationManager Navigation
 @rendermode InteractiveServer
