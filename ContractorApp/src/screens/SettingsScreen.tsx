@@ -61,29 +61,10 @@ const SettingsScreen = () => {
 
   const saveSettings = () => {
     try {
-      // Update or insert apiUrl
-      const apiUrlSetting = db.getFirstSync('SELECT * FROM settings WHERE key = ?', ['apiUrl']) as any;
-      if (apiUrlSetting) {
-        db.runSync('UPDATE settings SET value = ? WHERE key = ?', [apiUrl, 'apiUrl']);
-      } else {
-        db.runSync('INSERT INTO settings (key, value) VALUES (?, ?)', ['apiUrl', apiUrl]);
-      }
-      
-      // Update or insert syncEnabled
-      const syncEnabledSetting = db.getFirstSync('SELECT * FROM settings WHERE key = ?', ['syncEnabled']) as any;
-      if (syncEnabledSetting) {
-        db.runSync('UPDATE settings SET value = ? WHERE key = ?', [syncEnabled ? '1' : '0', 'syncEnabled']);
-      } else {
-        db.runSync('INSERT INTO settings (key, value) VALUES (?, ?)', ['syncEnabled', syncEnabled ? '1' : '0']);
-      }
-      
-      // Update or insert wifiOnlySync
-      const wifiOnlySetting = db.getFirstSync('SELECT * FROM settings WHERE key = ?', ['wifiOnlySync']) as any;
-      if (wifiOnlySetting) {
-        db.runSync('UPDATE settings SET value = ? WHERE key = ?', [wifiOnlySync ? '1' : '0', 'wifiOnlySync']);
-      } else {
-        db.runSync('INSERT INTO settings (key, value) VALUES (?, ?)', ['wifiOnlySync', wifiOnlySync ? '1' : '0']);
-      }
+      // Use INSERT OR REPLACE for atomic operations
+      db.runSync('INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)', ['apiUrl', apiUrl]);
+      db.runSync('INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)', ['syncEnabled', syncEnabled ? '1' : '0']);
+      db.runSync('INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)', ['wifiOnlySync', wifiOnlySync ? '1' : '0']);
       
       apiService.updateBaseURL(apiUrl);
       
@@ -218,7 +199,7 @@ const SettingsScreen = () => {
         </View>
 
         <View style={styles.switchContainer}>
-          <View style={{flex: 1}}>
+          <View style={styles.switchLabelContainer}>
             <Text style={styles.label}>WiFi Only Sync</Text>
             <Text style={styles.helpText}>Only sync when connected to WiFi (recommended)</Text>
           </View>
@@ -457,6 +438,9 @@ const styles = StyleSheet.create({
   themeButtonTextActive: {
     color: '#007AFF',
     fontWeight: '600',
+  },
+  switchLabelContainer: {
+    flex: 1,
   },
 });
 

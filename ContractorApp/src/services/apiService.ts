@@ -4,6 +4,9 @@ import db from '../database/database';
 import config from '../config/environment';
 import { isConnected, shouldAllowSync } from '../utils/networkUtils';
 
+// Error messages
+const SYNC_UNAVAILABLE_ERROR = 'Sync not available. Please connect to WiFi or enable mobile data sync in settings.';
+
 class ApiService {
   private api: AxiosInstance;
   private baseURL: string;
@@ -187,7 +190,7 @@ class ApiService {
     // Check network availability first
     const canSync = await this.canSync();
     if (!canSync) {
-      throw new Error('Sync not available. Please connect to WiFi or enable mobile data sync in settings.');
+      throw new Error(SYNC_UNAVAILABLE_ERROR);
     }
 
     try {
@@ -260,19 +263,11 @@ class ApiService {
         );
       }
 
-      // Update last sync time
-      const lastSyncSetting = db.getFirstSync('SELECT * FROM settings WHERE key = ?', ['lastSync']) as any;
-      if (lastSyncSetting) {
-        db.runSync(
-          'UPDATE settings SET value = ? WHERE key = ?',
-          [new Date().toISOString(), 'lastSync']
-        );
-      } else {
-        db.runSync(
-          'INSERT INTO settings (key, value) VALUES (?, ?)',
-          ['lastSync', new Date().toISOString()]
-        );
-      }
+      // Update last sync time using INSERT OR REPLACE
+      db.runSync(
+        'INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)',
+        ['lastSync', new Date().toISOString()]
+      );
       
       console.log('Sync completed successfully');
     } catch (error) {
@@ -285,7 +280,7 @@ class ApiService {
     // Check network availability first
     const canSync = await this.canSync();
     if (!canSync) {
-      throw new Error('Sync not available. Please connect to WiFi or enable mobile data sync in settings.');
+      throw new Error(SYNC_UNAVAILABLE_ERROR);
     }
 
     try {
