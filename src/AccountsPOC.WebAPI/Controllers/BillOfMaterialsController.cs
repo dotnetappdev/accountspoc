@@ -23,6 +23,7 @@ public class BillOfMaterialsController : ControllerBase
             .Include(b => b.Product)
             .Include(b => b.Components)
             .ThenInclude(c => c.Product)
+            .Include(b => b.Images)
             .ToListAsync();
     }
 
@@ -33,6 +34,7 @@ public class BillOfMaterialsController : ControllerBase
             .Include(b => b.Product)
             .Include(b => b.Components)
             .ThenInclude(c => c.Product)
+            .Include(b => b.Images)
             .FirstOrDefaultAsync(b => b.Id == id);
 
         if (billOfMaterial == null)
@@ -48,12 +50,18 @@ public class BillOfMaterialsController : ControllerBase
     {
         billOfMaterial.CreatedDate = DateTime.UtcNow;
         
+        int lineNumber = 1;
         foreach (var component in billOfMaterial.Components)
         {
+            component.LineNumber = lineNumber++;
             component.TotalCost = component.Quantity * component.UnitCost;
         }
         
-        billOfMaterial.EstimatedCost = billOfMaterial.Components.Sum(c => c.TotalCost);
+        billOfMaterial.MaterialCost = billOfMaterial.Components.Sum(c => c.TotalCost);
+        billOfMaterial.EstimatedCost = billOfMaterial.MaterialCost.GetValueOrDefault() 
+            + billOfMaterial.LabourCost.GetValueOrDefault() 
+            + billOfMaterial.OverheadCost.GetValueOrDefault();
+        billOfMaterial.TotalCost = billOfMaterial.EstimatedCost;
         
         _context.BillOfMaterials.Add(billOfMaterial);
         await _context.SaveChangesAsync();
@@ -71,14 +79,74 @@ public class BillOfMaterialsController : ControllerBase
 
         billOfMaterial.LastModifiedDate = DateTime.UtcNow;
         
+        var existingBOM = await _context.BillOfMaterials
+            .Include(b => b.Components)
+            .Include(b => b.Images)
+            .FirstOrDefaultAsync(b => b.Id == id);
+
+        if (existingBOM == null)
+        {
+            return NotFound();
+        }
+
+        _context.Entry(existingBOM).CurrentValues.SetValues(billOfMaterial);
+
+        var existingComponents = existingBOM.Components.ToList();
+        foreach (var existingComponent in existingComponents)
+        {
+            if (!billOfMaterial.Components.Any(c => c.Id == existingComponent.Id))
+            {
+                _context.BOMComponents.Remove(existingComponent);
+            }
+        }
+
+        int lineNumber = 1;
         foreach (var component in billOfMaterial.Components)
         {
+            component.LineNumber = lineNumber++;
             component.TotalCost = component.Quantity * component.UnitCost;
+            
+            var existingComponent = existingComponents.FirstOrDefault(c => c.Id == component.Id);
+            if (existingComponent != null)
+            {
+                _context.Entry(existingComponent).CurrentValues.SetValues(component);
+            }
+            else
+            {
+                component.BillOfMaterialId = id;
+                existingBOM.Components.Add(component);
+            }
         }
-        
-        billOfMaterial.EstimatedCost = billOfMaterial.Components.Sum(c => c.TotalCost);
-        
-        _context.Entry(billOfMaterial).State = EntityState.Modified;
+
+        var existingImages = existingBOM.Images.ToList();
+        foreach (var existingImage in existingImages)
+        {
+            if (!billOfMaterial.Images.Any(i => i.Id == existingImage.Id))
+            {
+                _context.BOMImages.Remove(existingImage);
+            }
+        }
+
+        foreach (var image in billOfMaterial.Images)
+        {
+            var existingImage = existingImages.FirstOrDefault(i => i.Id == image.Id);
+            if (existingImage != null)
+            {
+                _context.Entry(existingImage).CurrentValues.SetValues(image);
+            }
+            else
+            {
+                image.BillOfMaterialId = id;
+                image.CreatedDate = DateTime.UtcNow;
+                existingBOM.Images.Add(image);
+            }
+        }
+
+        existingBOM.MaterialCost = existingBOM.Components.Sum(c => c.TotalCost);
+        existingBOM.EstimatedCost = existingBOM.MaterialCost.GetValueOrDefault() 
+            + existingBOM.LabourCost.GetValueOrDefault() 
+            + existingBOM.OverheadCost.GetValueOrDefault();
+        existingBOM.TotalCost = existingBOM.EstimatedCost;
 
         try
         {
