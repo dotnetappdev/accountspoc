@@ -61,6 +61,12 @@ public class ApplicationDbContext : IdentityDbContext<User, Role, int, Microsoft
     public DbSet<StockItemImage> StockItemImages => Set<StockItemImage>();
     public DbSet<License> Licenses => Set<License>();
     public DbSet<Installation> Installations => Set<Installation>();
+    public DbSet<Quote> Quotes => Set<Quote>();
+    public DbSet<QuoteItem> QuoteItems => Set<QuoteItem>();
+    public DbSet<WorkOrder> WorkOrders => Set<WorkOrder>();
+    public DbSet<WorkOrderTask> WorkOrderTasks => Set<WorkOrderTask>();
+    public DbSet<SiteVisit> SiteVisits => Set<SiteVisit>();
+    public DbSet<SiteVisitSignOff> SiteVisitSignOffs => Set<SiteVisitSignOff>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -920,6 +926,164 @@ public class ApplicationDbContext : IdentityDbContext<User, Role, int, Microsoft
                 .WithMany()
                 .HasForeignKey(e => e.LicenseId)
                 .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // Quote configuration
+        modelBuilder.Entity<Quote>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.QuoteNumber).IsRequired().HasMaxLength(50);
+            entity.Property(e => e.CustomerName).IsRequired().HasMaxLength(200);
+            entity.Property(e => e.CustomerEmail).HasMaxLength(200);
+            entity.Property(e => e.CustomerPhone).HasMaxLength(50);
+            entity.Property(e => e.SubTotal).HasPrecision(18, 2);
+            entity.Property(e => e.TaxAmount).HasPrecision(18, 2);
+            entity.Property(e => e.DiscountAmount).HasPrecision(18, 2);
+            entity.Property(e => e.TotalAmount).HasPrecision(18, 2);
+            entity.Property(e => e.ExchangeRate).HasPrecision(18, 6);
+            entity.Property(e => e.Status).HasMaxLength(50);
+            entity.HasIndex(e => e.QuoteNumber).IsUnique();
+            entity.HasIndex(e => e.TenantId);
+            
+            entity.HasOne(e => e.Customer)
+                .WithMany()
+                .HasForeignKey(e => e.CustomerId)
+                .OnDelete(DeleteBehavior.SetNull);
+            
+            entity.HasMany(e => e.QuoteItems)
+                .WithOne(e => e.Quote)
+                .HasForeignKey(e => e.QuoteId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // QuoteItem configuration
+        modelBuilder.Entity<QuoteItem>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Description).IsRequired().HasMaxLength(500);
+            entity.Property(e => e.Quantity).HasPrecision(18, 4);
+            entity.Property(e => e.UnitPrice).HasPrecision(18, 2);
+            entity.Property(e => e.DiscountPercent).HasPrecision(5, 2);
+            entity.Property(e => e.TaxRate).HasPrecision(5, 2);
+            entity.Property(e => e.LineTotal).HasPrecision(18, 2);
+            entity.HasIndex(e => e.QuoteId);
+            
+            entity.HasOne(e => e.Product)
+                .WithMany()
+                .HasForeignKey(e => e.ProductId)
+                .OnDelete(DeleteBehavior.SetNull);
+        });
+
+        // WorkOrder configuration
+        modelBuilder.Entity<WorkOrder>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.WorkOrderNumber).IsRequired().HasMaxLength(50);
+            entity.Property(e => e.CustomerName).IsRequired().HasMaxLength(200);
+            entity.Property(e => e.CustomerEmail).HasMaxLength(200);
+            entity.Property(e => e.CustomerPhone).HasMaxLength(50);
+            entity.Property(e => e.Description).IsRequired().HasMaxLength(1000);
+            entity.Property(e => e.Status).HasMaxLength(50);
+            entity.Property(e => e.Priority).HasMaxLength(20);
+            entity.Property(e => e.EstimatedHours).HasPrecision(18, 2);
+            entity.Property(e => e.ActualHours).HasPrecision(18, 2);
+            entity.Property(e => e.EstimatedCost).HasPrecision(18, 2);
+            entity.Property(e => e.ActualCost).HasPrecision(18, 2);
+            entity.HasIndex(e => e.WorkOrderNumber).IsUnique();
+            entity.HasIndex(e => e.TenantId);
+            
+            entity.HasOne(e => e.Customer)
+                .WithMany()
+                .HasForeignKey(e => e.CustomerId)
+                .OnDelete(DeleteBehavior.SetNull);
+            
+            entity.HasOne(e => e.AssignedTo)
+                .WithMany()
+                .HasForeignKey(e => e.AssignedToUserId)
+                .OnDelete(DeleteBehavior.SetNull);
+            
+            entity.HasOne(e => e.SalesOrder)
+                .WithMany()
+                .HasForeignKey(e => e.SalesOrderId)
+                .OnDelete(DeleteBehavior.SetNull);
+            
+            entity.HasOne(e => e.Quote)
+                .WithMany()
+                .HasForeignKey(e => e.QuoteId)
+                .OnDelete(DeleteBehavior.SetNull);
+            
+            entity.HasMany(e => e.WorkOrderTasks)
+                .WithOne(e => e.WorkOrder)
+                .HasForeignKey(e => e.WorkOrderId)
+                .OnDelete(DeleteBehavior.Cascade);
+            
+            entity.HasMany(e => e.SiteVisitSignOffs)
+                .WithOne(e => e.WorkOrder)
+                .HasForeignKey(e => e.WorkOrderId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // WorkOrderTask configuration
+        modelBuilder.Entity<WorkOrderTask>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.TaskName).IsRequired().HasMaxLength(200);
+            entity.Property(e => e.Description).HasMaxLength(1000);
+            entity.Property(e => e.EstimatedHours).HasPrecision(18, 2);
+            entity.Property(e => e.ActualHours).HasPrecision(18, 2);
+            entity.HasIndex(e => e.WorkOrderId);
+            
+            entity.HasOne(e => e.CompletedBy)
+                .WithMany()
+                .HasForeignKey(e => e.CompletedByUserId)
+                .OnDelete(DeleteBehavior.SetNull);
+        });
+
+        // SiteVisit configuration
+        modelBuilder.Entity<SiteVisit>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.VisitNumber).IsRequired().HasMaxLength(50);
+            entity.Property(e => e.VisitType).IsRequired().HasMaxLength(50);
+            entity.Property(e => e.Status).HasMaxLength(50);
+            entity.HasIndex(e => e.VisitNumber).IsUnique();
+            entity.HasIndex(e => e.TenantId);
+            
+            entity.HasOne(e => e.Customer)
+                .WithMany()
+                .HasForeignKey(e => e.CustomerId)
+                .OnDelete(DeleteBehavior.SetNull);
+            
+            entity.HasOne(e => e.AssignedTo)
+                .WithMany()
+                .HasForeignKey(e => e.AssignedToUserId)
+                .OnDelete(DeleteBehavior.SetNull);
+            
+            entity.HasMany(e => e.WorkOrders)
+                .WithOne(e => e.SiteVisit)
+                .HasForeignKey(e => e.SiteVisitId)
+                .OnDelete(DeleteBehavior.SetNull);
+            
+            entity.HasMany(e => e.SiteVisitSignOffs)
+                .WithOne(e => e.SiteVisit)
+                .HasForeignKey(e => e.SiteVisitId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // SiteVisitSignOff configuration
+        modelBuilder.Entity<SiteVisitSignOff>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.VisitType).IsRequired().HasMaxLength(50);
+            entity.Property(e => e.SignedByName).IsRequired().HasMaxLength(200);
+            entity.Property(e => e.SignedByTitle).HasMaxLength(100);
+            entity.HasIndex(e => e.WorkOrderId);
+            entity.HasIndex(e => e.SiteVisitId);
+            
+            entity.HasOne(e => e.WorkOrder)
+                .WithMany(e => e.SiteVisitSignOffs)
+                .HasForeignKey(e => e.WorkOrderId)
+                .OnDelete(DeleteBehavior.SetNull);
         });
     }
 }

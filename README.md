@@ -4,7 +4,9 @@ A modern, full-featured accounting management system similar to Sage 200, built 
 
 ## 📚 Documentation
 
+- **[Build Instructions](BUILD_INSTRUCTIONS.md)** - Complete guide for building on all platforms (NEW)
 - **[Blazor Web App Guide](BLAZOR_APP_GUIDE.md)** - Complete guide for the web application
+- **[React Native Contractor App Guide](REACT_NATIVE_APP_GUIDE.md)** - Mobile app for contractors
 - **[Mobile App Guide](MOBILE_APP_GUIDE.md)** - Complete guide for the MAUI mobile fulfillment app
 - **[MAUI Implementation](MAUI_README.md)** - Technical details of the MAUI implementation
 - **[Screenshots Guide](docs/SCREENSHOTS_GUIDE.md)** - How to capture and contribute screenshots
@@ -17,8 +19,11 @@ A modern, full-featured accounting management system similar to Sage 200, built 
 - **Product Catalog** - Comprehensive product management with stock control and reorder levels
 - **Sales Order Processing** - Create and manage sales orders with customer information
 - **Sales Invoice Generation** - Generate invoices from sales orders with tax calculations
+- **Quotes Management** - Create and manage customer quotes with conversion to orders (NEW)
+- **Work Orders Management** - Track work orders with tasks and site visit sign-offs (NEW)
 - **Bill of Materials (BOM)** - Create and manage BOMs with component tracking
 - **BOM to Sales Order Linking** - Link BOMs to sales order items for component requirement tracking
+- **Contractor Mobile App** - React Native app for offline-first sales orders, quotes, and work orders (NEW)
 
 ## Architecture
 
@@ -31,12 +36,14 @@ AccountsPOC/
 │   ├── AccountsPOC.Infrastructure/  # Data access with EF Core
 │   ├── AccountsPOC.WebAPI/          # RESTful API (.NET 10)
 │   └── AccountsPOC.BlazorApp/       # Blazor Web App UI (.NET 10)
+└── ContractorApp/                   # React Native mobile app (NEW)
 ```
 
 ### Technology Stack
 - **.NET 10** - Latest .NET framework
 - **ASP.NET Core Web API** - RESTful backend services
 - **Blazor Web App** - Modern, interactive UI with server-side rendering
+- **React Native with Expo** - Cross-platform mobile app for contractors (NEW)
 - **Entity Framework Core** - ORM with SQLite database
 - **Bootstrap 5** - Modern, responsive UI framework
 - **Clean Architecture** - Separation of concerns and maintainability
@@ -61,8 +68,13 @@ AccountsPOC/
 
 ## Getting Started
 
+### Quick Start
+
+See **[BUILD_INSTRUCTIONS.md](BUILD_INSTRUCTIONS.md)** for detailed platform-specific build and deployment instructions.
+
 ### Prerequisites
 - .NET 10 SDK
+- Node.js (v18+) for React Native app
 - Any modern IDE (Visual Studio 2022, VS Code, Rider)
 
 ### Running the Application
@@ -81,8 +93,15 @@ dotnet run
 ```
 The Blazor app will start at `http://localhost:5193`
 
-3. **Access the Application:**
-Open your browser and navigate to `http://localhost:5193`
+3. **Start the React Native Contractor App:**
+```bash
+cd ContractorApp
+npm install
+npm start
+```
+Access via Expo Go app or web browser at `http://localhost:19006`
+
+For detailed instructions on building for iOS, Android, Windows, and Linux, see [BUILD_INSTRUCTIONS.md](BUILD_INSTRUCTIONS.md).
 
 ### Building the Solution
 ```bash
