@@ -227,7 +227,7 @@
             CompanyName = tenant.CompanyName,
             ContactEmail = tenant.ContactEmail,
             ContactPhone = tenant.ContactPhone,
-            Address = ""
+            Address = tenant.Address ?? ""
         };
         isEditing = true;
     }
