@@ -10,6 +10,8 @@ public class BankAccount
     public string? BranchCode { get; set; }
     public decimal Balance { get; set; }
     public required string Currency { get; set; }
+    public decimal? VatTaxRate { get; set; }
+    public string? Region { get; set; }
     public DateTime CreatedDate { get; set; }
     public DateTime? LastModifiedDate { get; set; }
     public bool IsActive { get; set; } = true;

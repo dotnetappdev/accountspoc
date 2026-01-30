@@ -153,8 +153,14 @@ namespace AccountsPOC.Infrastructure.Migrations
                     b.Property<DateTime?>("LastModifiedDate")
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("Region")
+                        .HasColumnType("TEXT");
+
                     b.Property<int>("TenantId")
                         .HasColumnType("INTEGER");
+
+                    b.Property<decimal?>("VatTaxRate")
+                        .HasColumnType("TEXT");
 
                     b.HasKey("Id");
 
@@ -3849,6 +3855,9 @@ namespace AccountsPOC.Infrastructure.Migrations
                         .HasMaxLength(500)
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("Bins")
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("City")
                         .HasMaxLength(100)
                         .HasColumnType("TEXT");
@@ -3868,14 +3877,29 @@ namespace AccountsPOC.Infrastructure.Migrations
                     b.Property<DateTime>("CreatedDate")
                         .HasColumnType("TEXT");
 
+                    b.Property<int?>("HeightLevels")
+                        .HasColumnType("INTEGER");
+
                     b.Property<bool>("IsActive")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("IsTemperatureControlled")
                         .HasColumnType("INTEGER");
 
                     b.Property<DateTime?>("LastModifiedDate")
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("PickingSequence")
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("PostCode")
                         .HasMaxLength(20)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("SecurityLevel")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("TemperatureRange")
                         .HasColumnType("TEXT");
 
                     b.Property<int>("TenantId")
@@ -3889,6 +3913,9 @@ namespace AccountsPOC.Infrastructure.Migrations
                     b.Property<string>("WarehouseName")
                         .IsRequired()
                         .HasMaxLength(200)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Zones")
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
