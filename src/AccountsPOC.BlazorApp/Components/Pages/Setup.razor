@@ -5,6 +5,7 @@
 @layout SetupLayout
 @inject HttpClient Http
 @inject NavigationManager Navigation
+@implements IDisposable
 @rendermode InteractiveServer
 
 <PageTitle>Database Setup</PageTitle>
@@ -304,6 +305,7 @@
     private DatabaseSetupResponse? setupResponse;
     private int countdown = 5;
     private System.Threading.Timer? countdownTimer;
+    private bool isNavigating = false;
 
     protected override void OnInitialized()
     {
@@ -440,10 +442,11 @@
     {
         countdownTimer = new System.Threading.Timer(async _ =>
         {
+            if (isNavigating) return; // Prevent race condition
+
             countdown--;
             if (countdown <= 0)
             {
-                countdownTimer?.Dispose();
                 await InvokeAsync(() =>
                 {
                     NavigateToTenantSetup();
@@ -458,7 +461,12 @@
 
     private void NavigateToTenantSetup()
     {
+        if (isNavigating) return; // Prevent duplicate navigation
+
+        isNavigating = true;
         countdownTimer?.Dispose();
+        countdownTimer = null;
+        
         // Navigate to tenant setup page - adjust the route as needed
         Navigation.NavigateTo("/tenants", forceLoad: true);
     }
