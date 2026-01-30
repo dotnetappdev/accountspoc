@@ -61,35 +61,74 @@
                         <h6>Order Items</h6>
                         <div class="card">
                             <div class="card-body">
-                                <div class="row mb-3">
-                                    <div class="col-md-5">
-                                        <label class="form-label">Product</label>
-                                        <select class="form-select" @bind="SelectedProductId">
-                                            <option value="0">-- Select Product --</option>
-                                            @if (products != null)
-                                            {
-                                                @foreach (var product in products)
-                                                {
-                                                    <option value="@product.Id">@product.ProductName - @product.ProductCode (@product.UnitPrice.ToString("C"))</option>
-                                                }
-                                            }
-                                        </select>
-                                    </div>
-                                    <div class="col-md-2">
-                                        <label class="form-label">Quantity</label>
-                                        <input type="number" class="form-control" @bind="newItemQuantity" min="1" />
-                                    </div>
-                                    <div class="col-md-2">
-                                        <label class="form-label">Unit Price</label>
-                                        <input type="number" class="form-control" @bind="newItemUnitPrice" step="0.01" min="0" />
-                                    </div>
-                                    <div class="col-md-3">
-                                        <label class="form-label">&nbsp;</label>
-                                        <button type="button" class="btn btn-primary w-100" @onclick="AddLineItem">
-                                            <i class="bi bi-plus-circle"></i> Add Item
-                                        </button>
+                                <div class="mb-3">
+                                    <div class="btn-group" role="group">
+                                        <input type="radio" class="btn-check" name="itemType" id="productItem" checked="@(!isFreeTextItem)" @onchange="@(() => SetItemType(false))" />
+                                        <label class="btn btn-outline-primary" for="productItem">
+                                            <i class="bi bi-box-seam"></i> Product
+                                        </label>
+                                        <input type="radio" class="btn-check" name="itemType" id="freeTextItem" checked="@isFreeTextItem" @onchange="@(() => SetItemType(true))" />
+                                        <label class="btn btn-outline-primary" for="freeTextItem">
+                                            <i class="bi bi-pencil"></i> Free Text / Non-Stock Item
+                                        </label>
                                     </div>
                                 </div>
+
+                                @if (!isFreeTextItem)
+                                {
+                                    <div class="row mb-3">
+                                        <div class="col-md-5">
+                                            <label class="form-label">Product</label>
+                                            <select class="form-select" @bind="SelectedProductId">
+                                                <option value="0">-- Select Product --</option>
+                                                @if (products != null)
+                                                {
+                                                    @foreach (var product in products)
+                                                    {
+                                                        <option value="@product.Id">@product.ProductName - @product.ProductCode (@product.UnitPrice.ToString("C"))</option>
+                                                    }
+                                                }
+                                            </select>
+                                        </div>
+                                        <div class="col-md-2">
+                                            <label class="form-label">Quantity</label>
+                                            <input type="number" class="form-control" @bind="newItemQuantity" min="1" />
+                                        </div>
+                                        <div class="col-md-2">
+                                            <label class="form-label">Unit Price</label>
+                                            <input type="number" class="form-control" @bind="newItemUnitPrice" step="0.01" min="0" />
+                                        </div>
+                                        <div class="col-md-3">
+                                            <label class="form-label">&nbsp;</label>
+                                            <button type="button" class="btn btn-primary w-100" @onclick="AddLineItem">
+                                                <i class="bi bi-plus-circle"></i> Add Item
+                                            </button>
+                                        </div>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div class="row mb-3">
+                                        <div class="col-md-5">
+                                            <label class="form-label">Description</label>
+                                            <input type="text" class="form-control" @bind="freeTextDescription" placeholder="Item description" />
+                                        </div>
+                                        <div class="col-md-2">
+                                            <label class="form-label">Quantity</label>
+                                            <input type="number" class="form-control" @bind="newItemQuantity" min="1" />
+                                        </div>
+                                        <div class="col-md-2">
+                                            <label class="form-label">Unit Price</label>
+                                            <input type="number" class="form-control" @bind="newItemUnitPrice" step="0.01" min="0" />
+                                        </div>
+                                        <div class="col-md-3">
+                                            <label class="form-label">&nbsp;</label>
+                                            <button type="button" class="btn btn-primary w-100" @onclick="AddFreeTextLineItem">
+                                                <i class="bi bi-plus-circle"></i> Add Item
+                                            </button>
+                                        </div>
+                                    </div>
+                                }
 
                                 @if (currentOrder.SalesOrderItems.Any())
                                 {
@@ -99,14 +138,28 @@
                                                  Striped="true"
                                                  Bordered="true">
                                         <Columns>
-                                            <TemplateColumn Title="Product">
+                                            <TemplateColumn Title="Product / Description">
                                                 <CellTemplate Context="itemContext">
-                                                    @(itemContext.Item.Product?.ProductName ?? "Unknown")
+                                                    @if (itemContext.Item.IsFreeTextItem)
+                                                    {
+                                                        <span><i class="bi bi-pencil text-info"></i> @(itemContext.Item.Description ?? "Free Text Item")</span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span>@(itemContext.Item.Product?.ProductName ?? "Unknown")</span>
+                                                    }
                                                 </CellTemplate>
                                             </TemplateColumn>
                                             <TemplateColumn Title="Code">
                                                 <CellTemplate Context="itemContext">
-                                                    @(itemContext.Item.Product?.ProductCode ?? "N/A")
+                                                    @if (!itemContext.Item.IsFreeTextItem)
+                                                    {
+                                                        @(itemContext.Item.Product?.ProductCode ?? "N/A")
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="text-muted">-</span>
+                                                    }
                                                 </CellTemplate>
                                             </TemplateColumn>
                                             <PropertyColumn Property="x => x.Quantity" Title="Quantity" />
@@ -258,6 +311,8 @@
     private int selectedProductId = 0;
     private int newItemQuantity = 1;
     private decimal newItemUnitPrice = 0;
+    private bool isFreeTextItem = false;
+    private string freeTextDescription = "";
 
     private int SelectedProductId
     {
@@ -408,6 +463,12 @@
         }
     }
 
+    private void SetItemType(bool isFreeText)
+    {
+        isFreeTextItem = isFreeText;
+        ResetLineItemFields();
+    }
+
     private void AddLineItem()
     {
         if (selectedProductId == 0 || newItemQuantity <= 0 || newItemUnitPrice < 0)
@@ -427,7 +488,29 @@
             Product = selectedProduct,
             Quantity = newItemQuantity,
             UnitPrice = newItemUnitPrice,
-            TotalPrice = newItemQuantity * newItemUnitPrice
+            TotalPrice = newItemQuantity * newItemUnitPrice,
+            IsFreeTextItem = false
+        };
+
+        currentOrder.SalesOrderItems.Add(newItem);
+        ResetLineItemFields();
+    }
+
+    private void AddFreeTextLineItem()
+    {
+        if (string.IsNullOrWhiteSpace(freeTextDescription) || newItemQuantity <= 0 || newItemUnitPrice < 0)
+        {
+            return;
+        }
+
+        var newItem = new SalesOrderItem
+        {
+            ProductId = null,
+            Description = freeTextDescription,
+            Quantity = newItemQuantity,
+            UnitPrice = newItemUnitPrice,
+            TotalPrice = newItemQuantity * newItemUnitPrice,
+            IsFreeTextItem = true
         };
 
         currentOrder.SalesOrderItems.Add(newItem);
@@ -444,6 +527,7 @@
         selectedProductId = 0;
         newItemQuantity = 1;
         newItemUnitPrice = 0;
+        freeTextDescription = "";
     }
 
     private decimal CalculateOrderTotal()

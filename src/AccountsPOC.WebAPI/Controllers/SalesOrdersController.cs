@@ -63,9 +63,22 @@ public class SalesOrdersController : ControllerBase
             {
                 return BadRequest("Unit price cannot be negative.");
             }
-            if (!await _context.Products.AnyAsync(p => p.Id == item.ProductId))
+            
+            // Only validate ProductId if it's not a free-text item
+            if (!item.IsFreeTextItem)
             {
-                return BadRequest($"Product with ID {item.ProductId} does not exist.");
+                if (item.ProductId == null || !await _context.Products.AnyAsync(p => p.Id == item.ProductId))
+                {
+                    return BadRequest($"Product with ID {item.ProductId} does not exist.");
+                }
+            }
+            else
+            {
+                // For free-text items, ensure description is provided
+                if (string.IsNullOrWhiteSpace(item.Description))
+                {
+                    return BadRequest("Description is required for free-text items.");
+                }
             }
             
             item.TotalPrice = item.Quantity * item.UnitPrice;
@@ -110,9 +123,22 @@ public class SalesOrdersController : ControllerBase
             {
                 return BadRequest("Unit price cannot be negative.");
             }
-            if (!await _context.Products.AnyAsync(p => p.Id == item.ProductId))
+            
+            // Only validate ProductId if it's not a free-text item
+            if (!item.IsFreeTextItem)
             {
-                return BadRequest($"Product with ID {item.ProductId} does not exist.");
+                if (item.ProductId == null || !await _context.Products.AnyAsync(p => p.Id == item.ProductId))
+                {
+                    return BadRequest($"Product with ID {item.ProductId} does not exist.");
+                }
+            }
+            else
+            {
+                // For free-text items, ensure description is provided
+                if (string.IsNullOrWhiteSpace(item.Description))
+                {
+                    return BadRequest("Description is required for free-text items.");
+                }
             }
             
             item.TotalPrice = item.Quantity * item.UnitPrice;
