@@ -215,7 +215,7 @@ const QuoteFormScreen = () => {
             
             <Text style={[styles.label, { color: colors.text }]}>Quote Number</Text>
             <TextInput
-              style={[styles.input, { backgroundColor: colors.inputBackground, color: colors.text }]}
+              style={[styles.input, { backgroundColor: colors.card, color: colors.text }]}
               value={quoteNumber}
               onChangeText={setQuoteNumber}
               placeholder="QT-12345"
@@ -252,7 +252,7 @@ const QuoteFormScreen = () => {
 
             <Text style={[styles.label, { color: colors.text }]}>Customer Name *</Text>
             <TextInput
-              style={[styles.input, { backgroundColor: colors.inputBackground, color: colors.text }]}
+              style={[styles.input, { backgroundColor: colors.card, color: colors.text }]}
               value={customerName}
               onChangeText={setCustomerName}
               placeholder="Enter customer name"
@@ -261,7 +261,7 @@ const QuoteFormScreen = () => {
 
             <Text style={[styles.label, { color: colors.text }]}>Email</Text>
             <TextInput
-              style={[styles.input, { backgroundColor: colors.inputBackground, color: colors.text }]}
+              style={[styles.input, { backgroundColor: colors.card, color: colors.text }]}
               value={customerEmail}
               onChangeText={setCustomerEmail}
               placeholder="email@example.com"
@@ -272,7 +272,7 @@ const QuoteFormScreen = () => {
 
             <Text style={[styles.label, { color: colors.text }]}>Phone</Text>
             <TextInput
-              style={[styles.input, { backgroundColor: colors.inputBackground, color: colors.text }]}
+              style={[styles.input, { backgroundColor: colors.card, color: colors.text }]}
               value={customerPhone}
               onChangeText={setCustomerPhone}
               placeholder="Phone number"
@@ -287,7 +287,7 @@ const QuoteFormScreen = () => {
 
             <Text style={[styles.label, { color: colors.text }]}>Quote Date</Text>
             <TouchableOpacity
-              style={[styles.input, styles.dateButton, { backgroundColor: colors.inputBackground }]}
+              style={[styles.input, styles.dateButton, { backgroundColor: colors.card }]}
               onPress={() => setShowQuoteDatePicker(true)}
             >
               <Text style={{ color: colors.text }}>{quoteDate.toLocaleDateString()}</Text>
@@ -309,7 +309,7 @@ const QuoteFormScreen = () => {
 
             <Text style={[styles.label, { color: colors.text }]}>Expiry Date (Optional)</Text>
             <TouchableOpacity
-              style={[styles.input, styles.dateButton, { backgroundColor: colors.inputBackground }]}
+              style={[styles.input, styles.dateButton, { backgroundColor: colors.card }]}
               onPress={() => setShowExpiryDatePicker(true)}
             >
               <Text style={{ color: colors.text }}>
@@ -363,7 +363,7 @@ const QuoteFormScreen = () => {
 
                 <Text style={[styles.label, { color: colors.text }]}>Description *</Text>
                 <TextInput
-                  style={[styles.input, { backgroundColor: colors.inputBackground, color: colors.text }]}
+                  style={[styles.input, { backgroundColor: colors.card, color: colors.text }]}
                   value={item.description}
                   onChangeText={(value) => updateItem(index, 'description', value)}
                   placeholder="Item description"
@@ -375,7 +375,7 @@ const QuoteFormScreen = () => {
                   <View style={styles.itemColumn}>
                     <Text style={[styles.label, { color: colors.text }]}>Quantity *</Text>
                     <TextInput
-                      style={[styles.input, { backgroundColor: colors.inputBackground, color: colors.text }]}
+                      style={[styles.input, { backgroundColor: colors.card, color: colors.text }]}
                       value={item.quantity.toString()}
                       onChangeText={(value) => updateItem(index, 'quantity', value)}
                       placeholder="1"
@@ -387,7 +387,7 @@ const QuoteFormScreen = () => {
                   <View style={styles.itemColumn}>
                     <Text style={[styles.label, { color: colors.text }]}>Unit Price *</Text>
                     <TextInput
-                      style={[styles.input, { backgroundColor: colors.inputBackground, color: colors.text }]}
+                      style={[styles.input, { backgroundColor: colors.card, color: colors.text }]}
                       value={item.unitPrice.toString()}
                       onChangeText={(value) => updateItem(index, 'unitPrice', value)}
                       placeholder="0.00"
@@ -418,7 +418,7 @@ const QuoteFormScreen = () => {
           <View style={[styles.section, { backgroundColor: colors.card }]}>
             <Text style={[styles.sectionTitle, { color: colors.text }]}>Notes</Text>
             <TextInput
-              style={[styles.input, styles.notesInput, { backgroundColor: colors.inputBackground, color: colors.text }]}
+              style={[styles.input, styles.notesInput, { backgroundColor: colors.card, color: colors.text }]}
               value={notes}
               onChangeText={setNotes}
               placeholder="Additional notes or terms..."
