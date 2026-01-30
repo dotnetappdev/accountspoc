@@ -60,9 +60,40 @@
                             </NavLink>
                         </li>
                         <li class="nav-item">
+                            <NavLink class="nav-link" href="quotes">
+                                <i class="bi bi-file-text nav-icon"></i>
+                                <p>Quotes</p>
+                            </NavLink>
+                        </li>
+                        <li class="nav-item">
                             <NavLink class="nav-link" href="price-lists">
                                 <i class="bi bi-tags nav-icon"></i>
                                 <p>Price Lists</p>
+                            </NavLink>
+                        </li>
+                    </ul>
+                </li>
+
+                <!-- Work Orders -->
+                <li class="nav-item @(expandedSections.Contains("workorders") ? "menu-open" : "")">
+                    <a href="#" class="nav-link" @onclick="@(() => ToggleSection("workorders"))" @onclick:preventDefault>
+                        <i class="nav-icon bi bi-wrench"></i>
+                        <p>
+                            Work Orders
+                            <i class="right bi @(expandedSections.Contains("workorders") ? "bi-chevron-down" : "bi-chevron-right")"></i>
+                        </p>
+                    </a>
+                    <ul class="nav nav-treeview">
+                        <li class="nav-item">
+                            <NavLink class="nav-link" href="work-orders">
+                                <i class="bi bi-clipboard-check nav-icon"></i>
+                                <p>Work Orders</p>
+                            </NavLink>
+                        </li>
+                        <li class="nav-item">
+                            <NavLink class="nav-link" href="site-visit-signoffs">
+                                <i class="bi bi-pen nav-icon"></i>
+                                <p>Site Visit Sign-offs</p>
                             </NavLink>
                         </li>
                     </ul>

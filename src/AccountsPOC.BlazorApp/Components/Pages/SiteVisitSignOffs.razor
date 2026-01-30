@@ -1,0 +1,282 @@
+@page "/site-visit-signoffs"
+@using System.Net.Http.Json
+@using AccountsPOC.BlazorApp.Models
+@inject HttpClient Http
+@rendermode InteractiveServer
+
+<PageTitle>Site Visit Sign-offs</PageTitle>
+
+<div class="container-fluid">
+    <h1 class="mb-4">Site Visit Sign-offs</h1>
+
+    <div class="row mb-3">
+        <div class="col">
+            <button class="btn btn-primary" @onclick="ShowAddForm">
+                <i class="bi bi-plus-circle"></i> Create New Sign-off
+            </button>
+        </div>
+    </div>
+
+    @if (showForm)
+    {
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5>@(editingSignOff != null ? "Edit" : "Create") Site Visit Sign-off</h5>
+            </div>
+            <div class="card-body">
+                <EditForm Model="currentSignOff" OnValidSubmit="SaveSignOff">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Work Order ID</label>
+                            <InputNumber class="form-control" @bind-Value="currentSignOff.WorkOrderId" />
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Visit Type</label>
+                            <InputSelect class="form-select" @bind-Value="currentSignOff.VisitType">
+                                <option value="Initial">Initial</option>
+                                <option value="Progress">Progress</option>
+                                <option value="Completion">Completion</option>
+                                <option value="Inspection">Inspection</option>
+                            </InputSelect>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Visit Date</label>
+                            <InputDate class="form-control" @bind-Value="currentSignOff.VisitDate" />
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Customer Satisfaction (1-5)</label>
+                            <InputNumber class="form-control" @bind-Value="currentSignOff.CustomerSatisfactionRating" />
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Signed By Name</label>
+                            <InputText class="form-control" @bind-Value="currentSignOff.SignedByName" />
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Signed By Title</label>
+                            <InputText class="form-control" @bind-Value="currentSignOff.SignedByTitle" />
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Work Completed</label>
+                        <InputTextArea class="form-control" @bind-Value="currentSignOff.WorkCompleted" rows="3" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Issues Identified</label>
+                        <InputTextArea class="form-control" @bind-Value="currentSignOff.IssuesIdentified" rows="3" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Next Steps</label>
+                        <InputTextArea class="form-control" @bind-Value="currentSignOff.NextSteps" rows="3" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Customer Comments</label>
+                        <InputTextArea class="form-control" @bind-Value="currentSignOff.CustomerComments" rows="3" />
+                    </div>
+                    <button type="submit" class="btn btn-success">Save</button>
+                    <button type="button" class="btn btn-secondary" @onclick="CancelForm">Cancel</button>
+                </EditForm>
+            </div>
+        </div>
+    }
+
+    @if (loading)
+    {
+        <div class="d-flex justify-content-center">
+            <div class="spinner-border" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+    }
+    else if (signOffs == null || !signOffs.Any())
+    {
+        <div class="alert alert-info">No site visit sign-offs found.</div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table table-striped table-hover">
+                <thead>
+                    <tr>
+                        <th>Work Order ID</th>
+                        <th>Visit Type</th>
+                        <th>Visit Date</th>
+                        <th>Signed By</th>
+                        <th>Rating</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var signOff in signOffs)
+                    {
+                        <tr>
+                            <td>@signOff.WorkOrderId</td>
+                            <td>
+                                <span class="badge bg-info">
+                                    @signOff.VisitType
+                                </span>
+                            </td>
+                            <td>@signOff.VisitDate.ToShortDateString()</td>
+                            <td>@signOff.SignedByName</td>
+                            <td>
+                                @if (signOff.CustomerSatisfactionRating.HasValue)
+                                {
+                                    <div>
+                                        @for (int i = 1; i <= 5; i++)
+                                        {
+                                            if (i <= signOff.CustomerSatisfactionRating.Value)
+                                            {
+                                                <i class="bi bi-star-fill text-warning"></i>
+                                            }
+                                            else
+                                            {
+                                                <i class="bi bi-star text-warning"></i>
+                                            }
+                                        }
+                                    </div>
+                                }
+                                else
+                                {
+                                    <span>N/A</span>
+                                }
+                            </td>
+                            <td>
+                                <button class="btn btn-sm btn-primary" @onclick="() => EditSignOff(signOff)">
+                                    <i class="bi bi-pencil"></i> Edit
+                                </button>
+                                <button class="btn btn-sm btn-danger" @onclick="() => DeleteSignOff(signOff.Id)">
+                                    <i class="bi bi-trash"></i> Delete
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>
+
+@code {
+    private List<SiteVisitSignOff>? signOffs;
+    private SiteVisitSignOff currentSignOff = new SiteVisitSignOff 
+    { 
+        VisitDate = DateTime.Now,
+        VisitType = "Initial",
+        SignedByName = "",
+        SignedDate = DateTime.Now
+    };
+    private SiteVisitSignOff? editingSignOff;
+    private bool showForm = false;
+    private bool loading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadSignOffs();
+    }
+
+    private async Task LoadSignOffs()
+    {
+        loading = true;
+        try
+        {
+            signOffs = await Http.GetFromJsonAsync<List<SiteVisitSignOff>>("http://localhost:5001/api/SiteVisitSignOffs");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading sign-offs: {ex.Message}");
+        }
+        finally
+        {
+            loading = false;
+        }
+    }
+
+    private void ShowAddForm()
+    {
+        currentSignOff = new SiteVisitSignOff 
+        { 
+            VisitDate = DateTime.Now,
+            VisitType = "Initial",
+            SignedByName = "",
+            SignedDate = DateTime.Now
+        };
+        editingSignOff = null;
+        showForm = true;
+    }
+
+    private void EditSignOff(SiteVisitSignOff signOff)
+    {
+        currentSignOff = signOff;
+        editingSignOff = signOff;
+        showForm = true;
+    }
+
+    private async Task SaveSignOff()
+    {
+        try
+        {
+            if (editingSignOff != null)
+            {
+                await Http.PutAsJsonAsync($"http://localhost:5001/api/SiteVisitSignOffs/{currentSignOff.Id}", currentSignOff);
+            }
+            else
+            {
+                await Http.PostAsJsonAsync("http://localhost:5001/api/SiteVisitSignOffs", currentSignOff);
+            }
+            
+            await LoadSignOffs();
+            CancelForm();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error saving sign-off: {ex.Message}");
+        }
+    }
+
+    private async Task DeleteSignOff(int id)
+    {
+        if (confirm("Are you sure you want to delete this sign-off?"))
+        {
+            try
+            {
+                await Http.DeleteAsync($"http://localhost:5001/api/SiteVisitSignOffs/{id}");
+                await LoadSignOffs();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error deleting sign-off: {ex.Message}");
+            }
+        }
+    }
+
+    private void CancelForm()
+    {
+        showForm = false;
+        editingSignOff = null;
+    }
+
+    private bool confirm(string message)
+    {
+        // In a real implementation, use JS interop for confirmation
+        return true;
+    }
+
+    public class SiteVisitSignOff
+    {
+        public int Id { get; set; }
+        public int WorkOrderId { get; set; }
+        public DateTime VisitDate { get; set; }
+        public string VisitType { get; set; } = "";
+        public string SignedByName { get; set; } = "";
+        public string? SignedByTitle { get; set; }
+        public DateTime SignedDate { get; set; }
+        public string? WorkCompleted { get; set; }
+        public string? IssuesIdentified { get; set; }
+        public string? NextSteps { get; set; }
+        public string? CustomerComments { get; set; }
+        public int? CustomerSatisfactionRating { get; set; }
+    }
+}
