@@ -49,15 +49,19 @@ public class QuotesController : ControllerBase
         quote.CreatedDate = DateTime.UtcNow;
         quote.QuoteDate = DateTime.UtcNow;
         
-        foreach (var item in quote.QuoteItems)
+        // Calculate totals only if items exist
+        if (quote.QuoteItems != null && quote.QuoteItems.Any())
         {
-            item.LineTotal = (item.Quantity * item.UnitPrice) * (1 - item.DiscountPercent / 100) * (1 + item.TaxRate / 100);
+            foreach (var item in quote.QuoteItems)
+            {
+                item.LineTotal = (item.Quantity * item.UnitPrice) * (1 - item.DiscountPercent / 100) * (1 + item.TaxRate / 100);
+            }
+            
+            quote.SubTotal = quote.QuoteItems.Sum(i => i.Quantity * i.UnitPrice);
+            quote.DiscountAmount = quote.QuoteItems.Sum(i => i.Quantity * i.UnitPrice * i.DiscountPercent / 100);
+            quote.TaxAmount = quote.QuoteItems.Sum(i => (i.Quantity * i.UnitPrice * (1 - i.DiscountPercent / 100)) * i.TaxRate / 100);
+            quote.TotalAmount = quote.SubTotal - quote.DiscountAmount + quote.TaxAmount;
         }
-        
-        quote.SubTotal = quote.QuoteItems.Sum(i => i.Quantity * i.UnitPrice);
-        quote.DiscountAmount = quote.QuoteItems.Sum(i => i.Quantity * i.UnitPrice * i.DiscountPercent / 100);
-        quote.TaxAmount = quote.QuoteItems.Sum(i => (i.Quantity * i.UnitPrice * (1 - i.DiscountPercent / 100)) * i.TaxRate / 100);
-        quote.TotalAmount = quote.SubTotal - quote.DiscountAmount + quote.TaxAmount;
         
         _context.Quotes.Add(quote);
         await _context.SaveChangesAsync();
@@ -75,22 +79,30 @@ public class QuotesController : ControllerBase
 
         quote.LastModifiedDate = DateTime.UtcNow;
         
-        foreach (var item in quote.QuoteItems)
+        // Calculate totals only if items exist
+        if (quote.QuoteItems != null && quote.QuoteItems.Any())
         {
-            item.LineTotal = (item.Quantity * item.UnitPrice) * (1 - item.DiscountPercent / 100) * (1 + item.TaxRate / 100);
+            foreach (var item in quote.QuoteItems)
+            {
+                item.LineTotal = (item.Quantity * item.UnitPrice) * (1 - item.DiscountPercent / 100) * (1 + item.TaxRate / 100);
+            }
+            
+            quote.SubTotal = quote.QuoteItems.Sum(i => i.Quantity * i.UnitPrice);
+            quote.DiscountAmount = quote.QuoteItems.Sum(i => i.Quantity * i.UnitPrice * i.DiscountPercent / 100);
+            quote.TaxAmount = quote.QuoteItems.Sum(i => (i.Quantity * i.UnitPrice * (1 - i.DiscountPercent / 100)) * i.TaxRate / 100);
+            quote.TotalAmount = quote.SubTotal - quote.DiscountAmount + quote.TaxAmount;
         }
-        
-        quote.SubTotal = quote.QuoteItems.Sum(i => i.Quantity * i.UnitPrice);
-        quote.DiscountAmount = quote.QuoteItems.Sum(i => i.Quantity * i.UnitPrice * i.DiscountPercent / 100);
-        quote.TaxAmount = quote.QuoteItems.Sum(i => (i.Quantity * i.UnitPrice * (1 - i.DiscountPercent / 100)) * i.TaxRate / 100);
-        quote.TotalAmount = quote.SubTotal - quote.DiscountAmount + quote.TaxAmount;
         
         _context.Entry(quote).State = EntityState.Modified;
 
-        // Handle quote items
+        // Handle quote items - remove and re-add in transaction
         var existingItems = await _context.QuoteItems.Where(i => i.QuoteId == id).ToListAsync();
         _context.QuoteItems.RemoveRange(existingItems);
-        _context.QuoteItems.AddRange(quote.QuoteItems);
+        
+        if (quote.QuoteItems != null)
+        {
+            _context.QuoteItems.AddRange(quote.QuoteItems);
+        }
 
         try
         {
@@ -180,8 +192,9 @@ public class QuotesController : ControllerBase
         }
 
         _context.SalesOrders.Add(salesOrder);
+        await _context.SaveChangesAsync();
 
-        // Update quote status
+        // Update quote status with correct order ID after saving
         quote.Status = "Converted";
         quote.AcceptedDate = DateTime.UtcNow;
         quote.ConvertedToOrderId = salesOrder.Id;

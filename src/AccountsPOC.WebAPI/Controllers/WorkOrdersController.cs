@@ -73,10 +73,14 @@ public class WorkOrdersController : ControllerBase
         
         _context.Entry(workOrder).State = EntityState.Modified;
 
-        // Handle work order tasks
+        // Handle work order tasks - remove and re-add with null check
         var existingTasks = await _context.WorkOrderTasks.Where(t => t.WorkOrderId == id).ToListAsync();
         _context.WorkOrderTasks.RemoveRange(existingTasks);
-        _context.WorkOrderTasks.AddRange(workOrder.WorkOrderTasks);
+        
+        if (workOrder.WorkOrderTasks != null)
+        {
+            _context.WorkOrderTasks.AddRange(workOrder.WorkOrderTasks);
+        }
 
         try
         {
