@@ -11,6 +11,7 @@ public interface ILicenseService
     Task<bool> CanAddCustomer(int tenantId);
     Task<bool> CanAddInstallation(int tenantId);
     Task<bool> CanAddStockItemImage(int stockItemId);
+    Task<bool> CanAddTenant(int tenantId);
     Task<License?> GetActiveLicense(int tenantId);
     Task<LicenseValidationResult> ValidateLicense(int tenantId);
 }
@@ -120,6 +121,17 @@ public class LicenseService : ILicenseService
         var currentCount = await _context.StockItemImages
             .CountAsync(i => i.StockItemId == stockItemId);
         return currentCount < license.MaxImagesPerStockItem;
+    }
+
+    public async Task<bool> CanAddTenant(int tenantId)
+    {
+        var license = await GetActiveLicense(tenantId);
+        if (license == null) return false;
+
+        if (license.MaxTenants == null) return true; // Unlimited
+
+        var currentCount = await _context.Tenants.CountAsync(t => t.IsActive);
+        return currentCount < license.MaxTenants;
     }
 }
 

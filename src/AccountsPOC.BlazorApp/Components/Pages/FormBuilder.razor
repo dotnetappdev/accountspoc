@@ -1,5 +1,6 @@
 @page "/form-builder"
 @page "/form-builder/{FormId:int}"
+@attribute [Authorize]
 @inject HttpClient Http
 @inject NavigationManager Navigation
 @inject IJSRuntime JSRuntime

@@ -1,5 +1,26 @@
 /* AdminLTE 4 Custom Styles for AccountsPOC */
 
+/* Wider sidebar */
+.main-sidebar {
+    width: 280px !important; /* Default is usually 250px */
+}
+
+@media (min-width: 768px) {
+    .sidebar-mini.sidebar-collapse .main-sidebar {
+        width: 4.6rem !important;
+    }
+    
+    .content-wrapper,
+    .main-footer {
+        margin-left: 280px !important;
+    }
+    
+    .sidebar-mini.sidebar-collapse .content-wrapper,
+    .sidebar-mini.sidebar-collapse .main-footer {
+        margin-left: 4.6rem !important;
+    }
+}
+
 /* Brand logo styling */
 .brand-link {
     padding: 0.8rem 0.5rem;

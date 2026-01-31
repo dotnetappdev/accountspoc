@@ -1,5 +1,6 @@
 using AccountsPOC.Domain.Entities;
 using AccountsPOC.Infrastructure.Data;
+using AccountsPOC.WebAPI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -10,10 +11,12 @@ namespace AccountsPOC.WebAPI.Controllers;
 public class TenantsController : ControllerBase
 {
     private readonly ApplicationDbContext _context;
+    private readonly ILicenseService _licenseService;
 
-    public TenantsController(ApplicationDbContext context)
+    public TenantsController(ApplicationDbContext context, ILicenseService licenseService)
     {
         _context = context;
+        _licenseService = licenseService;
     }
 
     [HttpGet]
@@ -38,6 +41,15 @@ public class TenantsController : ControllerBase
     [HttpPost]
     public async Task<ActionResult<Tenant>> PostTenant(Tenant tenant)
     {
+        // Check license limit for tenants
+        // For a multi-tenant system, typically the master/system tenant controls tenant creation
+        var masterTenantId = 1; // TODO: Get from configuration or system tenant
+        var canAdd = await _licenseService.CanAddTenant(masterTenantId);
+        if (!canAdd)
+        {
+            return BadRequest("Tenant limit reached for current license. Please upgrade your license to add more tenants.");
+        }
+
         // Validate TenantCode uniqueness
         if (await _context.Tenants.AnyAsync(t => t.TenantCode == tenant.TenantCode))
         {
@@ -54,6 +66,14 @@ public class TenantsController : ControllerBase
     [HttpPost("CreateWithCustomer")]
     public async Task<ActionResult<object>> CreateTenantWithCustomer(TenantCustomerDto dto)
     {
+        // Check license limit for tenants
+        var masterTenantId = 1; // TODO: Get from configuration or system tenant
+        var canAdd = await _licenseService.CanAddTenant(masterTenantId);
+        if (!canAdd)
+        {
+            return BadRequest("Tenant limit reached for current license. Please upgrade your license to add more tenants.");
+        }
+
         using var transaction = await _context.Database.BeginTransactionAsync();
         
         try
