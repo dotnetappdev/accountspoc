@@ -27,10 +27,12 @@ export const initDatabase = () => {
       CREATE TABLE IF NOT EXISTS sales_order_items (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         salesOrderId INTEGER NOT NULL,
+        productId INTEGER,
         description TEXT NOT NULL,
         quantity INTEGER NOT NULL,
         unitPrice REAL NOT NULL,
         totalPrice REAL NOT NULL,
+        isFreeTextItem INTEGER DEFAULT 0,
         FOREIGN KEY (salesOrderId) REFERENCES sales_orders(id) ON DELETE CASCADE
       );
     `);
@@ -166,6 +168,9 @@ export const initDatabase = () => {
         unitPrice REAL DEFAULT 0,
         quantityOnHand INTEGER DEFAULT 0,
         category TEXT,
+        storageCondition TEXT,
+        isDigitalProduct INTEGER DEFAULT 0,
+        isGiftCard INTEGER DEFAULT 0,
         syncStatus TEXT DEFAULT 'synced',
         lastSyncedAt TEXT
       );
