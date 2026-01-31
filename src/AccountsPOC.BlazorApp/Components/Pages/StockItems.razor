@@ -74,6 +74,26 @@
                     </CellTemplate>
                 </PropertyColumn>
                 <PropertyColumn Property="x => x.QuantityAvailable" Title="Qty Available" Filterable="true" Sortable="true" />
+                <TemplateColumn Title="Storage" Filterable="true" Sortable="false">
+                    <CellTemplate>
+                        @if (!string.IsNullOrEmpty(context.Item.StorageCondition))
+                        {
+                            var icon = context.Item.StorageCondition switch
+                            {
+                                "Refrigerated" or "Frozen" or "Chilled" => "❄️",
+                                "Perishable" => "🥗",
+                                "Hazardous" => "⚠️",
+                                "Controlled" => "🌡️",
+                                _ => "📦"
+                            };
+                            <span title="@context.Item.StorageCondition">@icon @context.Item.StorageCondition</span>
+                        }
+                        else
+                        {
+                            <span class="text-muted">-</span>
+                        }
+                    </CellTemplate>
+                </TemplateColumn>
                 <TemplateColumn Title="Warehouse" Filterable="false" Sortable="false">
                     <CellTemplate>
                         @(context.Item.Warehouse?.WarehouseName ?? "N/A")
@@ -261,13 +281,30 @@
                     </div>
                     
                     <div class="row">
-                        <div class="col-md-6 mb-3">
+                        <div class="col-md-4 mb-3">
                             <label class="form-label">Warehouse ID</label>
                             <InputNumber class="form-control" @bind-Value="currentItem.WarehouseId" />
                         </div>
-                        <div class="col-md-6 mb-3">
+                        <div class="col-md-4 mb-3">
                             <label class="form-label">Bin Location</label>
                             <InputText class="form-control" @bind-Value="currentItem.BinLocation" placeholder="A1-B2-C3" />
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Storage Condition</label>
+                            <InputSelect class="form-select" @bind-Value="currentItem.StorageCondition">
+                                <option value="">-- Not Required --</option>
+                                <option value="Ambient">Ambient / Room Temperature</option>
+                                <option value="Refrigerated">Refrigerated (2-8°C)</option>
+                                <option value="Frozen">Frozen (-18°C or below)</option>
+                                <option value="Controlled">Temperature Controlled</option>
+                                <option value="Chilled">Chilled (0-4°C)</option>
+                                <option value="Dry">Dry Storage</option>
+                                <option value="Hazardous">Hazardous Materials</option>
+                                <option value="Perishable">Perishable / Fresh</option>
+                            </InputSelect>
+                            <small class="form-text text-muted">
+                                <i class="bi bi-info-circle"></i> Required for food, perishables, or items with special storage needs
+                            </small>
                         </div>
                     </div>
 
@@ -275,6 +312,17 @@
                     {
                         <MudAlert Severity="Severity.Warning" Icon="@Icons.Material.Filled.Warning">
                             Stock level is at or below reorder level. Consider restocking.
+                        </MudAlert>
+                    }
+                    
+                    @if (!string.IsNullOrEmpty(currentItem.StorageCondition) && 
+                         (currentItem.StorageCondition == "Refrigerated" || 
+                          currentItem.StorageCondition == "Frozen" || 
+                          currentItem.StorageCondition == "Perishable" || 
+                          currentItem.StorageCondition == "Chilled"))
+                    {
+                        <MudAlert Severity="Severity.Info" Icon="@Icons.Material.Filled.AcUnit" Class="mt-2">
+                            <strong>Storage Note:</strong> This item requires @currentItem.StorageCondition.ToLower() storage conditions.
                         </MudAlert>
                     }
                 </MudTabPanel>

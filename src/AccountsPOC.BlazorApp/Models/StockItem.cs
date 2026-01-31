@@ -53,6 +53,9 @@ public class StockItem
     public bool IsDiscontinued { get; set; }
     public DateTime? DiscontinuedDate { get; set; }
     
+    // Storage Conditions
+    public string? StorageCondition { get; set; }
+    
     // Notes
     public string? Notes { get; set; }
     
