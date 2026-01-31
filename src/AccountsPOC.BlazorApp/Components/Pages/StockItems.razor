@@ -60,6 +60,22 @@
                     </CellTemplate>
                 </PropertyColumn>
                 <PropertyColumn Property="x => x.Description" Title="Description" Filterable="true" Sortable="true" />
+                <TemplateColumn Title="Type" Filterable="false" Sortable="false">
+                    <CellTemplate>
+                        @if (context.Item.IsGiftCard)
+                        {
+                            <MudChip Size="Size.Small" Color="Color.Success" Icon="@Icons.Material.Filled.CardGiftcard">Gift Card</MudChip>
+                        }
+                        else if (context.Item.IsDigitalProduct)
+                        {
+                            <MudChip Size="Size.Small" Color="Color.Info" Icon="@Icons.Material.Filled.CloudDownload">Digital</MudChip>
+                        }
+                        else
+                        {
+                            <span class="text-muted">Physical</span>
+                        }
+                    </CellTemplate>
+                </TemplateColumn>
                 <PropertyColumn Property="x => x.CostPrice" Title="Cost Price" Filterable="true" Sortable="true" Format="C" />
                 <PropertyColumn Property="x => x.SellingPrice" Title="Selling Price" Filterable="true" Sortable="true" Format="C" />
                 <PropertyColumn Property="x => x.QuantityOnHand" Title="Qty On Hand" Filterable="true" Sortable="true">
@@ -214,6 +230,27 @@
                             </div>
                         </div>
                     </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <div class="form-check">
+                                <InputCheckbox class="form-check-input" @bind-Value="currentItem.IsDigitalProduct" id="isDigitalProduct" />
+                                <label class="form-check-label" for="isDigitalProduct">
+                                    <i class="bi bi-cloud-download"></i> Digital Product (software, downloads, etc.)
+                                </label>
+                                <small class="form-text text-muted d-block">No physical inventory or shipping required</small>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="form-check">
+                                <InputCheckbox class="form-check-input" @bind-Value="currentItem.IsGiftCard" id="isGiftCard" />
+                                <label class="form-check-label" for="isGiftCard">
+                                    <i class="bi bi-gift"></i> Gift Card
+                                </label>
+                                <small class="form-text text-muted d-block">Virtual or physical gift card product</small>
+                            </div>
+                        </div>
+                    </div>
                 </MudTabPanel>
 
                 <MudTabPanel Text="Pricing" Icon="@Icons.Material.Filled.AttachMoney">
@@ -312,6 +349,14 @@
                     {
                         <MudAlert Severity="Severity.Warning" Icon="@Icons.Material.Filled.Warning">
                             Stock level is at or below reorder level. Consider restocking.
+                        </MudAlert>
+                    }
+                    
+                    @if (currentItem.IsDigitalProduct || currentItem.IsGiftCard)
+                    {
+                        <MudAlert Severity="Severity.Info" Icon="@Icons.Material.Filled.Info" Class="mt-2">
+                            <strong>@(currentItem.IsGiftCard ? "Gift Card" : "Digital Product") Note:</strong> 
+                            This item doesn't require physical inventory tracking or shipping. Quantities can be managed virtually.
                         </MudAlert>
                     }
                     

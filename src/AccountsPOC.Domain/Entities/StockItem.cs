@@ -57,6 +57,10 @@ public class StockItem
     // Storage Conditions
     public string? StorageCondition { get; set; } // Ambient, Refrigerated, Frozen, Controlled, Hazardous
     
+    // Product Type
+    public bool IsDigitalProduct { get; set; } = false;
+    public bool IsGiftCard { get; set; } = false;
+    
     // Notes
     public string? Notes { get; set; }
     
