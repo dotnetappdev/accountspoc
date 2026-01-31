@@ -5,9 +5,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace AccountsPOC.WebAPI.Controllers;
 
-[ApiController]
 [Route("api/[controller]")]
-public class CustomersController : ControllerBase
+public class CustomersController : TenantAwareControllerBase
 {
     private readonly ApplicationDbContext _context;
 
@@ -19,13 +18,18 @@ public class CustomersController : ControllerBase
     [HttpGet]
     public async Task<ActionResult<IEnumerable<Customer>>> GetCustomers()
     {
-        return await _context.Customers.ToListAsync();
+        var tenantId = GetRequiredTenantId();
+        return await _context.Customers
+            .Where(c => c.TenantId == tenantId)
+            .ToListAsync();
     }
 
     [HttpGet("{id}")]
     public async Task<ActionResult<Customer>> GetCustomer(int id)
     {
-        var customer = await _context.Customers.FindAsync(id);
+        var tenantId = GetRequiredTenantId();
+        var customer = await _context.Customers
+            .FirstOrDefaultAsync(c => c.Id == id && c.TenantId == tenantId);
 
         if (customer == null)
         {
@@ -38,7 +42,12 @@ public class CustomersController : ControllerBase
     [HttpPost]
     public async Task<ActionResult<Customer>> PostCustomer(Customer customer)
     {
+        var tenantId = GetRequiredTenantId();
+        
+        // Ensure the customer is created for the current tenant
+        customer.TenantId = tenantId;
         customer.CreatedDate = DateTime.UtcNow;
+        
         _context.Customers.Add(customer);
         await _context.SaveChangesAsync();
 
@@ -53,6 +62,19 @@ public class CustomersController : ControllerBase
             return BadRequest();
         }
 
+        var tenantId = GetRequiredTenantId();
+        
+        // Verify the customer belongs to the current tenant
+        var existing = await _context.Customers
+            .FirstOrDefaultAsync(c => c.Id == id && c.TenantId == tenantId);
+        
+        if (existing == null)
+        {
+            return NotFound();
+        }
+
+        // Ensure tenant ID cannot be changed
+        customer.TenantId = tenantId;
         customer.LastModifiedDate = DateTime.UtcNow;
         _context.Entry(customer).State = EntityState.Modified;
 
@@ -62,7 +84,7 @@ public class CustomersController : ControllerBase
         }
         catch (DbUpdateConcurrencyException)
         {
-            if (!CustomerExists(id))
+            if (!await CustomerExistsForTenant(id, tenantId))
             {
                 return NotFound();
             }
@@ -75,7 +97,10 @@ public class CustomersController : ControllerBase
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteCustomer(int id)
     {
-        var customer = await _context.Customers.FindAsync(id);
+        var tenantId = GetRequiredTenantId();
+        var customer = await _context.Customers
+            .FirstOrDefaultAsync(c => c.Id == id && c.TenantId == tenantId);
+        
         if (customer == null)
         {
             return NotFound();
@@ -91,7 +116,10 @@ public class CustomersController : ControllerBase
     [HttpPatch("{id}/agent-update")]
     public async Task<IActionResult> AgentUpdateCustomer(int id, AgentCustomerUpdateDto dto)
     {
-        var customer = await _context.Customers.FindAsync(id);
+        var tenantId = GetRequiredTenantId();
+        var customer = await _context.Customers
+            .FirstOrDefaultAsync(c => c.Id == id && c.TenantId == tenantId);
+        
         if (customer == null)
         {
             return NotFound();
@@ -118,9 +146,9 @@ public class CustomersController : ControllerBase
         return NoContent();
     }
 
-    private bool CustomerExists(int id)
+    private async Task<bool> CustomerExistsForTenant(int id, int tenantId)
     {
-        return _context.Customers.Any(e => e.Id == id);
+        return await _context.Customers.AnyAsync(e => e.Id == id && e.TenantId == tenantId);
     }
 }
 

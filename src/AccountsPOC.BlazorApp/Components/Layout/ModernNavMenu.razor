@@ -1,4 +1,5 @@
 @inject NavigationManager NavigationManager
+@inject IJSRuntime JSRuntime
 
 <!-- Main Sidebar Container -->
 <aside class="main-sidebar sidebar-dark-primary elevation-4">
@@ -299,9 +300,30 @@
 </aside>
 
 @code {
-    private HashSet<string> expandedSections = new() { "sales", "inventory" }; // Default expanded sections
+    private HashSet<string> expandedSections = new(); // Start with all sections collapsed
 
-    private void ToggleSection(string sectionName)
+    protected override async Task OnInitializedAsync()
+    {
+        // Load expanded sections from localStorage
+        try
+        {
+            var savedState = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "navMenuExpandedSections");
+            if (!string.IsNullOrEmpty(savedState))
+            {
+                var sections = System.Text.Json.JsonSerializer.Deserialize<List<string>>(savedState);
+                if (sections != null)
+                {
+                    expandedSections = new HashSet<string>(sections);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading nav menu state: {ex.Message}");
+        }
+    }
+
+    private async Task ToggleSection(string sectionName)
     {
         if (expandedSections.Contains(sectionName))
         {
@@ -310,6 +332,17 @@
         else
         {
             expandedSections.Add(sectionName);
+        }
+
+        // Save to localStorage
+        try
+        {
+            var sectionsJson = System.Text.Json.JsonSerializer.Serialize(expandedSections.ToList());
+            await JSRuntime.InvokeVoidAsync("localStorage.setItem", "navMenuExpandedSections", sectionsJson);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error saving nav menu state: {ex.Message}");
         }
     }
 }
