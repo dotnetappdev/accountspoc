@@ -5,9 +5,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace AccountsPOC.WebAPI.Controllers;
 
-[ApiController]
 [Route("api/[controller]")]
-public class BankAccountsController : ControllerBase
+public class BankAccountsController : TenantAwareControllerBase
 {
     private readonly ApplicationDbContext _context;
 
@@ -19,13 +18,18 @@ public class BankAccountsController : ControllerBase
     [HttpGet]
     public async Task<ActionResult<IEnumerable<BankAccount>>> GetBankAccounts()
     {
-        return await _context.BankAccounts.ToListAsync();
+        var tenantId = GetRequiredTenantId();
+        return await _context.BankAccounts
+            .Where(b => b.TenantId == tenantId)
+            .ToListAsync();
     }
 
     [HttpGet("{id}")]
     public async Task<ActionResult<BankAccount>> GetBankAccount(int id)
     {
-        var bankAccount = await _context.BankAccounts.FindAsync(id);
+        var tenantId = GetRequiredTenantId();
+        var bankAccount = await _context.BankAccounts
+            .FirstOrDefaultAsync(b => b.Id == id && b.TenantId == tenantId);
 
         if (bankAccount == null)
         {
@@ -38,7 +42,12 @@ public class BankAccountsController : ControllerBase
     [HttpPost]
     public async Task<ActionResult<BankAccount>> PostBankAccount(BankAccount bankAccount)
     {
+        var tenantId = GetRequiredTenantId();
+        
+        // Ensure the bank account is created for the current tenant
+        bankAccount.TenantId = tenantId;
         bankAccount.CreatedDate = DateTime.UtcNow;
+        
         _context.BankAccounts.Add(bankAccount);
         await _context.SaveChangesAsync();
 
@@ -53,6 +62,19 @@ public class BankAccountsController : ControllerBase
             return BadRequest();
         }
 
+        var tenantId = GetRequiredTenantId();
+        
+        // Verify the bank account belongs to the current tenant
+        var existing = await _context.BankAccounts
+            .FirstOrDefaultAsync(b => b.Id == id && b.TenantId == tenantId);
+        
+        if (existing == null)
+        {
+            return NotFound();
+        }
+
+        // Ensure tenant ID cannot be changed
+        bankAccount.TenantId = tenantId;
         bankAccount.LastModifiedDate = DateTime.UtcNow;
         _context.Entry(bankAccount).State = EntityState.Modified;
 
@@ -62,7 +84,7 @@ public class BankAccountsController : ControllerBase
         }
         catch (DbUpdateConcurrencyException)
         {
-            if (!BankAccountExists(id))
+            if (!await BankAccountExistsForTenant(id, tenantId))
             {
                 return NotFound();
             }
@@ -75,7 +97,10 @@ public class BankAccountsController : ControllerBase
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteBankAccount(int id)
     {
-        var bankAccount = await _context.BankAccounts.FindAsync(id);
+        var tenantId = GetRequiredTenantId();
+        var bankAccount = await _context.BankAccounts
+            .FirstOrDefaultAsync(b => b.Id == id && b.TenantId == tenantId);
+        
         if (bankAccount == null)
         {
             return NotFound();
@@ -87,8 +112,8 @@ public class BankAccountsController : ControllerBase
         return NoContent();
     }
 
-    private bool BankAccountExists(int id)
+    private async Task<bool> BankAccountExistsForTenant(int id, int tenantId)
     {
-        return _context.BankAccounts.Any(e => e.Id == id);
+        return await _context.BankAccounts.AnyAsync(e => e.Id == id && e.TenantId == tenantId);
     }
 }
