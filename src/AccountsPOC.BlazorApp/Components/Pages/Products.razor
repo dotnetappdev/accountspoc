@@ -57,6 +57,19 @@
                         {
                             <p class="product-description">@(product.Description.Length > 100 ? product.Description.Substring(0, 100) + "..." : product.Description)</p>
                         }
+                        @if (!string.IsNullOrEmpty(product.Category) || !string.IsNullOrEmpty(product.Barcode))
+                        {
+                            <div class="product-meta">
+                                @if (!string.IsNullOrEmpty(product.Category))
+                                {
+                                    <span class="meta-badge"><i class="bi bi-tag"></i> @product.Category</span>
+                                }
+                                @if (!string.IsNullOrEmpty(product.Barcode))
+                                {
+                                    <span class="meta-badge"><i class="bi bi-upc-scan"></i> @product.Barcode</span>
+                                }
+                            </div>
+                        }
                         <div class="product-info">
                             <div class="info-item price-item">
                                 <span class="label">Unit Price</span>
@@ -104,43 +117,161 @@
 <ModalDialog Title="@(editingProduct != null ? "Edit Product" : "Add New Product")"
              IsVisible="showForm"
              OnClose="CancelForm"
-             Size="lg">
+             Size="xl">
     <Body>
         <EditForm Model="currentProduct" OnValidSubmit="SaveProduct">
-            <div class="row">
-                <div class="col-md-6 mb-3">
-                    <label class="form-label">Product Code</label>
-                    <InputText class="form-control" @bind-Value="currentProduct.ProductCode" placeholder="PROD-001" />
-                </div>
-                <div class="col-md-6 mb-3">
-                    <label class="form-label">Product Name</label>
-                    <InputText class="form-control" @bind-Value="currentProduct.ProductName" placeholder="Product name" />
-                </div>
-            </div>
-            <div class="mb-3">
-                <label class="form-label">Description</label>
-                <InputTextArea class="form-control" @bind-Value="currentProduct.Description" rows="3" placeholder="Detailed product description..." />
-            </div>
-            <div class="row">
-                <div class="col-md-4 mb-3">
-                    <label class="form-label">Unit Price</label>
-                    <CurrencyInput @bind-Value="currentProduct.UnitPrice" Currency="USD" />
-                </div>
-                <div class="col-md-4 mb-3">
-                    <label class="form-label">Stock Level</label>
-                    <InputNumber class="form-control" @bind-Value="currentProduct.StockLevel" />
-                </div>
-                <div class="col-md-4 mb-3">
-                    <label class="form-label">Reorder Level</label>
-                    <InputNumber class="form-control" @bind-Value="currentProduct.ReorderLevel" />
-                </div>
-            </div>
-            <div class="mb-3 form-check">
-                <InputCheckbox class="form-check-input" id="isActive" @bind-Value="currentProduct.IsActive" />
-                <label class="form-check-label" for="isActive">
-                    Product is active
-                </label>
-            </div>
+            <MudTabs Elevation="2" Rounded="true" ApplyEffectsToContainer="true" PanelClass="pa-4">
+                <MudTabPanel Text="Basic Info" Icon="@Icons.Material.Filled.Info">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Product Code <span class="text-danger">*</span></label>
+                            <InputText class="form-control" @bind-Value="currentProduct.ProductCode" placeholder="PROD-001" />
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Product Name <span class="text-danger">*</span></label>
+                            <InputText class="form-control" @bind-Value="currentProduct.ProductName" placeholder="Product name" />
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Category</label>
+                            <InputText class="form-control" @bind-Value="currentProduct.Category" placeholder="e.g., Electronics, Hardware" />
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Unit of Measure</label>
+                            <InputText class="form-control" @bind-Value="currentProduct.UnitOfMeasure" placeholder="Each, Box, Pallet" />
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Description</label>
+                        <InputTextArea class="form-control" @bind-Value="currentProduct.Description" rows="2" placeholder="Short description..." />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Long Description</label>
+                        <InputTextArea class="form-control" @bind-Value="currentProduct.LongDescription" rows="3" placeholder="Detailed product description..." />
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Barcode</label>
+                            <InputText class="form-control" @bind-Value="currentProduct.Barcode" placeholder="EAN/UPC barcode" />
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Manufacturer Part #</label>
+                            <InputText class="form-control" @bind-Value="currentProduct.ManufacturerPartNumber" placeholder="MPN" />
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Internal Reference</label>
+                            <InputText class="form-control" @bind-Value="currentProduct.InternalReference" placeholder="Internal ref" />
+                        </div>
+                    </div>
+                    <div class="mb-3 form-check">
+                        <InputCheckbox class="form-check-input" id="isActive" @bind-Value="currentProduct.IsActive" />
+                        <label class="form-check-label" for="isActive">
+                            Product is active
+                        </label>
+                    </div>
+                </MudTabPanel>
+
+                <MudTabPanel Text="Pricing" Icon="@Icons.Material.Filled.AttachMoney">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Unit Price</label>
+                            <CurrencyInput @bind-Value="currentProduct.UnitPrice" Currency="USD" />
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Cost Price</label>
+                            <CurrencyInput @bind-Value="currentProduct.CostPrice" Currency="USD" />
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Tax Code</label>
+                            <InputText class="form-control" @bind-Value="currentProduct.TaxCode" placeholder="T1, VAT20, etc." />
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="form-check mt-4">
+                                <InputCheckbox class="form-check-input" id="taxExempt" @bind-Value="currentProduct.TaxExempt" />
+                                <label class="form-check-label" for="taxExempt">
+                                    Tax Exempt
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </MudTabPanel>
+
+                <MudTabPanel Text="Inventory" Icon="@Icons.Material.Filled.Inventory">
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Stock Level</label>
+                            <InputNumber class="form-control" @bind-Value="currentProduct.StockLevel" />
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Reorder Level</label>
+                            <InputNumber class="form-control" @bind-Value="currentProduct.ReorderLevel" />
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Reorder Quantity</label>
+                            <InputNumber class="form-control" @bind-Value="currentProduct.ReorderQuantity" />
+                        </div>
+                    </div>
+                    @if (currentProduct.StockLevel <= currentProduct.ReorderLevel)
+                    {
+                        <MudAlert Severity="Severity.Warning" Icon="@Icons.Material.Filled.Warning">
+                            Stock level is at or below reorder level. Consider restocking.
+                        </MudAlert>
+                    }
+                </MudTabPanel>
+
+                <MudTabPanel Text="Dimensions" Icon="@Icons.Material.Filled.Straighten">
+                    <div class="row">
+                        <div class="col-md-3 mb-3">
+                            <label class="form-label">Length</label>
+                            <InputNumber class="form-control" @bind-Value="currentProduct.Length" />
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label class="form-label">Width</label>
+                            <InputNumber class="form-control" @bind-Value="currentProduct.Width" />
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label class="form-label">Height</label>
+                            <InputNumber class="form-control" @bind-Value="currentProduct.Height" />
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label class="form-label">Dimension UOM</label>
+                            <InputText class="form-control" @bind-Value="currentProduct.DimensionUOM" placeholder="cm, in, mm" />
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Weight</label>
+                            <InputNumber class="form-control" @bind-Value="currentProduct.Weight" />
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Weight UOM</label>
+                            <InputText class="form-control" @bind-Value="currentProduct.WeightUOM" placeholder="kg, lb, g" />
+                        </div>
+                    </div>
+                </MudTabPanel>
+
+                <MudTabPanel Text="Images" Icon="@Icons.Material.Filled.Image">
+                    <div class="mb-3">
+                        <label class="form-label">Primary Image URL</label>
+                        <InputText class="form-control" @bind-Value="currentProduct.PrimaryImageUrl" placeholder="https://example.com/image.jpg" />
+                        @if (!string.IsNullOrEmpty(currentProduct.PrimaryImageUrl))
+                        {
+                            <div class="mt-2">
+                                <img src="@currentProduct.PrimaryImageUrl" alt="Primary" style="max-width: 200px; max-height: 200px;" class="img-thumbnail" />
+                            </div>
+                        }
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Additional Images (comma-separated URLs)</label>
+                        <InputTextArea class="form-control" @bind-Value="additionalImagesInput" rows="3" placeholder="https://example.com/image1.jpg, https://example.com/image2.jpg" />
+                        <small class="form-text text-muted">Enter multiple image URLs separated by commas</small>
+                    </div>
+                </MudTabPanel>
+            </MudTabs>
+
             <div class="modal-actions">
                 <button type="submit" class="btn-gradient btn-success">
                     <i class="bi bi-check-circle"></i> Save Product
@@ -326,6 +457,29 @@
         line-height: 1.5;
     }
 
+    .product-meta {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+        margin-bottom: 1rem;
+    }
+
+    .meta-badge {
+        background: #e9ecef;
+        color: #495057;
+        padding: 0.25rem 0.75rem;
+        border-radius: 12px;
+        font-size: 0.75rem;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+
+    .meta-badge i {
+        font-size: 0.875rem;
+    }
+
     .product-info {
         border-top: 1px solid #e9ecef;
         padding-top: 1rem;
@@ -459,6 +613,7 @@
     private Product? editingProduct;
     private bool showForm = false;
     private bool loading = true;
+    private string additionalImagesInput = "";
 
     protected override async Task OnInitializedAsync()
     {
@@ -482,7 +637,13 @@
 
     private void ShowAddForm()
     {
-        currentProduct = new() { ProductCode = "", ProductName = "", IsActive = true };
+        currentProduct = new() { 
+            ProductCode = "", 
+            ProductName = "", 
+            IsActive = true,
+            UnitOfMeasure = "Each"
+        };
+        additionalImagesInput = "";
         editingProduct = null;
         showForm = true;
     }
@@ -496,13 +657,32 @@
             ProductCode = product.ProductCode,
             ProductName = product.ProductName,
             Description = product.Description,
+            LongDescription = product.LongDescription,
             UnitPrice = product.UnitPrice,
+            CostPrice = product.CostPrice,
             StockLevel = product.StockLevel,
             ReorderLevel = product.ReorderLevel,
+            ReorderQuantity = product.ReorderQuantity,
             IsActive = product.IsActive,
+            Barcode = product.Barcode,
+            Category = product.Category,
+            ManufacturerPartNumber = product.ManufacturerPartNumber,
+            InternalReference = product.InternalReference,
+            UnitOfMeasure = product.UnitOfMeasure,
+            Weight = product.Weight,
+            WeightUOM = product.WeightUOM,
+            Length = product.Length,
+            Width = product.Width,
+            Height = product.Height,
+            DimensionUOM = product.DimensionUOM,
+            TaxExempt = product.TaxExempt,
+            TaxCode = product.TaxCode,
+            PrimaryImageUrl = product.PrimaryImageUrl,
+            AdditionalImageUrls = product.AdditionalImageUrls,
             CreatedDate = product.CreatedDate,
             LastModifiedDate = product.LastModifiedDate
         };
+        additionalImagesInput = product.AdditionalImageUrls != null ? string.Join(", ", product.AdditionalImageUrls) : "";
         showForm = true;
     }
 
@@ -510,6 +690,20 @@
     {
         try
         {
+            // Parse additional images from comma-separated input
+            if (!string.IsNullOrWhiteSpace(additionalImagesInput))
+            {
+                currentProduct.AdditionalImageUrls = additionalImagesInput
+                    .Split(',')
+                    .Select(s => s.Trim())
+                    .Where(s => !string.IsNullOrEmpty(s))
+                    .ToList();
+            }
+            else
+            {
+                currentProduct.AdditionalImageUrls = null;
+            }
+
             if (editingProduct != null)
             {
                 await Http.PutAsJsonAsync($"api/Products/{currentProduct.Id}", currentProduct);

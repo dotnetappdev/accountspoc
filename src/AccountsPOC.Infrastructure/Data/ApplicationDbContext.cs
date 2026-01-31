@@ -20,6 +20,7 @@ public class ApplicationDbContext : IdentityDbContext<User, Role, int, Microsoft
     public DbSet<SalesInvoice> SalesInvoices => Set<SalesInvoice>();
     public DbSet<BillOfMaterial> BillOfMaterials => Set<BillOfMaterial>();
     public DbSet<BOMComponent> BOMComponents => Set<BOMComponent>();
+    public DbSet<BOMImage> BOMImages => Set<BOMImage>();
     public DbSet<StockItem> StockItems => Set<StockItem>();
     public DbSet<Warehouse> Warehouses => Set<Warehouse>();
     public DbSet<PriceList> PriceLists => Set<PriceList>();
@@ -185,6 +186,19 @@ public class ApplicationDbContext : IdentityDbContext<User, Role, int, Microsoft
                 .WithMany()
                 .HasForeignKey(e => e.ProductId)
                 .OnDelete(DeleteBehavior.Restrict);
+        });
+        
+        // BOMImage configuration
+        modelBuilder.Entity<BOMImage>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.ImageUrl).IsRequired().HasMaxLength(500);
+            entity.Property(e => e.Caption).HasMaxLength(200);
+            
+            entity.HasOne(e => e.BillOfMaterial)
+                .WithMany(b => b.Images)
+                .HasForeignKey(e => e.BillOfMaterialId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
         
         // StockItem configuration

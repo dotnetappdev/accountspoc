@@ -52,14 +52,40 @@ public class SalesOrdersController : ControllerBase
     [HttpPost]
     public async Task<ActionResult<SalesOrder>> PostSalesOrder(SalesOrder salesOrder)
     {
-        salesOrder.CreatedDate = DateTime.UtcNow;
-        salesOrder.OrderDate = DateTime.UtcNow;
-        
+        // Validate items
         foreach (var item in salesOrder.SalesOrderItems)
         {
+            if (item.Quantity <= 0)
+            {
+                return BadRequest("Quantity must be greater than zero.");
+            }
+            if (item.UnitPrice < 0)
+            {
+                return BadRequest("Unit price cannot be negative.");
+            }
+            
+            // Only validate ProductId if it's not a free-text item
+            if (!item.IsFreeTextItem)
+            {
+                if (item.ProductId == null || !await _context.Products.AnyAsync(p => p.Id == item.ProductId))
+                {
+                    return BadRequest($"Product with ID {item.ProductId} does not exist.");
+                }
+            }
+            else
+            {
+                // For free-text items, ensure description is provided
+                if (string.IsNullOrWhiteSpace(item.Description))
+                {
+                    return BadRequest("Description is required for free-text items.");
+                }
+            }
+            
             item.TotalPrice = item.Quantity * item.UnitPrice;
         }
         
+        salesOrder.CreatedDate = DateTime.UtcNow;
+        salesOrder.OrderDate = DateTime.UtcNow;
         salesOrder.TotalAmount = salesOrder.SalesOrderItems.Sum(i => i.TotalPrice);
         
         _context.SalesOrders.Add(salesOrder);
@@ -76,16 +102,76 @@ public class SalesOrdersController : ControllerBase
             return BadRequest();
         }
 
-        salesOrder.LastModifiedDate = DateTime.UtcNow;
-        
+        // Get existing order with items first
+        var existingOrder = await _context.SalesOrders
+            .Include(o => o.SalesOrderItems)
+            .FirstOrDefaultAsync(o => o.Id == id);
+            
+        if (existingOrder == null)
+        {
+            return NotFound();
+        }
+
+        // Validate items
         foreach (var item in salesOrder.SalesOrderItems)
         {
+            if (item.Quantity <= 0)
+            {
+                return BadRequest("Quantity must be greater than zero.");
+            }
+            if (item.UnitPrice < 0)
+            {
+                return BadRequest("Unit price cannot be negative.");
+            }
+            
+            // Only validate ProductId if it's not a free-text item
+            if (!item.IsFreeTextItem)
+            {
+                if (item.ProductId == null || !await _context.Products.AnyAsync(p => p.Id == item.ProductId))
+                {
+                    return BadRequest($"Product with ID {item.ProductId} does not exist.");
+                }
+            }
+            else
+            {
+                // For free-text items, ensure description is provided
+                if (string.IsNullOrWhiteSpace(item.Description))
+                {
+                    return BadRequest("Description is required for free-text items.");
+                }
+            }
+            
             item.TotalPrice = item.Quantity * item.UnitPrice;
         }
         
+        salesOrder.LastModifiedDate = DateTime.UtcNow;
         salesOrder.TotalAmount = salesOrder.SalesOrderItems.Sum(i => i.TotalPrice);
         
-        _context.Entry(salesOrder).State = EntityState.Modified;
+        // Update order properties
+        existingOrder.OrderNumber = salesOrder.OrderNumber;
+        existingOrder.OrderDate = salesOrder.OrderDate;
+        existingOrder.CustomerName = salesOrder.CustomerName;
+        existingOrder.CustomerEmail = salesOrder.CustomerEmail;
+        existingOrder.CustomerPhone = salesOrder.CustomerPhone;
+        existingOrder.TotalAmount = salesOrder.TotalAmount;
+        existingOrder.Status = salesOrder.Status;
+        existingOrder.LastModifiedDate = salesOrder.LastModifiedDate;
+        
+        // Remove old items
+        _context.SalesOrderItems.RemoveRange(existingOrder.SalesOrderItems);
+        
+        // Add new items
+        foreach (var item in salesOrder.SalesOrderItems)
+        {
+            existingOrder.SalesOrderItems.Add(new SalesOrderItem
+            {
+                ProductId = item.ProductId,
+                Quantity = item.Quantity,
+                UnitPrice = item.UnitPrice,
+                TotalPrice = item.TotalPrice,
+                BillOfMaterialId = item.BillOfMaterialId
+            });
+        }
 
         try
         {

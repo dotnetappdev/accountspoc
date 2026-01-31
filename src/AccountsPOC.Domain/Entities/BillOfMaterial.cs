@@ -52,5 +52,6 @@ public class BillOfMaterial
     public Product? Product { get; set; }
     public Warehouse? DefaultWarehouse { get; set; }
     public ICollection<BOMComponent> Components { get; set; } = new List<BOMComponent>();
+    public ICollection<BOMImage> Images { get; set; } = new List<BOMImage>();
     public ICollection<SalesOrderItem> SalesOrderItems { get; set; } = new List<SalesOrderItem>();
 }

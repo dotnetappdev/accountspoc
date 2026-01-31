@@ -87,11 +87,23 @@ namespace AccountsPOC.Infrastructure.Migrations
                     b.Property<int>("BillOfMaterialId")
                         .HasColumnType("INTEGER");
 
+                    b.Property<bool>("IsOptional")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("LineNumber")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Notes")
+                        .HasColumnType("TEXT");
+
                     b.Property<int>("ProductId")
                         .HasColumnType("INTEGER");
 
                     b.Property<int>("Quantity")
                         .HasColumnType("INTEGER");
+
+                    b.Property<decimal?>("ScrapPercentage")
+                        .HasColumnType("TEXT");
 
                     b.Property<decimal>("TotalCost")
                         .HasPrecision(18, 2)
@@ -108,6 +120,43 @@ namespace AccountsPOC.Infrastructure.Migrations
                     b.HasIndex("ProductId");
 
                     b.ToTable("BOMComponents");
+                });
+
+            modelBuilder.Entity("AccountsPOC.Domain.Entities.BOMImage", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("BillOfMaterialId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Caption")
+                        .HasMaxLength(200)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("DisplayOrder")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("ImageData")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ImageUrl")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("IsPrimaryImage")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BillOfMaterialId");
+
+                    b.ToTable("BOMImages");
                 });
 
             modelBuilder.Entity("AccountsPOC.Domain.Entities.BankAccount", b =>
@@ -153,8 +202,14 @@ namespace AccountsPOC.Infrastructure.Migrations
                     b.Property<DateTime?>("LastModifiedDate")
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("Region")
+                        .HasColumnType("TEXT");
+
                     b.Property<int>("TenantId")
                         .HasColumnType("INTEGER");
+
+                    b.Property<decimal?>("VatTaxRate")
+                        .HasColumnType("TEXT");
 
                     b.HasKey("Id");
 
@@ -3849,6 +3904,9 @@ namespace AccountsPOC.Infrastructure.Migrations
                         .HasMaxLength(500)
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("Bins")
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("City")
                         .HasMaxLength(100)
                         .HasColumnType("TEXT");
@@ -3868,14 +3926,29 @@ namespace AccountsPOC.Infrastructure.Migrations
                     b.Property<DateTime>("CreatedDate")
                         .HasColumnType("TEXT");
 
+                    b.Property<int?>("HeightLevels")
+                        .HasColumnType("INTEGER");
+
                     b.Property<bool>("IsActive")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("IsTemperatureControlled")
                         .HasColumnType("INTEGER");
 
                     b.Property<DateTime?>("LastModifiedDate")
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("PickingSequence")
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("PostCode")
                         .HasMaxLength(20)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("SecurityLevel")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("TemperatureRange")
                         .HasColumnType("TEXT");
 
                     b.Property<int>("TenantId")
@@ -3889,6 +3962,9 @@ namespace AccountsPOC.Infrastructure.Migrations
                     b.Property<string>("WarehouseName")
                         .IsRequired()
                         .HasMaxLength(200)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Zones")
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
@@ -4203,6 +4279,17 @@ namespace AccountsPOC.Infrastructure.Migrations
                     b.Navigation("BillOfMaterial");
 
                     b.Navigation("Product");
+                });
+
+            modelBuilder.Entity("AccountsPOC.Domain.Entities.BOMImage", b =>
+                {
+                    b.HasOne("AccountsPOC.Domain.Entities.BillOfMaterial", "BillOfMaterial")
+                        .WithMany("Images")
+                        .HasForeignKey("BillOfMaterialId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("BillOfMaterial");
                 });
 
             modelBuilder.Entity("AccountsPOC.Domain.Entities.BillOfMaterial", b =>
@@ -4933,6 +5020,8 @@ namespace AccountsPOC.Infrastructure.Migrations
             modelBuilder.Entity("AccountsPOC.Domain.Entities.BillOfMaterial", b =>
                 {
                     b.Navigation("Components");
+
+                    b.Navigation("Images");
 
                     b.Navigation("SalesOrderItems");
                 });

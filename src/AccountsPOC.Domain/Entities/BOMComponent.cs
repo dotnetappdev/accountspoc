@@ -8,8 +8,11 @@ public class BOMComponent
     public int Quantity { get; set; }
     public decimal UnitCost { get; set; }
     public decimal TotalCost { get; set; }
+    public int LineNumber { get; set; }
+    public string? Notes { get; set; }
+    public decimal? ScrapPercentage { get; set; }
+    public bool IsOptional { get; set; } = false;
     
-    // Navigation properties
     public BillOfMaterial? BillOfMaterial { get; set; }
     public Product? Product { get; set; }
 }

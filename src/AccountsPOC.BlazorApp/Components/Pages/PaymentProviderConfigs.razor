@@ -127,87 +127,123 @@
     <ModalDialog Title="@(editingProvider != null ? "Edit Payment Provider" : "Add Payment Provider")" 
                  IsVisible="@showModal" 
                  OnClose="CloseModal"
-                 Size="lg">
+                 Size="xl">
         <Body>
             <EditForm Model="currentProvider" OnValidSubmit="SaveProvider">
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label">Provider Name <span class="text-danger">*</span></label>
-                        <InputText class="form-control" @bind-Value="currentProvider.ProviderName" placeholder="Stripe" />
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label">Provider Code <span class="text-danger">*</span></label>
-                        <InputSelect class="form-select" @bind-Value="currentProvider.ProviderCode">
-                            <option value="">Select Provider</option>
-                            <option value="STRIPE">Stripe</option>
-                            <option value="APPLEPAY">Apple Pay</option>
-                            <option value="GOOGLEPAY">Google Pay</option>
-                            <option value="PAYPAL">PayPal</option>
-                            <option value="SQUARE">Square</option>
-                            <option value="BRAINTREE">Braintree</option>
-                            <option value="AUTHORIZE_NET">Authorize.Net</option>
-                        </InputSelect>
-                    </div>
-                </div>
+                <ul class="nav nav-tabs mb-3" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link @(activeTab == "basic" ? "active" : "")" 
+                                type="button" 
+                                @onclick="@(() => SetActiveTab("basic"))">
+                            <i class="bi bi-info-circle"></i> Basic Info
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link @(activeTab == "credentials" ? "active" : "")" 
+                                type="button" 
+                                @onclick="@(() => SetActiveTab("credentials"))">
+                            <i class="bi bi-key"></i> Credentials
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link @(activeTab == "settings" ? "active" : "")" 
+                                type="button" 
+                                @onclick="@(() => SetActiveTab("settings"))">
+                            <i class="bi bi-gear"></i> Settings
+                        </button>
+                    </li>
+                </ul>
 
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label">Publishable Key</label>
-                        <InputText class="form-control" @bind-Value="currentProvider.PublishableKey" placeholder="pk_test_..." />
-                        <small class="form-text text-muted">Public API key</small>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label">Secret Key</label>
-                        <InputText class="form-control" type="password" @bind-Value="currentProvider.SecretKey" placeholder="sk_test_..." />
-                        <small class="form-text text-muted">Secret API key (keep secure)</small>
-                    </div>
-                </div>
-
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label">API Key</label>
-                        <InputText class="form-control" type="password" @bind-Value="currentProvider.ApiKey" placeholder="API Key" />
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label">Merchant ID</label>
-                        <InputText class="form-control" @bind-Value="currentProvider.MerchantId" placeholder="Merchant ID" />
-                    </div>
-                </div>
-
-                <div class="mb-3">
-                    <label class="form-label">Webhook Secret</label>
-                    <InputText class="form-control" type="password" @bind-Value="currentProvider.WebhookSecret" placeholder="whsec_..." />
-                    <small class="form-text text-muted">Webhook signing secret</small>
-                </div>
-
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label">Environment <span class="text-danger">*</span></label>
-                        <InputSelect class="form-select" @bind-Value="currentProvider.Environment">
-                            <option value="Test">Test</option>
-                            <option value="Production">Production</option>
-                        </InputSelect>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label">Status</label>
-                        <div class="mt-2">
-                            <div class="form-check form-switch mb-2">
-                                <InputCheckbox class="form-check-input" @bind-Value="currentProvider.IsEnabled" id="isEnabled" />
-                                <label class="form-check-label" for="isEnabled">Enabled</label>
+                <div class="tab-content">
+                    @if (activeTab == "basic")
+                    {
+                        <div class="tab-pane-content">
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Provider Name <span class="text-danger">*</span></label>
+                                    <InputText class="form-control" @bind-Value="currentProvider.ProviderName" placeholder="Stripe" />
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Provider Code <span class="text-danger">*</span></label>
+                                    <InputSelect class="form-select" @bind-Value="currentProvider.ProviderCode">
+                                        <option value="">Select Provider</option>
+                                        <option value="STRIPE">Stripe</option>
+                                        <option value="APPLEPAY">Apple Pay</option>
+                                        <option value="GOOGLEPAY">Google Pay</option>
+                                        <option value="PAYPAL">PayPal</option>
+                                        <option value="SQUARE">Square</option>
+                                        <option value="BRAINTREE">Braintree</option>
+                                        <option value="AUTHORIZE_NET">Authorize.Net</option>
+                                    </InputSelect>
+                                </div>
                             </div>
-                            <div class="form-check form-switch">
-                                <InputCheckbox class="form-check-input" @bind-Value="currentProvider.IsDefault" id="isDefault" />
-                                <label class="form-check-label" for="isDefault">Set as Default Provider</label>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Environment <span class="text-danger">*</span></label>
+                                    <InputSelect class="form-select" @bind-Value="currentProvider.Environment">
+                                        <option value="Test">Test</option>
+                                        <option value="Production">Production</option>
+                                    </InputSelect>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Status</label>
+                                    <div class="mt-2">
+                                        <div class="form-check form-switch mb-2">
+                                            <InputCheckbox class="form-check-input" @bind-Value="currentProvider.IsEnabled" id="isEnabled" />
+                                            <label class="form-check-label" for="isEnabled">Enabled</label>
+                                        </div>
+                                        <div class="form-check form-switch">
+                                            <InputCheckbox class="form-check-input" @bind-Value="currentProvider.IsDefault" id="isDefault" />
+                                            <label class="form-check-label" for="isDefault">Set as Default Provider</label>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                </div>
-
-                <div class="mb-3">
-                    <label class="form-label">Additional Configuration (JSON)</label>
-                    <InputTextArea class="form-control font-monospace" @bind-Value="currentProvider.AdditionalConfig" rows="5" 
-                                  placeholder='{"key": "value"}' />
-                    <small class="form-text text-muted">Additional provider-specific settings in JSON format</small>
+                    }
+                    else if (activeTab == "credentials")
+                    {
+                        <div class="tab-pane-content">
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Publishable Key</label>
+                                    <InputText class="form-control" @bind-Value="currentProvider.PublishableKey" placeholder="pk_test_..." />
+                                    <small class="form-text text-muted">Public API key</small>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Secret Key</label>
+                                    <InputText class="form-control" type="password" @bind-Value="currentProvider.SecretKey" placeholder="sk_test_..." />
+                                    <small class="form-text text-muted">Secret API key (keep secure)</small>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">API Key</label>
+                                    <InputText class="form-control" type="password" @bind-Value="currentProvider.ApiKey" placeholder="API Key" />
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Merchant ID</label>
+                                    <InputText class="form-control" @bind-Value="currentProvider.MerchantId" placeholder="Merchant ID" />
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Webhook Secret</label>
+                                <InputText class="form-control" type="password" @bind-Value="currentProvider.WebhookSecret" placeholder="whsec_..." />
+                                <small class="form-text text-muted">Webhook signing secret for event verification</small>
+                            </div>
+                        </div>
+                    }
+                    else if (activeTab == "settings")
+                    {
+                        <div class="tab-pane-content">
+                            <div class="mb-3">
+                                <label class="form-label">Additional Configuration (JSON)</label>
+                                <InputTextArea class="form-control font-monospace" @bind-Value="currentProvider.AdditionalConfig" rows="8" 
+                                              placeholder='{"key": "value"}' />
+                                <small class="form-text text-muted">Additional provider-specific settings in JSON format</small>
+                            </div>
+                        </div>
+                    }
                 </div>
 
                 <div class="mt-4 d-flex justify-content-end gap-2">
@@ -469,6 +505,39 @@
     .font-monospace {
         font-family: 'Courier New', Courier, monospace;
     }
+
+    .nav-tabs {
+        border-bottom: 2px solid #e9ecef;
+    }
+
+    .nav-tabs .nav-link {
+        border: none;
+        color: #6c757d;
+        font-weight: 500;
+        padding: 0.75rem 1.5rem;
+        transition: all 0.2s ease;
+    }
+
+    .nav-tabs .nav-link:hover {
+        color: #667eea;
+        border-bottom: 2px solid #667eea;
+    }
+
+    .nav-tabs .nav-link.active {
+        color: #667eea;
+        border-bottom: 2px solid #667eea;
+        background: transparent;
+    }
+
+    .tab-pane-content {
+        padding: 1.5rem 0;
+        animation: fadeIn 0.3s ease-in;
+    }
+
+    @@keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
 </style>
 
 @code {
@@ -480,6 +549,7 @@
     private bool showTestModal = false;
     private bool testSuccess = false;
     private string testMessage = "";
+    private string activeTab = "basic";
 
     protected override async Task OnInitializedAsync()
     {
@@ -511,6 +581,7 @@
     private void ShowAddModal()
     {
         editingProvider = null;
+        activeTab = "basic";
         currentProvider = new PaymentProviderConfig
         {
             TenantId = 1,
@@ -525,6 +596,7 @@
     private void ShowEditModal(PaymentProviderConfig provider)
     {
         editingProvider = provider;
+        activeTab = "basic";
         currentProvider = new PaymentProviderConfig
         {
             Id = provider.Id,
@@ -549,6 +621,12 @@
     {
         showModal = false;
         editingProvider = null;
+        activeTab = "basic";
+    }
+
+    private void SetActiveTab(string tab)
+    {
+        activeTab = tab;
     }
 
     private void CloseTestModal()

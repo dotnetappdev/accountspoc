@@ -71,6 +71,20 @@
                                 <span class="label">Currency:</span>
                                 <span class="value">@account.Currency</span>
                             </div>
+                            @if (account.VatTaxRate.HasValue)
+                            {
+                                <div class="detail-item">
+                                    <span class="label">VAT/Tax Rate:</span>
+                                    <span class="value">@account.VatTaxRate.Value.ToString("0.##")%</span>
+                                </div>
+                            }
+                            @if (!string.IsNullOrEmpty(account.Region))
+                            {
+                                <div class="detail-item">
+                                    <span class="label">Region:</span>
+                                    <span class="value">@account.Region</span>
+                                </div>
+                            }
                         </div>
                         <div class="balance-section">
                             <span class="balance-label">Current Balance</span>
@@ -131,6 +145,16 @@
                         <option value="AUD">AUD - Australian Dollar</option>
                         <option value="CAD">CAD - Canadian Dollar</option>
                     </InputSelect>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">VAT/Tax Rate (%)</label>
+                    <InputNumber class="form-control" @bind-Value="currentAccount.VatTaxRate" placeholder="20.0" step="0.01" />
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Region</label>
+                    <InputText class="form-control" @bind-Value="currentAccount.Region" placeholder="e.g., UK, EU, North America" />
                 </div>
             </div>
             <div class="mb-3 form-check">
@@ -475,6 +499,8 @@
             BranchCode = account.BranchCode,
             Balance = account.Balance,
             Currency = account.Currency,
+            VatTaxRate = account.VatTaxRate,
+            Region = account.Region,
             IsActive = account.IsActive,
             CreatedDate = account.CreatedDate,
             LastModifiedDate = account.LastModifiedDate

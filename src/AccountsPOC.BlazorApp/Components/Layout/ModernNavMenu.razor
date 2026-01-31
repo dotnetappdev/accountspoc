@@ -173,6 +173,14 @@
                     </ul>
                 </li>
 
+                <!-- Forms -->
+                <li class="nav-item">
+                    <NavLink class="nav-link" href="forms" Match="NavLinkMatch.All">
+                        <i class="nav-icon bi bi-ui-checks-grid"></i>
+                        <p>Forms</p>
+                    </NavLink>
+                </li>
+
                 <!-- Configuration & Settings -->
                 <li class="nav-item @(expandedSections.Contains("settings") ? "menu-open" : "")">
                     <a href="#" class="nav-link" @onclick="@(() => ToggleSection("settings"))" @onclick:preventDefault>
@@ -205,12 +213,6 @@
                             <NavLink class="nav-link" href="custom-fields">
                                 <i class="bi bi-input-cursor-text nav-icon"></i>
                                 <p>Custom Fields</p>
-                            </NavLink>
-                        </li>
-                        <li class="nav-item">
-                            <NavLink class="nav-link" href="forms">
-                                <i class="bi bi-ui-checks-grid nav-icon"></i>
-                                <p>Forms Management</p>
                             </NavLink>
                         </li>
                         <li class="nav-item">

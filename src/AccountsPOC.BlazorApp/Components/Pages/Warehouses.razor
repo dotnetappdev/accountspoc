@@ -1,140 +1,571 @@
 @page "/warehouses"
 @using System.Net.Http.Json
 @using AccountsPOC.BlazorApp.Models
+@using AccountsPOC.BlazorApp.Components.Shared
 @inject HttpClient Http
+@inject NavigationManager NavigationManager
 @rendermode InteractiveServer
 
 <PageTitle>Warehouses</PageTitle>
 
-<div class="container-fluid">
-    <h1 class="mb-4">Warehouse Management</h1>
-
-    <div class="row mb-3">
-        <div class="col">
-            <button class="btn btn-primary" @onclick="ShowAddForm">
-                <i class="bi bi-plus-circle"></i> Add New Warehouse
-            </button>
+<div class="container-fluid modern-page">
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">
+                <i class="bi bi-building"></i> Warehouses
+            </h1>
+            <p class="page-subtitle">Manage your warehouse facilities and operations</p>
         </div>
+        <button class="btn-gradient btn-primary" @onclick="ShowAddForm">
+            <i class="bi bi-plus-circle"></i> Add New Warehouse
+        </button>
     </div>
-
-    @if (showForm)
-    {
-        <div class="card mb-4">
-            <div class="card-header">
-                <h5>@(editingWarehouse != null ? "Edit" : "Add") Warehouse</h5>
-            </div>
-            <div class="card-body">
-                <EditForm Model="currentWarehouse" OnValidSubmit="SaveWarehouse">
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Warehouse Code</label>
-                            <InputText class="form-control" @bind-Value="currentWarehouse.WarehouseCode" />
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Warehouse Name</label>
-                            <InputText class="form-control" @bind-Value="currentWarehouse.WarehouseName" />
-                        </div>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Address</label>
-                        <InputText class="form-control" @bind-Value="currentWarehouse.Address" />
-                    </div>
-                    <div class="row">
-                        <div class="col-md-4 mb-3">
-                            <label class="form-label">City</label>
-                            <InputText class="form-control" @bind-Value="currentWarehouse.City" />
-                        </div>
-                        <div class="col-md-4 mb-3">
-                            <label class="form-label">Post Code</label>
-                            <InputText class="form-control" @bind-Value="currentWarehouse.PostCode" />
-                        </div>
-                        <div class="col-md-4 mb-3">
-                            <label class="form-label">Country</label>
-                            <InputText class="form-control" @bind-Value="currentWarehouse.Country" />
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Contact Name</label>
-                            <InputText class="form-control" @bind-Value="currentWarehouse.ContactName" />
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Contact Phone</label>
-                            <InputText class="form-control" @bind-Value="currentWarehouse.ContactPhone" />
-                        </div>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-check-label">
-                            <InputCheckbox class="form-check-input" @bind-Value="currentWarehouse.IsActive" />
-                            Active
-                        </label>
-                    </div>
-                    <button type="submit" class="btn btn-success">Save</button>
-                    <button type="button" class="btn btn-secondary" @onclick="CancelForm">Cancel</button>
-                </EditForm>
-            </div>
-        </div>
-    }
 
     @if (loading)
     {
-        <p><em>Loading...</em></p>
+        <div class="loading-card">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="mt-3">Loading warehouses...</p>
+        </div>
     }
     else if (warehouses == null || !warehouses.Any())
     {
-        <div class="alert alert-info">No warehouses found. Add one to get started.</div>
+        <div class="empty-state">
+            <i class="bi bi-inbox"></i>
+            <h3>No warehouses yet</h3>
+            <p>Add your first warehouse to get started</p>
+        </div>
     }
     else
     {
-        <div class="table-responsive">
-            <table class="table table-striped table-hover">
-                <thead class="table-dark">
-                    <tr>
-                        <th>Code</th>
-                        <th>Name</th>
-                        <th>Address</th>
-                        <th>City</th>
-                        <th>Post Code</th>
-                        <th>Contact</th>
-                        <th>Status</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var warehouse in warehouses)
-                    {
-                        <tr>
-                            <td>@warehouse.WarehouseCode</td>
-                            <td>@warehouse.WarehouseName</td>
-                            <td>@warehouse.Address</td>
-                            <td>@warehouse.City</td>
-                            <td>@warehouse.PostCode</td>
-                            <td>@warehouse.ContactName<br/>@warehouse.ContactPhone</td>
-                            <td>
-                                @if (warehouse.IsActive)
-                                {
-                                    <span class="badge bg-success">Active</span>
-                                }
-                                else
-                                {
-                                    <span class="badge bg-secondary">Inactive</span>
-                                }
-                            </td>
-                            <td>
-                                <button class="btn btn-sm btn-warning" @onclick="() => EditWarehouse(warehouse)">
-                                    <i class="bi bi-pencil"></i> Edit
-                                </button>
-                                <button class="btn btn-sm btn-danger" @onclick="() => DeleteWarehouse(warehouse.Id)">
-                                    <i class="bi bi-trash"></i> Delete
-                                </button>
-                            </td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
+        <div class="warehouses-grid">
+            @foreach (var warehouse in warehouses)
+            {
+                <div class="warehouse-card">
+                    <div class="warehouse-card-header">
+                        <div class="warehouse-icon">
+                            <i class="bi bi-building"></i>
+                        </div>
+                        <span class="status-badge @(warehouse.IsActive ? "status-active" : "status-inactive")">
+                            @(warehouse.IsActive ? "Active" : "Inactive")
+                        </span>
+                    </div>
+                    <div class="warehouse-card-body">
+                        <h4 class="warehouse-name">@warehouse.WarehouseName</h4>
+                        <p class="warehouse-code">Code: @warehouse.WarehouseCode</p>
+                        <div class="warehouse-details">
+                            <div class="detail-item">
+                                <span class="label">Location:</span>
+                                <span class="value">@warehouse.City, @warehouse.Country</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="label">Contact:</span>
+                                <span class="value">@warehouse.ContactName</span>
+                            </div>
+                            @if (warehouse.HeightLevels.HasValue)
+                            {
+                                <div class="detail-item">
+                                    <span class="label">Height Levels:</span>
+                                    <span class="value">@warehouse.HeightLevels</span>
+                                </div>
+                            }
+                            @if (!string.IsNullOrEmpty(warehouse.SecurityLevel))
+                            {
+                                <div class="detail-item">
+                                    <span class="label">Security:</span>
+                                    <span class="value">@warehouse.SecurityLevel</span>
+                                </div>
+                            }
+                            @if (warehouse.IsTemperatureControlled)
+                            {
+                                <div class="detail-item">
+                                    <span class="label">Temperature:</span>
+                                    <span class="value">
+                                        <i class="bi bi-thermometer-snow"></i> Controlled
+                                        @if (!string.IsNullOrEmpty(warehouse.TemperatureRange))
+                                        {
+                                            <text> (@warehouse.TemperatureRange)</text>
+                                        }
+                                    </span>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                    <div class="warehouse-card-footer">
+                        <button class="btn-action btn-edit" @onclick="() => EditWarehouse(warehouse)" title="Edit Warehouse">
+                            <i class="bi bi-pencil"></i> Edit
+                        </button>
+                        <button class="btn-action btn-delete" @onclick="() => DeleteWarehouse(warehouse.Id)" title="Delete Warehouse">
+                            <i class="bi bi-trash"></i> Delete
+                        </button>
+                    </div>
+                </div>
+            }
         </div>
     }
 </div>
+
+<ModalDialog Title="@(editingWarehouse != null ? "Edit Warehouse" : "Add New Warehouse")"
+             IsVisible="showForm"
+             OnClose="CancelForm"
+             Size="xl">
+    <Body>
+        <EditForm Model="currentWarehouse" OnValidSubmit="SaveWarehouse">
+            <ul class="nav nav-tabs mb-3" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link @(activeTab == "basic" ? "active" : "")" 
+                            type="button" 
+                            @onclick="@(() => SetActiveTab("basic"))">
+                        <i class="bi bi-info-circle"></i> Basic Info
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link @(activeTab == "location" ? "active" : "")" 
+                            type="button" 
+                            @onclick="@(() => SetActiveTab("location"))">
+                        <i class="bi bi-geo-alt"></i> Location
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link @(activeTab == "management" ? "active" : "")" 
+                            type="button" 
+                            @onclick="@(() => SetActiveTab("management"))">
+                        <i class="bi bi-boxes"></i> Warehouse Management
+                    </button>
+                </li>
+            </ul>
+
+            <div class="tab-content">
+                @if (activeTab == "basic")
+                {
+                    <div class="tab-pane-content">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Warehouse Code</label>
+                                <InputText class="form-control" @bind-Value="currentWarehouse.WarehouseCode" placeholder="WH001" />
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Warehouse Name</label>
+                                <InputText class="form-control" @bind-Value="currentWarehouse.WarehouseName" placeholder="Main Distribution Center" />
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Contact Name</label>
+                                <InputText class="form-control" @bind-Value="currentWarehouse.ContactName" placeholder="Warehouse Manager" />
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Contact Phone</label>
+                                <InputText class="form-control" @bind-Value="currentWarehouse.ContactPhone" placeholder="+1 555 1234" />
+                            </div>
+                        </div>
+                        <div class="mb-3 form-check">
+                            <InputCheckbox class="form-check-input" id="isActive" @bind-Value="currentWarehouse.IsActive" />
+                            <label class="form-check-label" for="isActive">
+                                Warehouse is active
+                            </label>
+                        </div>
+                    </div>
+                }
+                else if (activeTab == "location")
+                {
+                    <div class="tab-pane-content">
+                        <div class="mb-3">
+                            <label class="form-label">Address</label>
+                            <InputText class="form-control" @bind-Value="currentWarehouse.Address" placeholder="123 Industrial Park Road" />
+                        </div>
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">City</label>
+                                <InputText class="form-control" @bind-Value="currentWarehouse.City" placeholder="London" />
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Post Code</label>
+                                <InputText class="form-control" @bind-Value="currentWarehouse.PostCode" placeholder="SW1A 1AA" />
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Country</label>
+                                <InputText class="form-control" @bind-Value="currentWarehouse.Country" placeholder="United Kingdom" />
+                            </div>
+                        </div>
+                    </div>
+                }
+                else if (activeTab == "management")
+                {
+                    <div class="tab-pane-content">
+                        <h6 class="section-title">Storage Organization</h6>
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Bins</label>
+                                <InputText class="form-control" @bind-Value="currentWarehouse.Bins" placeholder="e.g., A1-A100, B1-B50" />
+                                <small class="form-text text-muted">Comma-separated list of bin codes</small>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Zones</label>
+                                <InputText class="form-control" @bind-Value="currentWarehouse.Zones" placeholder="e.g., Receiving, Storage, Shipping" />
+                                <small class="form-text text-muted">Comma-separated list of zone names</small>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Height Levels</label>
+                                <InputNumber class="form-control" @bind-Value="currentWarehouse.HeightLevels" placeholder="e.g., 5" />
+                                <small class="form-text text-muted">Number of vertical storage levels</small>
+                            </div>
+                        </div>
+                        
+                        <h6 class="section-title mt-4">Operational Configuration</h6>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Security Level</label>
+                                <InputSelect class="form-select" @bind-Value="currentWarehouse.SecurityLevel">
+                                    <option value="">-- Select Security Level --</option>
+                                    <option value="Basic">Basic - Standard access control</option>
+                                    <option value="Medium">Medium - Enhanced monitoring</option>
+                                    <option value="High">High - 24/7 surveillance</option>
+                                    <option value="Maximum">Maximum - Restricted access</option>
+                                </InputSelect>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Picking Sequence</label>
+                                <InputSelect class="form-select" @bind-Value="currentWarehouse.PickingSequence">
+                                    <option value="">-- Select Picking Method --</option>
+                                    <option value="FIFO">FIFO (First In, First Out)</option>
+                                    <option value="LIFO">LIFO (Last In, First Out)</option>
+                                    <option value="FEFO">FEFO (First Expired, First Out)</option>
+                                    <option value="Zone">Zone-based Picking</option>
+                                    <option value="Batch">Batch Picking</option>
+                                    <option value="Wave">Wave Picking</option>
+                                </InputSelect>
+                            </div>
+                        </div>
+                        
+                        <h6 class="section-title mt-4">Temperature Control</h6>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <div class="form-check">
+                                    <InputCheckbox class="form-check-input" id="isTemperatureControlled" @bind-Value="currentWarehouse.IsTemperatureControlled" />
+                                    <label class="form-check-label" for="isTemperatureControlled">
+                                        Temperature Controlled Facility
+                                    </label>
+                                </div>
+                            </div>
+                            @if (currentWarehouse.IsTemperatureControlled)
+                            {
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Temperature Range</label>
+                                    <InputText class="form-control" @bind-Value="currentWarehouse.TemperatureRange" placeholder="e.g., 2°C to 8°C" />
+                                    <small class="form-text text-muted">Specify the temperature range maintained</small>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                }
+            </div>
+
+            <div class="modal-actions">
+                <button type="submit" class="btn-gradient btn-success">
+                    <i class="bi bi-check-circle"></i> Save Warehouse
+                </button>
+                <button type="button" class="btn btn-secondary" @onclick="CancelForm">
+                    Cancel
+                </button>
+            </div>
+        </EditForm>
+    </Body>
+</ModalDialog>
+
+<style>
+    .modern-page {
+        animation: fadeIn 0.4s ease-in;
+    }
+
+    @@keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+        padding-bottom: 1.5rem;
+        border-bottom: 2px solid #e9ecef;
+    }
+
+    .page-title {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #1a1a1a;
+        margin-bottom: 0.25rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .page-subtitle {
+        color: #6c757d;
+        margin-bottom: 0;
+        font-size: 0.95rem;
+    }
+
+    .btn-gradient {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+        color: white;
+        padding: 0.75rem 1.5rem;
+        border-radius: 8px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+    }
+
+    .btn-gradient:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        color: white;
+    }
+
+    .btn-gradient.btn-success {
+        background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        box-shadow: 0 4px 15px rgba(17, 153, 142, 0.3);
+    }
+
+    .btn-gradient.btn-success:hover {
+        box-shadow: 0 6px 20px rgba(17, 153, 142, 0.4);
+    }
+
+    .loading-card {
+        text-align: center;
+        padding: 4rem;
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    }
+
+    .empty-state i {
+        font-size: 4rem;
+        color: #cbd5e0;
+        margin-bottom: 1rem;
+    }
+
+    .empty-state h3 {
+        color: #2d3748;
+        margin-bottom: 0.5rem;
+    }
+
+    .empty-state p {
+        color: #718096;
+    }
+
+    .warehouses-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+        gap: 1.5rem;
+        animation: slideUp 0.5s ease-out;
+    }
+
+    @@keyframes slideUp {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .warehouse-card {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        transition: all 0.3s ease;
+        overflow: hidden;
+        border: 1px solid #e9ecef;
+    }
+
+    .warehouse-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+    }
+
+    .warehouse-card-header {
+        padding: 1.25rem;
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .warehouse-icon {
+        width: 48px;
+        height: 48px;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.5rem;
+    }
+
+    .status-badge {
+        padding: 0.375rem 0.875rem;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .status-active {
+        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        color: white;
+    }
+
+    .status-inactive {
+        background: rgba(255, 255, 255, 0.3);
+        color: white;
+    }
+
+    .warehouse-card-body {
+        padding: 1.25rem;
+    }
+
+    .warehouse-name {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: #1a1a1a;
+        margin-bottom: 0.25rem;
+    }
+
+    .warehouse-code {
+        color: #6c757d;
+        font-size: 0.9rem;
+        margin-bottom: 1rem;
+    }
+
+    .warehouse-details {
+        border-top: 1px solid #e9ecef;
+        padding-top: 0.75rem;
+    }
+
+    .detail-item {
+        display: flex;
+        justify-content: space-between;
+        padding: 0.375rem 0;
+    }
+
+    .detail-item .label {
+        color: #6c757d;
+        font-size: 0.875rem;
+    }
+
+    .detail-item .value {
+        color: #1a1a1a;
+        font-weight: 600;
+        font-size: 0.875rem;
+    }
+
+    .warehouse-card-footer {
+        padding: 1rem 1.25rem;
+        background: #f8f9fa;
+        border-top: 1px solid #e9ecef;
+        display: flex;
+        gap: 0.5rem;
+    }
+
+    .btn-action {
+        flex: 1;
+        padding: 0.5rem 0.75rem;
+        border: 1px solid #dee2e6;
+        background: white;
+        border-radius: 6px;
+        font-size: 0.875rem;
+        font-weight: 500;
+        transition: all 0.2s ease;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.375rem;
+    }
+
+    .btn-action:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .btn-edit {
+        color: #667eea;
+        border-color: #667eea;
+    }
+
+    .btn-edit:hover {
+        background: #667eea;
+        color: white;
+    }
+
+    .btn-delete {
+        color: #f5576c;
+        border-color: #f5576c;
+    }
+
+    .btn-delete:hover {
+        background: #f5576c;
+        color: white;
+    }
+
+    .nav-tabs {
+        border-bottom: 2px solid #dee2e6;
+    }
+
+    .nav-tabs .nav-link {
+        border: none;
+        background: transparent;
+        color: #6c757d;
+        padding: 0.75rem 1.5rem;
+        border-bottom: 3px solid transparent;
+        transition: all 0.2s ease;
+        font-weight: 500;
+    }
+
+    .nav-tabs .nav-link:hover {
+        color: #667eea;
+        border-bottom-color: #667eea;
+    }
+
+    .nav-tabs .nav-link.active {
+        color: #667eea;
+        border-bottom-color: #667eea;
+    }
+
+    .tab-pane-content {
+        padding: 1.5rem 0;
+        animation: fadeIn 0.3s ease-in;
+    }
+
+    .section-title {
+        color: #1a1a1a;
+        font-weight: 600;
+        margin-bottom: 1rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 1px solid #e9ecef;
+    }
+
+    .modal-actions {
+        display: flex;
+        gap: 0.75rem;
+        justify-content: flex-end;
+        margin-top: 1.5rem;
+        padding-top: 1rem;
+        border-top: 1px solid #e9ecef;
+    }
+</style>
 
 @code {
     private List<Warehouse>? warehouses;
@@ -142,6 +573,7 @@
     private Warehouse? editingWarehouse;
     private bool showForm = false;
     private bool loading = true;
+    private string activeTab = "basic";
 
     protected override async Task OnInitializedAsync()
     {
@@ -167,6 +599,7 @@
     {
         currentWarehouse = new() { WarehouseCode = "", WarehouseName = "", Address = "", IsActive = true };
         editingWarehouse = null;
+        activeTab = "basic";
         showForm = true;
     }
 
@@ -185,9 +618,17 @@
             ContactName = warehouse.ContactName,
             ContactPhone = warehouse.ContactPhone,
             IsActive = warehouse.IsActive,
+            Bins = warehouse.Bins,
+            Zones = warehouse.Zones,
+            HeightLevels = warehouse.HeightLevels,
+            IsTemperatureControlled = warehouse.IsTemperatureControlled,
+            TemperatureRange = warehouse.TemperatureRange,
+            SecurityLevel = warehouse.SecurityLevel,
+            PickingSequence = warehouse.PickingSequence,
             CreatedDate = warehouse.CreatedDate,
             LastModifiedDate = warehouse.LastModifiedDate
         };
+        activeTab = "basic";
         showForm = true;
     }
 
@@ -230,5 +671,10 @@
     {
         showForm = false;
         editingWarehouse = null;
+    }
+
+    private void SetActiveTab(string tab)
+    {
+        activeTab = tab;
     }
 }

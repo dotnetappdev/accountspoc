@@ -60,6 +60,22 @@
                     </CellTemplate>
                 </PropertyColumn>
                 <PropertyColumn Property="x => x.Description" Title="Description" Filterable="true" Sortable="true" />
+                <TemplateColumn Title="Type" Filterable="false" Sortable="false">
+                    <CellTemplate>
+                        @if (context.Item.IsGiftCard)
+                        {
+                            <MudChip Size="Size.Small" Color="Color.Success" Icon="@Icons.Material.Filled.CardGiftcard">Gift Card</MudChip>
+                        }
+                        else if (context.Item.IsDigitalProduct)
+                        {
+                            <MudChip Size="Size.Small" Color="Color.Info" Icon="@Icons.Material.Filled.CloudDownload">Digital</MudChip>
+                        }
+                        else
+                        {
+                            <span class="text-muted">Physical</span>
+                        }
+                    </CellTemplate>
+                </TemplateColumn>
                 <PropertyColumn Property="x => x.CostPrice" Title="Cost Price" Filterable="true" Sortable="true" Format="C" />
                 <PropertyColumn Property="x => x.SellingPrice" Title="Selling Price" Filterable="true" Sortable="true" Format="C" />
                 <PropertyColumn Property="x => x.QuantityOnHand" Title="Qty On Hand" Filterable="true" Sortable="true">
@@ -74,6 +90,26 @@
                     </CellTemplate>
                 </PropertyColumn>
                 <PropertyColumn Property="x => x.QuantityAvailable" Title="Qty Available" Filterable="true" Sortable="true" />
+                <TemplateColumn Title="Storage" Filterable="true" Sortable="false">
+                    <CellTemplate>
+                        @if (!string.IsNullOrEmpty(context.Item.StorageCondition))
+                        {
+                            var icon = context.Item.StorageCondition switch
+                            {
+                                "Refrigerated" or "Frozen" or "Chilled" => "❄️",
+                                "Perishable" => "🥗",
+                                "Hazardous" => "⚠️",
+                                "Controlled" => "🌡️",
+                                _ => "📦"
+                            };
+                            <span title="@context.Item.StorageCondition">@icon @context.Item.StorageCondition</span>
+                        }
+                        else
+                        {
+                            <span class="text-muted">-</span>
+                        }
+                    </CellTemplate>
+                </TemplateColumn>
                 <TemplateColumn Title="Warehouse" Filterable="false" Sortable="false">
                     <CellTemplate>
                         @(context.Item.Warehouse?.WarehouseName ?? "N/A")
@@ -129,154 +165,278 @@
 <ModalDialog Title="@(editingItem != null ? "Edit Stock Item" : "Add New Stock Item")"
              IsVisible="showForm"
              OnClose="CancelForm"
-             Size="lg">
+             Size="xl">
     <Body>
         <EditForm Model="currentItem" OnValidSubmit="SaveStockItem">
             <DataAnnotationsValidator />
             
-            <div class="row">
-                <div class="col-md-6 mb-3">
-                    <label class="form-label">Stock Code <span class="text-danger">*</span></label>
-                    <InputText class="form-control" @bind-Value="currentItem.StockCode" placeholder="STK-001" />
-                    <ValidationMessage For="@(() => currentItem.StockCode)" />
-                </div>
-                <div class="col-md-6 mb-3">
-                    <label class="form-label">Unit of Measure</label>
-                    <InputText class="form-control" @bind-Value="currentItem.UnitOfMeasure" placeholder="Each, Box, Pallet" />
-                </div>
-            </div>
-            
-            <div class="mb-3">
-                <label class="form-label">Description <span class="text-danger">*</span></label>
-                <InputText class="form-control" @bind-Value="currentItem.Description" placeholder="Short description" />
-                <ValidationMessage For="@(() => currentItem.Description)" />
-            </div>
-            
-            <div class="mb-3">
-                <label class="form-label">Long Description</label>
-                <InputTextArea class="form-control" @bind-Value="currentItem.LongDescription" rows="2" placeholder="Detailed description..." />
-            </div>
-            
-            <div class="row">
-                <div class="col-md-4 mb-3">
-                    <label class="form-label">Category</label>
-                    <InputText class="form-control" @bind-Value="currentItem.Category" placeholder="e.g., Electronics" />
-                </div>
-                <div class="col-md-4 mb-3">
-                    <label class="form-label">Barcode</label>
-                    <InputText class="form-control" @bind-Value="currentItem.Barcode" placeholder="Barcode/EAN" />
-                </div>
-                <div class="col-md-4 mb-3">
-                    <label class="form-label">Manufacturer Part #</label>
-                    <InputText class="form-control" @bind-Value="currentItem.ManufacturerPartNumber" placeholder="MPN" />
-                </div>
-            </div>
-            
-            <hr class="my-4" />
-            <h6 class="text-muted mb-3"><i class="bi bi-currency-dollar"></i> Pricing</h6>
-            
-            <div class="row">
-                <div class="col-md-6 mb-3">
-                    <label class="form-label">Cost Price</label>
-                    <InputNumber class="form-control" @bind-Value="currentItem.CostPrice" />
-                </div>
-                <div class="col-md-6 mb-3">
-                    <label class="form-label">Selling Price</label>
-                    <InputNumber class="form-control" @bind-Value="currentItem.SellingPrice" />
-                </div>
-            </div>
-            
-            <div class="row">
-                <div class="col-md-6 mb-3">
-                    <label class="form-label">Tax Code</label>
-                    <InputText class="form-control" @bind-Value="currentItem.TaxCode" placeholder="T1" />
-                </div>
-                <div class="col-md-6 mb-3">
-                    <div class="form-check mt-4">
-                        <InputCheckbox class="form-check-input" @bind-Value="currentItem.TaxExempt" id="taxExempt" />
-                        <label class="form-check-label" for="taxExempt">Tax Exempt</label>
+            <MudTabs Elevation="2" Rounded="true" ApplyEffectsToContainer="true" PanelClass="pa-4">
+                <MudTabPanel Text="Basic Info" Icon="@Icons.Material.Filled.Info">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Stock Code <span class="text-danger">*</span></label>
+                            <InputText class="form-control" @bind-Value="currentItem.StockCode" placeholder="STK-001" />
+                            <ValidationMessage For="@(() => currentItem.StockCode)" />
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Unit of Measure</label>
+                            <InputText class="form-control" @bind-Value="currentItem.UnitOfMeasure" placeholder="Each, Box, Pallet" />
+                        </div>
                     </div>
-                </div>
-            </div>
-            
-            <hr class="my-4" />
-            <h6 class="text-muted mb-3"><i class="bi bi-boxes"></i> Stock Information</h6>
-            
-            <div class="row">
-                <div class="col-md-3 mb-3">
-                    <label class="form-label">Qty On Hand</label>
-                    <InputNumber class="form-control" @bind-Value="currentItem.QuantityOnHand" />
-                </div>
-                <div class="col-md-3 mb-3">
-                    <label class="form-label">Qty Allocated</label>
-                    <InputNumber class="form-control" @bind-Value="currentItem.QuantityAllocated" />
-                </div>
-                <div class="col-md-3 mb-3">
-                    <label class="form-label">Qty On Order</label>
-                    <InputNumber class="form-control" @bind-Value="currentItem.QuantityOnOrder" />
-                </div>
-                <div class="col-md-3 mb-3">
-                    <label class="form-label">Qty Available</label>
-                    <input type="text" class="form-control" value="@(currentItem.QuantityOnHand - currentItem.QuantityAllocated)" readonly />
-                </div>
-            </div>
-            
-            <div class="row">
-                <div class="col-md-6 mb-3">
-                    <label class="form-label">Reorder Level</label>
-                    <InputNumber class="form-control" @bind-Value="currentItem.ReorderLevel" />
-                </div>
-                <div class="col-md-6 mb-3">
-                    <label class="form-label">Reorder Quantity</label>
-                    <InputNumber class="form-control" @bind-Value="currentItem.ReorderQuantity" />
-                </div>
-            </div>
-            
-            <div class="row">
-                <div class="col-md-6 mb-3">
-                    <label class="form-label">Warehouse ID</label>
-                    <InputNumber class="form-control" @bind-Value="currentItem.WarehouseId" />
-                </div>
-                <div class="col-md-6 mb-3">
-                    <label class="form-label">Bin Location</label>
-                    <InputText class="form-control" @bind-Value="currentItem.BinLocation" placeholder="A1-B2-C3" />
-                </div>
-            </div>
-            
-            <hr class="my-4" />
-            <h6 class="text-muted mb-3"><i class="bi bi-truck"></i> Supplier Information</h6>
-            
-            <div class="row">
-                <div class="col-md-6 mb-3">
-                    <label class="form-label">Default Supplier ID</label>
-                    <InputNumber class="form-control" @bind-Value="currentItem.DefaultSupplierId" />
-                </div>
-                <div class="col-md-6 mb-3">
-                    <label class="form-label">Supplier Part Number</label>
-                    <InputText class="form-control" @bind-Value="currentItem.SupplierPartNumber" placeholder="Supplier's part #" />
-                </div>
-            </div>
-            
-            <div class="row">
-                <div class="col-md-4 mb-3">
-                    <div class="form-check">
-                        <InputCheckbox class="form-check-input" @bind-Value="currentItem.IsActive" id="isActive" />
-                        <label class="form-check-label" for="isActive">Active</label>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Description <span class="text-danger">*</span></label>
+                        <InputText class="form-control" @bind-Value="currentItem.Description" placeholder="Short description" />
+                        <ValidationMessage For="@(() => currentItem.Description)" />
                     </div>
-                </div>
-                <div class="col-md-4 mb-3">
-                    <div class="form-check">
-                        <InputCheckbox class="form-check-input" @bind-Value="currentItem.IsDiscontinued" id="isDiscontinued" />
-                        <label class="form-check-label" for="isDiscontinued">Discontinued</label>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Long Description</label>
+                        <InputTextArea class="form-control" @bind-Value="currentItem.LongDescription" rows="2" placeholder="Detailed description..." />
                     </div>
-                </div>
-                <div class="col-md-4 mb-3">
-                    <div class="form-check">
-                        <InputCheckbox class="form-check-input" @bind-Value="currentItem.IsAgeRestricted" id="isAgeRestricted" />
-                        <label class="form-check-label" for="isAgeRestricted">Age Restricted</label>
+                    
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Category</label>
+                            <InputText class="form-control" @bind-Value="currentItem.Category" placeholder="e.g., Electronics" />
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Barcode</label>
+                            <InputText class="form-control" @bind-Value="currentItem.Barcode" placeholder="Barcode/EAN" />
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Manufacturer Part #</label>
+                            <InputText class="form-control" @bind-Value="currentItem.ManufacturerPartNumber" placeholder="MPN" />
+                        </div>
                     </div>
-                </div>
-            </div>
+
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <div class="form-check">
+                                <InputCheckbox class="form-check-input" @bind-Value="currentItem.IsActive" id="isActive" />
+                                <label class="form-check-label" for="isActive">Active</label>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <div class="form-check">
+                                <InputCheckbox class="form-check-input" @bind-Value="currentItem.IsDiscontinued" id="isDiscontinued" />
+                                <label class="form-check-label" for="isDiscontinued">Discontinued</label>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <div class="form-check">
+                                <InputCheckbox class="form-check-input" @bind-Value="currentItem.IsAgeRestricted" id="isAgeRestricted" />
+                                <label class="form-check-label" for="isAgeRestricted">Age Restricted</label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <div class="form-check">
+                                <InputCheckbox class="form-check-input" @bind-Value="currentItem.IsDigitalProduct" id="isDigitalProduct" />
+                                <label class="form-check-label" for="isDigitalProduct">
+                                    <i class="bi bi-cloud-download"></i> Digital Product (software, downloads, etc.)
+                                </label>
+                                <small class="form-text text-muted d-block">No physical inventory or shipping required</small>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="form-check">
+                                <InputCheckbox class="form-check-input" @bind-Value="currentItem.IsGiftCard" id="isGiftCard" />
+                                <label class="form-check-label" for="isGiftCard">
+                                    <i class="bi bi-gift"></i> Gift Card
+                                </label>
+                                <small class="form-text text-muted d-block">Virtual or physical gift card product</small>
+                            </div>
+                        </div>
+                    </div>
+                </MudTabPanel>
+
+                <MudTabPanel Text="Pricing" Icon="@Icons.Material.Filled.AttachMoney">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Cost Price</label>
+                            <InputNumber class="form-control" @bind-Value="currentItem.CostPrice" />
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Selling Price</label>
+                            <InputNumber class="form-control" @bind-Value="currentItem.SellingPrice" />
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Tax Code</label>
+                            <InputText class="form-control" @bind-Value="currentItem.TaxCode" placeholder="T1" />
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="form-check mt-4">
+                                <InputCheckbox class="form-check-input" @bind-Value="currentItem.TaxExempt" id="taxExempt" />
+                                <label class="form-check-label" for="taxExempt">Tax Exempt</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    @if (currentItem.SellingPrice > 0 && currentItem.CostPrice > 0)
+                    {
+                        <MudAlert Severity="Severity.Info" Icon="@Icons.Material.Filled.Info">
+                            Margin: @(((currentItem.SellingPrice - currentItem.CostPrice) / currentItem.SellingPrice * 100).ToString("F2"))%
+                        </MudAlert>
+                    }
+                </MudTabPanel>
+
+                <MudTabPanel Text="Inventory" Icon="@Icons.Material.Filled.Inventory">
+                    <div class="row">
+                        <div class="col-md-3 mb-3">
+                            <label class="form-label">Qty On Hand</label>
+                            <InputNumber class="form-control" @bind-Value="currentItem.QuantityOnHand" />
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label class="form-label">Qty Allocated</label>
+                            <InputNumber class="form-control" @bind-Value="currentItem.QuantityAllocated" />
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label class="form-label">Qty On Order</label>
+                            <InputNumber class="form-control" @bind-Value="currentItem.QuantityOnOrder" />
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label class="form-label">Qty Available</label>
+                            <input type="text" class="form-control" value="@(currentItem.QuantityOnHand - currentItem.QuantityAllocated)" readonly />
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Reorder Level</label>
+                            <InputNumber class="form-control" @bind-Value="currentItem.ReorderLevel" />
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Reorder Quantity</label>
+                            <InputNumber class="form-control" @bind-Value="currentItem.ReorderQuantity" />
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Warehouse ID</label>
+                            <InputNumber class="form-control" @bind-Value="currentItem.WarehouseId" />
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Bin Location</label>
+                            <InputText class="form-control" @bind-Value="currentItem.BinLocation" placeholder="A1-B2-C3" />
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Storage Condition</label>
+                            <InputSelect class="form-select" @bind-Value="currentItem.StorageCondition">
+                                <option value="">-- Not Required --</option>
+                                <option value="Ambient">Ambient / Room Temperature</option>
+                                <option value="Refrigerated">Refrigerated (2-8°C)</option>
+                                <option value="Frozen">Frozen (-18°C or below)</option>
+                                <option value="Controlled">Temperature Controlled</option>
+                                <option value="Chilled">Chilled (0-4°C)</option>
+                                <option value="Dry">Dry Storage</option>
+                                <option value="Hazardous">Hazardous Materials</option>
+                                <option value="Perishable">Perishable / Fresh</option>
+                            </InputSelect>
+                            <small class="form-text text-muted">
+                                <i class="bi bi-info-circle"></i> Required for food, perishables, or items with special storage needs
+                            </small>
+                        </div>
+                    </div>
+
+                    @if (currentItem.QuantityOnHand <= currentItem.ReorderLevel)
+                    {
+                        <MudAlert Severity="Severity.Warning" Icon="@Icons.Material.Filled.Warning">
+                            Stock level is at or below reorder level. Consider restocking.
+                        </MudAlert>
+                    }
+                    
+                    @if (currentItem.IsDigitalProduct || currentItem.IsGiftCard)
+                    {
+                        <MudAlert Severity="Severity.Info" Icon="@Icons.Material.Filled.Info" Class="mt-2">
+                            <strong>@(currentItem.IsGiftCard ? "Gift Card" : "Digital Product") Note:</strong> 
+                            This item doesn't require physical inventory tracking or shipping. Quantities can be managed virtually.
+                        </MudAlert>
+                    }
+                    
+                    @if (!string.IsNullOrEmpty(currentItem.StorageCondition) && 
+                         (currentItem.StorageCondition == "Refrigerated" || 
+                          currentItem.StorageCondition == "Frozen" || 
+                          currentItem.StorageCondition == "Perishable" || 
+                          currentItem.StorageCondition == "Chilled"))
+                    {
+                        <MudAlert Severity="Severity.Info" Icon="@Icons.Material.Filled.AcUnit" Class="mt-2">
+                            <strong>Storage Note:</strong> This item requires @currentItem.StorageCondition.ToLower() storage conditions.
+                        </MudAlert>
+                    }
+                </MudTabPanel>
+
+                <MudTabPanel Text="Supplier" Icon="@Icons.Material.Filled.LocalShipping">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Default Supplier ID</label>
+                            <InputNumber class="form-control" @bind-Value="currentItem.DefaultSupplierId" />
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Supplier Part Number</label>
+                            <InputText class="form-control" @bind-Value="currentItem.SupplierPartNumber" placeholder="Supplier's part #" />
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Lead Time (Days)</label>
+                            <InputNumber class="form-control" @bind-Value="currentItem.SupplierLeadTimeDays" />
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Internal Reference</label>
+                            <InputText class="form-control" @bind-Value="currentItem.InternalReference" placeholder="Internal ref" />
+                        </div>
+                    </div>
+                </MudTabPanel>
+
+                <MudTabPanel Text="Dimensions" Icon="@Icons.Material.Filled.Straighten">
+                    <div class="row">
+                        <div class="col-md-3 mb-3">
+                            <label class="form-label">Length</label>
+                            <InputNumber class="form-control" @bind-Value="currentItem.Length" />
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label class="form-label">Width</label>
+                            <InputNumber class="form-control" @bind-Value="currentItem.Width" />
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label class="form-label">Height</label>
+                            <InputNumber class="form-control" @bind-Value="currentItem.Height" />
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label class="form-label">Dimension UOM</label>
+                            <InputText class="form-control" @bind-Value="currentItem.DimensionUOM" placeholder="cm, in, mm" />
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Weight</label>
+                            <InputNumber class="form-control" @bind-Value="currentItem.Weight" />
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Weight UOM</label>
+                            <InputText class="form-control" @bind-Value="currentItem.WeightUOM" placeholder="kg, lb, g" />
+                        </div>
+                    </div>
+                </MudTabPanel>
+
+                <MudTabPanel Text="Notes" Icon="@Icons.Material.Filled.Notes">
+                    <div class="mb-3">
+                        <label class="form-label">Notes</label>
+                        <InputTextArea class="form-control" @bind-Value="currentItem.Notes" rows="5" placeholder="Additional notes about this stock item..." />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Account Code</label>
+                        <InputText class="form-control" @bind-Value="currentItem.AccountCode" placeholder="Accounting code" />
+                    </div>
+                </MudTabPanel>
+            </MudTabs>
             
             <div class="mt-3 d-flex justify-content-end gap-2">
                 <button type="submit" class="btn btn-success">

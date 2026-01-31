@@ -16,6 +16,15 @@ public class Warehouse
     public DateTime CreatedDate { get; set; }
     public DateTime? LastModifiedDate { get; set; }
     
+    // Warehouse Management Properties
+    public string? Bins { get; set; }
+    public string? Zones { get; set; }
+    public int? HeightLevels { get; set; }
+    public bool IsTemperatureControlled { get; set; }
+    public string? TemperatureRange { get; set; }
+    public string? SecurityLevel { get; set; }
+    public string? PickingSequence { get; set; }
+    
     // Navigation properties
     public ICollection<StockItem> StockItems { get; set; } = new List<StockItem>();
 }
